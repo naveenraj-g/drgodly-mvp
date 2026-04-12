@@ -1,0 +1,10 @@
+export { createDoctorInitialProfileController } from "./createDoctorInitialProfile.controller";
+export { getAllDoctorsDataController } from "./getAllDoctorsData.controller";
+export { deleteDoctorProfileController } from "./deleteDoctorProfile.controller";
+export { getDoctorDataByIdController } from "./getDoctorDataById.controller";
+export { createorUpdateDoctorPersonalDetailsController } from "./createOrUpdateDoctorPersonalDetails.controller";
+export { createorUpdateDoctorQualificationDetailsController } from "./createOrUpdateDoctorQualificationDetails.controller";
+export { createorUpdateDoctorWorkDetailsController } from "./createOrUpdateDoctorWorkDetails.controller";
+export { createorUpdateDoctorConcentController } from "./createOrUpdateDoctorConcent.controller";
+export { submitDoctorFullProfileController } from "./submitDoctorFullProfile.controller";
+export { getDoctorProfileByHPRIdController } from "./getDoctorProfileByHPRId.controller";

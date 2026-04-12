@@ -1,0 +1,10 @@
+export { DoctorProfileModule } from "./doctorProfile.module";
+export { AbdmServiceModule } from "./abdmService.module";
+export { PatientProfileModule } from "./patientProfile.module";
+export { AppointmentModule } from "./appointment.module";
+export { DoctorServiceModule } from "./doctorService.module";
+export { OrgAccessCheckRepositoryModule } from "./orgAccessCheck.module";
+export { IdResolverRepositoryModule } from "./idResolver.module";
+export { DoctorWeeklyAvailabilityModule } from "./doctorWeeklyAvailability.module";
+export { DoctorModule } from "./doctor.module";
+export { DashboardModule } from "./dashboard.module";

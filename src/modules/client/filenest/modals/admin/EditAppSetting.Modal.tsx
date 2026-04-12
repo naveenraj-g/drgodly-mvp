@@ -1,0 +1,133 @@
+"use client";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
+import { useSession } from "@/modules/client/auth/betterauth/auth-client";
+import { useFilenestAdminStoreModal } from "../../stores/admin-store-modal";
+import { useServerAction } from "zsa-react";
+import { handleInputParseError } from "@/modules/shared/utils/handleInputParseError";
+import {
+  CreateOrUpdateAppStorageSettingFormSchema,
+  TCreateOrUpdateAppStorageSettingFormSchema,
+} from "@/modules/shared/schemas/filenest/filenestValidationSchemas";
+import { useForm, FormProvider } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
+import { updateAppStorageSetting } from "../../server-actions/app-storage-setting-action";
+import { AppSettingForm } from "../../forms/modals/admin/AppSettingForm";
+
+export const EditAppSettingModal = () => {
+  const session = useSession();
+  const closeModal = useFilenestAdminStoreModal((state) => state.onClose);
+  const modalType = useFilenestAdminStoreModal((state) => state.type);
+  const isOpen = useFilenestAdminStoreModal((state) => state.isOpen);
+  const appSettingsRequiredDatas = useFilenestAdminStoreModal(
+    (state) => state.appSettingsRequiredDatas
+  );
+  const appSettingData = useFilenestAdminStoreModal(
+    (state) => state.appSettingData
+  );
+
+  const isModalOpen = isOpen && modalType === "editAppSetting";
+
+  const form = useForm({
+    resolver: zodResolver(CreateOrUpdateAppStorageSettingFormSchema),
+    defaultValues: {
+      appId: appSettingData?.appId ?? "",
+      appSlug: appSettingData?.appSlug ?? "",
+      name: appSettingData?.name ?? "",
+      type: appSettingData?.type ?? "LOCAL",
+      subFolder: appSettingData?.subFolder ?? "",
+      maxFileSize: appSettingData?.maxFileSize ?? 500,
+      isActive: appSettingData?.isActive ?? false,
+      cloudStorageConfigId: appSettingData?.cloudStorageConfigId ?? null,
+      localStorageConfigId: appSettingData?.localStorageConfigId ?? null,
+    },
+  });
+
+  useEffect(() => {
+    if (!appSettingData) return;
+
+    form.reset(appSettingData);
+  }, [appSettingData, form]);
+
+  const { execute } = useServerAction(updateAppStorageSetting, {
+    onSuccess({ data }) {
+      toast.success(`${data?.name ?? ""} app setting edited.`);
+      handleCloseModal();
+    },
+    onError({ err }) {
+      const handled = handleInputParseError({
+        err,
+        form,
+        toastMessage: "Form validation failed",
+        toastDescription: "Please correct the highlighted fields below.",
+      });
+
+      if (handled) return;
+
+      toast.error("An unexpected error occurred.", {
+        description: err.message ?? "Please try again later.",
+      });
+    },
+  });
+
+  async function handleCreateCloudStorage(
+    values: TCreateOrUpdateAppStorageSettingFormSchema
+  ) {
+    if (!session || !session.data?.user || !session.data.user?.currentOrgId) {
+      toast.error("User not authenticated.");
+      return;
+    }
+
+    if (!appSettingData) {
+      toast.error("App Setting not found.");
+      return;
+    }
+
+    const data = {
+      ...values,
+      userId: session.data.user.id,
+      orgId: session.data.user.currentOrgId,
+      id: appSettingData.id,
+    };
+
+    await execute(data);
+  }
+
+  function handleCloseModal() {
+    form.reset();
+    closeModal();
+  }
+
+  return (
+    <Dialog open={isModalOpen} onOpenChange={handleCloseModal}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Edit App Setting</DialogTitle>
+          <DialogDescription>
+            Edit the app setting details to update this entry in your
+            collection.
+          </DialogDescription>
+        </DialogHeader>
+        {!appSettingData || !session ? (
+          <p className="text-center py-10">Failed to get App Setting Data</p>
+        ) : (
+          <FormProvider {...form}>
+            <AppSettingForm
+              onCancel={handleCloseModal}
+              onSubmit={handleCreateCloudStorage}
+              appSettingsRequiredDatas={appSettingsRequiredDatas}
+            />
+          </FormProvider>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+};

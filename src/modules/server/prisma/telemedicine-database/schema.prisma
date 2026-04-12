@@ -1,0 +1,861 @@
+generator client {
+    provider      = "prisma-client-js"
+    output        = "../generated/telemedicine-database"
+    binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL_TELEMEDICINE")
+}
+
+// ───────────────────────────
+// ENUMS
+// ───────────────────────────
+
+enum RegistrationType {
+    permanent
+    renewal
+}
+
+enum WorkStatus {
+    government
+    private
+    both
+}
+
+enum GovernmentCategory {
+    central
+    state
+}
+
+enum Gender {
+    MALE
+    FEMALE
+    OTHER
+}
+
+enum AbnormalFlag {
+    HIGH
+    LOW
+    NORMAL
+}
+
+enum AppointmentStatus {
+    PENDING
+    SCHEDULED
+    RESCHEDULED
+    CANCELLED
+    COMPLETED
+}
+
+enum AppointmentMode {
+    VIRTUAL
+    INPERSON
+    INTAKE
+}
+
+enum DayOfWeek {
+    SUNDAY
+    MONDAY
+    TUESDAY
+    WEDNESDAY
+    THURSDAY
+    FRIDAY
+    SATURDAY
+}
+
+enum ReviewStatus {
+    PENDING // awaiting moderation
+    PUBLISHED // visible publicly
+    HIDDEN // hidden by admin/mod
+    REPORTED // flagged by users
+    DELETED // soft-deleted (kept for audit)
+}
+
+enum DoctorType {
+    HUMAN
+    INTAKE
+}
+
+// ───────────────────────────
+// ROOT DOCTOR
+// ───────────────────────────
+
+model Doctor {
+    id     String  @id @default(uuid())
+    orgId  String
+    userId String?
+
+    doctorId Int @default(autoincrement())
+
+    registrationNumber   String?
+    registrationProvider String?
+
+    doctorType          DoctorType @default(HUMAN)
+    isCompleted         Boolean    @default(false)
+    isABDMDoctorProfile Boolean    @default(false)
+
+    personal             DoctorPersonalDetail?
+    qualification        DoctorQualification?
+    workDetail           DoctorWorkDetail?
+    concent              DoctorConcent?
+    appointments         Appointment[]
+    services             Service[]
+    weeklyAvailabilities WeeklyAvailability[]
+    reviews              Review[]
+    authoredReplies      ReviewReply[]
+
+    ratingAverage Float? @default(0)
+    ratingCount   Int    @default(0)
+
+    createdBy String?
+    updatedBy String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([orgId, userId])
+}
+
+// ───────────────────────────
+// Doctor Concent
+// ───────────────────────────
+model DoctorConcent {
+    id                               String   @id @default(uuid())
+    orgId                            String
+    isAgreeToShowDetailsPublic       Boolean
+    name                             Boolean
+    systemOfMedicine                 Boolean
+    qualification                    Boolean
+    experience                       Boolean
+    // showToPublic                     Boolean?
+    email                            Boolean?
+    contactNumber                    Boolean?
+    placeOfWork                      Boolean?
+    profilePicture                   Boolean?
+    languageSpoken                   Boolean?
+    workStatus                       Boolean?
+    teleConsultation                 Boolean?
+    isDeclearedToCreateDoctorAccount Boolean?
+
+    doctorId String @unique
+    doctor   Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+    createdBy String?
+    updatedBy String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+// ───────────────────────────
+// PERSONAL DETAILS
+// ───────────────────────────
+
+model DoctorPersonalDetail {
+    id                      String   @id @default(uuid())
+    orgId                   String
+    title                   String
+    fullName                String
+    nationality             String
+    dateOfBirth             DateTime
+    gender                  String
+    mobileNumber            String
+    alternativeMobileNumber String?
+    alternativeEmail        String?
+    email                   String
+    speciality              String   @default("unknown")
+
+    doctorId String @unique
+    doctor   Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+    kycAddress           KYCAddress?
+    communicationAddress CommunicationAddress?
+    languagesSpoken      Language[]
+    socialAccounts       SocialAccount[]
+
+    createdBy String?
+    updatedBy String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+// ──────────────────────────────────────────────────────────────
+// Social Platform
+// ──────────────────────────────────────────────────────────────
+model SocialAccount {
+    id       String @id @default(uuid())
+    orgId    String
+    platform String
+    url      String
+
+    doctorPersonalDetailId String
+    doctorPersonalDetail   DoctorPersonalDetail @relation(fields: [doctorPersonalDetailId], references: [id], onDelete: Cascade)
+
+    createdBy String?
+    updatedBy String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+// ──────────────────────────────────────────────────────────────
+// Languages Spoken (junction table)
+// ──────────────────────────────────────────────────────────────
+model Language {
+    id       String @id @default(uuid())
+    orgId    String
+    langCode String
+
+    doctorPersonalDetailId String
+    doctorPersonalDetail   DoctorPersonalDetail @relation(fields: [doctorPersonalDetailId], references: [id], onDelete: Cascade)
+
+    createdBy String?
+    updatedBy String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+// ───────────────────────────
+// ADDRESS
+// ───────────────────────────
+
+model KYCAddress {
+    id          String @id @default(cuid())
+    orgId       String
+    careOf      String
+    addressLine String
+    city        String
+    district    String
+    state       String
+    pincode     String // 6-digit Indian pincode
+
+    doctorPersonalDetailId String               @unique
+    doctorPersonalDetail   DoctorPersonalDetail @relation(fields: [doctorPersonalDetailId], references: [id], onDelete: Cascade)
+
+    createdBy String?
+    updatedBy String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([pincode])
+}
+
+model CommunicationAddress {
+    id          String  @id @default(cuid())
+    orgId       String
+    sameAsKyc   Boolean @default(false)
+    careOf      String?
+    addressLine String?
+    city        String?
+    district    String?
+    state       String?
+    pincode     String?
+
+    doctorPersonalDetailId String               @unique
+    doctorPersonalDetail   DoctorPersonalDetail @relation(fields: [doctorPersonalDetailId], references: [id], onDelete: Cascade)
+
+    createdBy String?
+    updatedBy String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([pincode])
+}
+
+// ───────────────────────────
+// QUALIFICATION GROUP
+// ───────────────────────────
+
+model DoctorQualification {
+    id                      String           @id @default(uuid())
+    orgId                   String
+    systemOfMedicine        String
+    category                String
+    councilName             String
+    registrationNumber      String
+    dateOfFirstRegistration DateTime
+    registrationType        RegistrationType
+    registrationValidDate   DateTime?
+    nameMatchesAadhaar      Boolean
+
+    doctorId       String          @unique
+    doctor         Doctor          @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+    qualifications Qualification[]
+
+    createdBy String?
+    updatedBy String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Qualification {
+    id                     String  @id @default(uuid())
+    orgId                  String
+    countryOfQualification String
+    degreeName             String
+    country                String
+    state                  String
+    college                String
+    university             String
+    passingMonth           String
+    passingYear            String
+    nameMatchesAadhaar     Boolean
+
+    doctorQualificationId String
+    doctorQualification   DoctorQualification @relation(fields: [doctorQualificationId], references: [id], onDelete: Cascade)
+
+    createdBy String?
+    updatedBy String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+// ───────────────────────────
+// WORK DETAILS + FACILITIES
+// ───────────────────────────
+
+model DoctorWorkDetail {
+    id                  String              @id @default(uuid())
+    orgId               String
+    currentlyWorking    Boolean
+    experience          String
+    reasonForNotWorking String?
+    otherReason         String?
+    natureOfWork        String?
+    teleConsultationURL String?
+    workStatus          WorkStatus?
+    governmentCategory  GovernmentCategory?
+    centralGovernment   String?
+    about               String
+
+    doctorId               String                        @unique
+    doctor                 Doctor                        @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+    workingFacilityDetails DoctorWorkingFacilityDetail[]
+
+    createdBy String?
+    updatedBy String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model DoctorWorkingFacilityDetail {
+    id             String  @id @default(uuid())
+    orgId          String
+    facilityId     String
+    facilityStatus Boolean
+    facilityName   String
+    address        String
+    state          String
+    district       String
+    type           String
+    department     String
+    designation    String
+
+    doctorWorkId String
+    doctorWork   DoctorWorkDetail @relation(fields: [doctorWorkId], references: [id], onDelete: Cascade)
+
+    createdBy String?
+    updatedBy String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Service {
+    id             String  @id @default(uuid())
+    orgId          String
+    name           String
+    duration       Int
+    priceAmount    Float?
+    priceCurrency  String? @db.VarChar(3)
+    description    String?
+    supportedModes Json
+
+    doctorId String
+    doctor   Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+    createdBy String?
+    updatedBy String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([orgId, doctorId, name])
+}
+
+model WeeklyAvailability {
+    id        String  @id @default(uuid())
+    orgId     String
+    dayOfWeek String
+    isEnabled Boolean @default(false)
+
+    doctorId String
+    doctor   Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+    slots AvailabilitySlot[]
+
+    createdBy String?
+    updatedBy String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([orgId, doctorId, dayOfWeek])
+}
+
+model AvailabilitySlot {
+    id                   String             @id @default(uuid())
+    orgId                String
+    start                String
+    end                  String
+    weeklyAvailabilityId String
+    weeklyAvailability   WeeklyAvailability @relation(fields: [weeklyAvailabilityId], references: [id], onDelete: Cascade)
+
+    createdBy String?
+    updatedBy String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+////////////////////////////////////////////////////////////
+
+// -----------------------------
+// Patient
+// -----------------------------
+model Patient {
+    id     String @id @default(uuid())
+    orgId  String
+    userId String
+
+    patientId Int @default(autoincrement())
+
+    isCompleted          Boolean @default(false)
+    isABHAPatientProfile Boolean @default(false)
+
+    // Relations
+    personal       PatientPersonalDetail?
+    medicalHistory MedicalHistory[]
+    medications    Medication[]
+    labResults     LabResult[]
+    vitals         Vital[]
+    lifestyle      Lifestyle?
+    appointments   Appointment[]
+    reviews        Review[]
+
+    createdBy String?
+    updatedBy String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([orgId, userId])
+}
+
+// -----------------------------
+// Personal Detail
+// -----------------------------
+
+model PatientPersonalDetail {
+    id        String @id @default(uuid())
+    patientId String @unique
+    orgId     String
+
+    name                    String
+    gender                  Gender
+    dateOfBirth             DateTime
+    address                 String
+    alternativeAddress      String?
+    mobileNumber            String
+    alternativeMobileNumber String?
+    email                   String
+    alternativeEmail        String?
+    insuranceProvider       String?
+    insuranceNumber         String?
+    idCardNumber            String?
+    maritalStatus           String
+    bloodGroup              String?
+
+    patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+    createdBy String?
+    updatedBy String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+/**
+ * model PatientFHIR {
+ * id        String   @id @default(uuid())
+ * patientId String   @unique
+ * orgId     String   // managingOrganization reference
+ * // FHIR: identifier[]
+ * nationalId        String?   // idCardNumber → identifier
+ * insuranceNumber   String?   // identifier
+ * insuranceProvider String?   // extension
+ * // FHIR: name[]
+ * givenName  String
+ * familyName String?
+ * fullName   String?   // Optional convenience
+ * // FHIR: gender (male | female | other | unknown)
+ * gender GenderFHIR
+ * // FHIR: birthDate
+ * birthDate DateTime
+ * // FHIR: address[]
+ * addressLine1        String
+ * addressLine2        String?
+ * city                String?
+ * state               String?
+ * postalCode          String?
+ * country             String?
+ * alternativeAddress  String?
+ * // FHIR: telecom[]
+ * phonePrimary   String
+ * phoneAlternate String?
+ * emailPrimary   String
+ * emailAlternate String?
+ * // FHIR: maritalStatus (coded)
+ * maritalStatus MaritalStatusFHIR
+ * // FHIR: extensions
+ * bloodGroup String?
+ * // FHIR: meta fields stored as extensions
+ * createdBy String?
+ * updatedBy String?
+ * createdAt DateTime @default(now())
+ * updatedAt DateTime @updatedAt
+ * patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+ * }
+ * enum GenderFHIR {
+ * male
+ * female
+ * other
+ * unknown
+ * }
+ * enum MaritalStatusFHIR {
+ * single
+ * married
+ * divorced
+ * widowed
+ * separated
+ * unknown
+ * }
+ */
+
+// -----------------------------
+// Medical History
+// -----------------------------
+model MedicalHistory {
+    id        String @id @default(uuid())
+    patientId String
+    orgId     String
+
+    pastDiagnoses     String?
+    pastSurgeries     String?
+    allergies         String?
+    immunizations     String?
+    ongoingTreatments String?
+    familyHistory     String?
+
+    patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+    createdBy String?
+    updatedBy String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+// -----------------------------
+// Medications
+// -----------------------------
+model Medication {
+    id        String @id @default(uuid())
+    patientId String
+    orgId     String
+
+    drugName  String
+    fromDate  DateTime
+    toDate    DateTime
+    dose      String?
+    frequency String?
+    duration  String?
+
+    patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+    createdBy String?
+    updatedBy String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+// -----------------------------
+// Lab Results
+// -----------------------------
+model LabResult {
+    id        String @id @default(uuid())
+    patientId String
+    orgId     String
+
+    parameter    String
+    value        String?
+    range        String?
+    units        String?
+    abnormalFlag AbnormalFlag?
+
+    labReportDate  DateTime?
+    labReportRefNo String?
+    labName        String?
+
+    patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+    createdBy String?
+    updatedBy String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+// -----------------------------
+// Vitals
+// -----------------------------
+model Vital {
+    id        String @id @default(uuid())
+    patientId String
+    orgId     String
+
+    bp        String?
+    hr        Int?
+    temp      Float?
+    bmi       Float?
+    oxygenSat Float?
+    asOnDate  DateTime
+
+    patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+    createdBy String?
+    updatedBy String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+// -----------------------------
+// Lifestyle
+// -----------------------------
+model Lifestyle {
+    id        String @id @default(uuid())
+    patientId String @unique
+    orgId     String
+
+    smoking  String?
+    alcohol  String?
+    exercise String?
+    diet     String?
+
+    patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+    createdBy String?
+    updatedBy String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+// -----------------------------
+// Appointment
+// -----------------------------
+
+enum CancelledBy {
+    PATIENT
+    DOCTOR
+}
+
+model PreAppointmentMap {
+    id BigInt @id @default(autoincrement())
+
+    intakeAppointmentId   String
+    followUpAppointmentId String
+
+    intakeAppointment   Appointment @relation("Intake", fields: [intakeAppointmentId], references: [id], onDelete: Cascade)
+    followUpAppointment Appointment @relation("FollowUp", fields: [followUpAppointmentId], references: [id], onDelete: Cascade)
+
+    createdBy String?
+    updatedBy String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([intakeAppointmentId])
+    @@unique([followUpAppointmentId])
+}
+
+model Appointment {
+    id    String @id @default(uuid())
+    orgId String
+
+    patientId String
+    doctorId  String?
+
+    appointmentMode AppointmentMode
+
+    appointmentDate DateTime
+    time            String
+
+    status        AppointmentStatus @default(PENDING)
+    type          String
+    price         Float?
+    priceCurrency String?
+    note          String?
+
+    virtualRoomId String?      @unique
+    cancelReason  String?
+    cancelledBy   CancelledBy?
+
+    // per-participant visibility
+    isPatientDeleted Boolean @default(false)
+    isDoctorDeleted  Boolean @default(false)
+
+    patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+    doctor  Doctor? @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+    // mapping relations
+    intakeMapping   PreAppointmentMap? @relation("Intake")
+    followUpMapping PreAppointmentMap? @relation("FollowUp")
+
+    review            Review?
+    appointmentAudits AppointmentAudit[]
+    appointmentActual AppointmentActual?
+
+    createdBy String?
+    updatedBy String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([id, orgId], name: "appointment_id_orgId_unique")
+    @@index([orgId, patientId, isPatientDeleted, appointmentDate])
+    @@index([orgId, doctorId, isDoctorDeleted, appointmentDate])
+}
+
+model AppointmentActual {
+    id            Int    @id @default(autoincrement())
+    orgId         String
+    appointmentId String @unique
+
+    intakeConversation  Json?
+    intakeReport        Json?
+    virtualConversation Json?
+
+    appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+    createdBy String?
+    updatedBy String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+enum AppointmentEventKind {
+    RESCHEDULED
+    CANCELLED
+    DELETED
+    SCHEDULED
+}
+
+enum AppointmentActorType {
+    PATIENT
+    DOCTOR
+    STAFF
+    SYSTEM
+}
+
+model AppointmentAudit {
+    id            Int         @id @default(autoincrement())
+    orgId         String
+    appointmentId String
+    appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+    kind      AppointmentEventKind // RESCHEDULED | CANCELLED
+    actorType AppointmentActorType // who did it
+    actorId   String? // optional user id of actor
+    reason    String? // free text reason
+
+    // only used for RESCHEDULED
+    fromDate DateTime?
+    fromTime String?
+    toDate   DateTime?
+    toTime   String?
+
+    createdBy String?
+    createdAt DateTime @default(now())
+
+    @@index([appointmentId, createdAt])
+}
+
+// ───────────────────────────
+// Doctor Reviews
+// ───────────────────────────
+model Review {
+    id    String @id @default(uuid())
+    orgId String
+
+    doctorId String
+    doctor   Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+    patientId String
+    patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+    // Optional, but recommended if the review is tied to a specific visit
+    appointmentId String?      @unique
+    appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+
+    rating      Int // enforce 1..5 in app/service layer (DB CHECK not portable in Prisma)
+    title       String?
+    comment     String?
+    isAnonymous Boolean @default(false)
+
+    status         ReviewStatus @default(PUBLISHED)
+    reportedReason String?
+
+    // Basic engagement signals (optional)
+    helpfulCount Int @default(0)
+
+    // One optional reply from the doctor/clinic
+    reply ReviewReply[]
+
+    createdBy String?
+    updatedBy String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    // Uncomment one of the following depending on your policy:
+
+    // 1) One review per (patient, doctor) across all time:
+    // @@unique([patientId, doctorId])
+
+    // 2) One review per (patient, doctor, appointment) – already enforced via unique appointmentId
+    // leave as-is if you want multiple reviews across different appointments
+
+    @@index([orgId, doctorId, status])
+}
+
+enum ReviewAuthorRole {
+    DOCTOR
+    ADMIN
+}
+
+model ReviewReply {
+    id    String @id @default(uuid())
+    orgId String
+
+    reviewId String
+    review   Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+    // who replied
+    authorRole   ReviewAuthorRole
+    authorUserId String // the userId who posted the reply (doctor user or admin user)
+
+    // optional fast path to doctor profile (null for admin replies)
+    authorDoctorId String?
+    authorDoctor   Doctor? @relation(fields: [authorDoctorId], references: [id], onDelete: SetNull)
+
+    message String
+
+    createdBy String?
+    updatedBy String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // OPTIONAL: enforce at most one reply per role per review:
+    // @@unique([reviewId, authorRole])
+
+    @@index([reviewId])
+    @@index([authorRole])
+    @@index([authorDoctorId])
+}

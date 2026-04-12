@@ -1,0 +1,387 @@
+generator client {
+  provider      = "prisma-client-js"
+  output        = "../generated/main-database"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL_MAIN")
+}
+
+model User {
+  id                    String             @id @default(uuid())
+  name                  String
+  email                 String
+  emailVerified         Boolean            @default(false)
+  image                 String?
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @default(now()) @updatedAt
+  twoFactorEnabled      Boolean?           @default(false)
+  role                  String?
+  banned                Boolean?           @default(false)
+  banReason             String?
+  banExpires            DateTime?
+  username              String?
+  keycloakUserid        String?
+  displayUsername       String?
+  currentOrgId          String?
+  roleBasedRedirectUrls String?
+  sessions              Session[]
+  accounts              Account[]
+  twofactors            TwoFactor[]
+  members               Member[]
+  invitations           Invitation[]
+  rbac                  RBAC[]
+  oauthapplications     OauthApplication[]
+  oauthaccesstokens     OauthAccessToken[]
+  oauthconsents         OauthConsent[]
+  userpreferences       UserPreference?
+
+  @@unique([email])
+  @@unique([username])
+  @@map("user")
+}
+
+model UserPreference {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  timezone     String?  @default("Asia/Kolkata")
+  dateFormat   String?  @default("DD/MM/YYYY")
+  timeFormat   String?  @default("hh:mm A")
+  country      String?  @default("IN")
+  currency     String?  @default("INR")
+  // measurementSystem String?  @default("metric")
+  numberFormat String?  @default("1,23,456.78")
+  weekStart    String?  @default("monday")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PreferenceTemplate {
+  id           String          @id @default(uuid())
+  scope        PreferenceScope @default(GLOBAL)
+  country      String?
+  timezone     String?         @default("UTC")
+  dateFormat   String?         @default("DD/MM/YYYY")
+  timeFormat   String?         @default("24h")
+  currency     String?         @default("USD")
+  // measurementSystem String?         @default("metric")
+  numberFormat String?         @default("1,234.56")
+  weekStart    String?         @default("monday")
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+}
+
+enum PreferenceScope {
+  GLOBAL
+  COUNTRY
+}
+
+model Session {
+  id                   String   @id @default(uuid())
+  expiresAt            DateTime
+  token                String
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  ipAddress            String?
+  userAgent            String?
+  userId               String
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  impersonatedBy       String?
+  activeOrganizationId String?
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(uuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id @default(uuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  @@map("verification")
+}
+
+model TwoFactor {
+  id          String @id @default(uuid())
+  secret      String
+  backupCodes String
+  userId      String
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("twoFactor")
+}
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  slug      String   @unique
+  logo      String?
+  metadata  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members         Member[]
+  invitations     Invitation[]
+  appOrganization AppOrganization[]
+  rbac            RBAC[]
+
+  @@index([id])
+  @@map("organization")
+}
+
+model Member {
+  id             String       @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role           String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("member")
+}
+
+model Invitation {
+  id             String       @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  email          String
+  role           String?
+  status         String
+  expiresAt      DateTime
+  inviterId      String
+  user           User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+
+  @@map("invitation")
+}
+
+model OauthApplication {
+  id                String             @id @default(uuid())
+  name              String?
+  icon              String?
+  metadata          String?
+  clientId          String?
+  clientSecret      String?
+  redirectURLs      String?
+  type              String?
+  disabled          Boolean?           @default(false)
+  userId            String?
+  user              User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt         DateTime?
+  updatedAt         DateTime?
+  oauthaccesstokens OauthAccessToken[]
+  oauthconsents     OauthConsent[]
+
+  @@unique([clientId])
+  @@map("oauthApplication")
+}
+
+model OauthAccessToken {
+  id                    String            @id @default(uuid())
+  accessToken           String?
+  refreshToken          String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  clientId              String?
+  oauthapplication      OauthApplication? @relation(fields: [clientId], references: [clientId], onDelete: Cascade)
+  userId                String?
+  user                  User?             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scopes                String?
+  createdAt             DateTime?
+  updatedAt             DateTime?
+
+  @@unique([accessToken])
+  @@unique([refreshToken])
+  @@map("oauthAccessToken")
+}
+
+model OauthConsent {
+  id               String            @id @default(uuid())
+  clientId         String?
+  oauthapplication OauthApplication? @relation(fields: [clientId], references: [clientId], onDelete: Cascade)
+  userId           String?
+  user             User?             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scopes           String?
+  createdAt        DateTime?
+  updatedAt        DateTime?
+  consentGiven     Boolean?
+
+  @@map("oauthConsent")
+}
+
+model Role {
+  id          String @id @default(uuid())
+  name        String @unique
+  description String
+
+  menuPermission   MenuPermission[]
+  actionPermission ActionPermission[]
+  rbac             RBAC[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([id])
+}
+
+enum AppType {
+  platform
+  custom
+}
+
+model App {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String
+  slug        String  @unique
+  type        AppType
+  imageUrl    String?
+
+  appMenuItems     AppMenuItem[]
+  appActions       AppAction[]
+  appOrganization  AppOrganization[]
+  menuPermission   MenuPermission[]
+  actionPermission ActionPermission[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([id])
+}
+
+model AppOrganization {
+  appId          String
+  organizationId String
+  app            App          @relation(fields: [appId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([appId, organizationId])
+}
+
+model AppMenuItem {
+  id          String  @id @default(uuid())
+  name        String
+  description String
+  slug        String  @unique
+  icon        String?
+
+  appId String
+  app   App    @relation(fields: [appId], references: [id], onDelete: Cascade)
+
+  menuPermission MenuPermission[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([appId, slug])
+  @@index([id])
+}
+
+enum AppActionType {
+  button
+  link
+}
+
+model AppAction {
+  id          String        @id @default(uuid())
+  actionName  String
+  description String
+  actionType  AppActionType
+  icon        String?
+
+  appId String
+  app   App    @relation(fields: [appId], references: [id], onDelete: Cascade)
+
+  actionPermission ActionPermission[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([appId, actionName])
+  @@index([id])
+}
+
+model MenuPermission {
+  id String @id @default(uuid())
+
+  roleId        String
+  appId         String
+  appMenuItemId String
+  role          Role        @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  app           App         @relation(fields: [appId], references: [id], onDelete: Cascade)
+  appMenuItem   AppMenuItem @relation(fields: [appMenuItemId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([roleId, appId, appMenuItemId])
+  @@index([roleId])
+  @@index([appId])
+  @@index([appMenuItemId])
+}
+
+model ActionPermission {
+  id String @id @default(uuid())
+
+  roleId      String
+  appId       String
+  appActionId String
+  role        Role      @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  app         App       @relation(fields: [appId], references: [id], onDelete: Cascade)
+  appAction   AppAction @relation(fields: [appActionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([roleId, appId, appActionId])
+  @@index([roleId])
+  @@index([appId])
+  @@index([appActionId])
+}
+
+model RBAC {
+  id String @id @default(uuid())
+
+  organizationId     String
+  userId             String
+  roleId             String
+  defaultRedirectUrl String @default("/bezs")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role         Role         @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([organizationId, userId, roleId])
+}

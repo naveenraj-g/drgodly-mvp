@@ -1,0 +1,302 @@
+Schema
+------
+
+enum MenuNodeType {
+  GROUP
+  ITEM
+}
+
+model AppMenuNode {
+  id        String   @id @default(uuid())
+
+  // Core
+  type      MenuNodeType
+  title     String
+  description String?
+  slug      String?   // for routing / unique handle (groups & items)
+  url       String?   // only for ITEM; null for GROUP
+  icon      String?   // store the icon key, e.g. "LayoutDashboard"
+  order     Int       @default(0)
+
+  // Tree
+  parentId  String?
+  parent    AppMenuNode? @relation("MenuTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children  AppMenuNode[] @relation("MenuTree")
+
+  // App scoping
+  appId     String
+  app       App       @relation(fields: [appId], references: [id], onDelete: Cascade)
+
+  // Permissions (reuse your existing M2M)
+  menuPermission MenuPermission[]
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Indices & constraints
+  @@index([appId, parentId, order])
+  @@unique([appId, slug]) // keep slugs unique within an app (optional but handy)
+}
+
+
+----------------------------------------------------------------------------------------
+
+Creating MenuItems
+------------------
+
+// prisma/seed.ts
+import { PrismaClient, MenuNodeType } from "@prisma/client";
+const prisma = new PrismaClient();
+
+async function main() {
+  const app = await prisma.app.upsert({
+    where: { slug: "telemedicine" },
+    update: {},
+    create: { id: crypto.randomUUID(), name: "Telemedicine", slug: "telemedicine" },
+  });
+
+  // Top-level groups
+  const adminGroup = await prisma.appMenuNode.create({
+    data: {
+      appId: app.id,
+      type: "GROUP",
+      title: "Admin Management",
+      slug: "admin-management",
+      order: 0,
+    },
+  });
+
+  const doctorGroup = await prisma.appMenuNode.create({
+    data: {
+      appId: app.id,
+      type: "GROUP",
+      title: "Doctor",
+      slug: "doctor",
+      order: 1,
+    },
+  });
+
+  const patientGroup = await prisma.appMenuNode.create({
+    data: {
+      appId: app.id,
+      type: "GROUP",
+      title: "Patient",
+      slug: "patient",
+      order: 2,
+    },
+  });
+
+  // Admin items
+  await prisma.appMenuNode.create({
+    data: {
+      appId: app.id,
+      type: "ITEM",
+      title: "Manage Doctors",
+      slug: "manage-doctors",
+      url: "/bezs/telemedicine/admin/manage-doctors",
+      icon: "LayoutDashboard",
+      order: 0,
+      parentId: adminGroup.id,
+    },
+  });
+
+  // Doctor items
+  await prisma.appMenuNode.create({
+    data: {
+      appId: app.id,
+      type: "ITEM",
+      title: "Dashboard",
+      slug: "doctor-dashboard",
+      url: "/bezs/telemedicine/doctor",
+      icon: "LayoutDashboard",
+      order: 0,
+      parentId: doctorGroup.id,
+    },
+  });
+
+  const professionalSettings = await prisma.appMenuNode.create({
+    data: {
+      appId: app.id,
+      type: "ITEM", // acts like a collapsible section that also has children
+      title: "Professional Settings",
+      slug: "professional-settings",
+      icon: "Stethoscope",
+      order: 1,
+      parentId: doctorGroup.id,
+    },
+  });
+
+  await prisma.appMenuNode.createMany({
+    data: [
+      {
+        id: crypto.randomUUID(),
+        appId: app.id,
+        type: "ITEM",
+        title: "Services",
+        slug: "doctor-settings-services",
+        url: "/bezs/telemedicine/doctor/settings/services",
+        icon: "BriefcaseMedical",
+        order: 0,
+        parentId: professionalSettings.id,
+      },
+      {
+        id: crypto.randomUUID(),
+        appId: app.id,
+        type: "ITEM",
+        title: "Availability",
+        slug: "doctor-settings-availability",
+        url: "/bezs/telemedicine/doctor/settings/availability",
+        icon: "CalendarClock",
+        order: 1,
+        parentId: professionalSettings.id,
+      },
+    ],
+  });
+
+  const doctorSettings = await prisma.appMenuNode.create({
+    data: {
+      appId: app.id,
+      type: "ITEM",
+      title: "Settings",
+      slug: "doctor-settings",
+      icon: "Settings2",
+      order: 2,
+      parentId: doctorGroup.id,
+    },
+  });
+
+  await prisma.appMenuNode.create({
+    data: {
+      appId: app.id,
+      type: "ITEM",
+      title: "Profile",
+      slug: "doctor-settings-profile",
+      url: "/bezs/telemedicine/doctor/settings/profile",
+      icon: "UserCog",
+      order: 0,
+      parentId: doctorSettings.id,
+    },
+  });
+
+  // Patient items
+  await prisma.appMenuNode.createMany({
+    data: [
+      {
+        id: crypto.randomUUID(),
+        appId: app.id,
+        type: "ITEM",
+        title: "Dashboard",
+        slug: "patient-dashboard",
+        url: "/bezs/telemedicine/patient",
+        icon: "LayoutDashboard",
+        order: 0,
+        parentId: patientGroup.id,
+      },
+      {
+        id: crypto.randomUUID(),
+        appId: app.id,
+        type: "ITEM",
+        title: "Profile",
+        slug: "patient-profile",
+        url: "/bezs/telemedicine/patient/profile",
+        icon: "UserCog",
+        order: 1,
+        parentId: patientGroup.id,
+      },
+      {
+        id: crypto.randomUUID(),
+        appId: app.id,
+        type: "ITEM",
+        title: "Book Appointment",
+        slug: "patient-book-appointment",
+        url: "/bezs/telemedicine/patient/appointments/book",
+        icon: "CalendarPlus",
+        order: 2,
+        parentId: patientGroup.id,
+      },
+      {
+        id: crypto.randomUUID(),
+        appId: app.id,
+        type: "ITEM",
+        title: "Appointment Intake",
+        slug: "patient-askai",
+        url: "/bezs/telemedicine/patient/askai",
+        icon: "CalendarPlus",
+        order: 3,
+        parentId: patientGroup.id,
+      },
+    ],
+  });
+}
+
+main().finally(() => prisma.$disconnect());
+
+--------------------------------------------------------------------
+
+Query + transform to your desired structure
+-------------------------------------------
+
+import { PrismaClient, MenuNodeType } from "@prisma/client";
+const prisma = new PrismaClient();
+
+type SidebarNode = {
+  title: string;
+  url?: string;
+  icon?: string;          // icon key; map to actual component in UI
+  items?: SidebarNode[];  // children
+};
+
+export async function getSidebar(appSlug: string) {
+  const app = await prisma.app.findUnique({ where: { slug: appSlug }, select: { id: true } });
+  if (!app) return { navGroups: [] };
+
+  const nodes = await prisma.appMenuNode.findMany({
+    where: { appId: app.id },
+    orderBy: [{ parentId: "asc" }, { order: "asc" }, { title: "asc" }],
+  });
+
+  // index by id
+  const byId = new Map(nodes.map(n => [n.id, { ...n, items: [] as SidebarNode[] }]));
+
+  // build tree
+  const roots: any[] = [];
+  for (const n of nodes) {
+    const node = byId.get(n.id)!;
+    if (n.parentId) {
+      const parent = byId.get(n.parentId)!;
+      (parent.items as any[]).push(node);
+    } else {
+      roots.push(node);
+    }
+  }
+
+  // map to your shape
+  const toSidebarNode = (n: any): SidebarNode => {
+    const base: SidebarNode = {
+      title: n.title,
+      icon: n.icon ?? undefined,
+      url: n.url ?? undefined,
+    };
+    if (n.items && n.items.length) {
+      base.items = n.items
+        .sort((a: any, b: any) => a.order - b.order || a.title.localeCompare(b.title))
+        .map(toSidebarNode);
+    }
+    return base;
+  };
+
+  const navGroups = roots
+    .filter(r => r.type === "GROUP")
+    .sort((a, b) => a.order - b.order || a.title.localeCompare(b.title))
+    .map(g => ({
+      title: g.title,
+      items: (g.items || [])
+        .sort((a: any, b: any) => a.order - b.order || a.title.localeCompare(b.title))
+        .map(toSidebarNode),
+    }));
+
+  return { navGroups };
+}
+
+LINK - https://chatgpt.com/share/6929fcb8-f608-8011-873e-89177e311d4c

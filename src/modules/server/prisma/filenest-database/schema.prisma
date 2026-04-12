@@ -1,0 +1,221 @@
+generator client {
+    provider      = "prisma-client-js"
+    output        = "../generated/filenest"
+    binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL_FILENEST")
+}
+
+// -----------------------------------------------------------
+// Enums
+// ------------------------------------------------------------
+
+// Which general storage type (local disk or cloud bucket)
+enum StorageType {
+    LOCAL
+    CLOUD
+}
+
+// Specific cloud vendor
+enum CloudStorageVendor {
+    AWS_S3
+    AZURE_BLOB
+}
+
+// -----------------------------------------------------------
+// Cloud & Local storage definitions
+// ------------------------------------------------------------
+
+/**
+ * Central table for cloud credentials.
+ * You can have multiple credentials for AWS/Azure etc.
+ */
+model CloudStorageConfig {
+    id            BigInt             @id @default(autoincrement())
+    orgId         String
+    name          String             @unique
+    vendor        CloudStorageVendor
+    region        String
+    bucketName    String?
+    containerName String?
+    clientId      String             @unique
+    clientSecret  String             @unique
+    maxFileSize   Int
+    isActive      Boolean            @default(true)
+
+    appStorageSettings AppStorageSetting[]
+
+    createdBy String?
+    updatedBy String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+/**
+ * Local storage configuration, e.g. for storing files on a VPS.
+ */
+model LocalStorageConfig {
+    id          BigInt  @id @default(autoincrement())
+    orgId       String
+    name        String  @unique
+    basePath    String // e.g. "/var/filenest/files"
+    maxFileSize Int
+    isActive    Boolean @default(true)
+
+    appStorageSettings AppStorageSetting[]
+
+    createdBy String?
+    updatedBy String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+// -----------------------------------------------------------
+// Application storage routing
+// ------------------------------------------------------------
+
+/**
+ * Each app (or tenant) can have its own storage configuration.
+ * Depending on the `type`, it links to either CloudStorageCredential or LocalStorageConfig.
+ */
+model AppStorageSetting {
+    id          BigInt      @id @default(autoincrement())
+    appId       String
+    orgId       String
+    appSlug     String
+    name        String
+    type        StorageType
+    subFolder   String
+    maxFileSize Int
+
+    // routing controls
+    isActive Boolean @default(false) // ✅ exactly one active per (orgId,appId,appSlug)
+    // priority Int     @default(100) // lower = preferred (for planned failover)
+
+    // For cloud
+    cloudStorageConfigId BigInt?
+    cloudStorageConfig   CloudStorageConfig? @relation(fields: [cloudStorageConfigId], references: [id], onDelete: Cascade)
+
+    // For local
+    localStorageConfigId BigInt?
+    localStorageConfig   LocalStorageConfig? @relation(fields: [localStorageConfigId], references: [id], onDelete: Cascade)
+
+    // ✅ Back-relation to UserFile
+    userFiles UserFile[]
+
+    createdBy String?
+    updatedBy String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // Helpful uniqueness to avoid duplicate rows per backend type
+    @@unique([orgId, appId, appSlug, type, name], map: "app_backend_unique")
+    @@index([orgId, appId, appSlug], map: "app_lookup_idx")
+}
+
+// -----------------------------------------------------------
+// Dynamic FileEntity (domain-defined file categories)
+// ------------------------------------------------------------
+
+model FileEntity {
+    id        BigInt  @id @default(autoincrement())
+    orgId     String
+    appId     String
+    appSlug   String
+    type      String
+    name      String
+    label     String
+    subFolder String? // optional per-entity subfolder like "prescriptions"
+    isActive  Boolean @default(true)
+
+    userFiles UserFile[]
+
+    createdBy String?
+    updatedBy String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+// -----------------------------------------------------------
+// Core user file model
+// ------------------------------------------------------------
+
+model UserFile {
+    id            BigInt  @id @default(autoincrement())
+    userId        String?
+    orgId         String?
+    appId         String?
+    appSlug       String?
+    appointmentId String?
+
+    fileId   String // actual file name in the storage (e.g: 1766157641426-C3Vwi4Y94h8d2vxzrEJqh8AmsezSkyRe-Screenshot 2025-12-07 134352.png)
+    fileName String
+    fileType String
+    fileSize BigInt // in bytes (e.g: 438833)
+
+    /**
+     * Which storage this file uses (local or cloud)
+     */
+    storageType StorageType
+
+    /**
+     * Optional foreign key to AppStorageSetting (for tenant-level control)
+     */
+    appStorageSettingId BigInt?
+    appStorageSetting   AppStorageSetting? @relation(fields: [appStorageSettingId], references: [id], onDelete: SetNull)
+
+    /**
+     * Actual file path or key (depends on storageType)
+     */
+    filePath String
+
+    /**
+     * Logical reference
+     */
+    referenceType String?
+    referenceId   String?
+
+    /**
+     * Dynamic entity
+     */
+    fileEntityId BigInt
+    fileEntity   FileEntity @relation(fields: [fileEntityId], references: [id])
+
+    createdBy String
+    updatedBy String
+
+    userFilePermissions UserFilePermission[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([fileEntityId])
+    @@index([userId])
+    @@index([appId, appSlug])
+    @@index([referenceType, referenceId])
+}
+
+// -----------------------------------------------------------
+// User file access control
+// ------------------------------------------------------------
+model UserFilePermission {
+    id           BigInt  @id @default(autoincrement())
+    orgId        String
+    ownerUserId  String
+    sharedUserId String
+    canView      Boolean @default(false)
+    canDownload  Boolean @default(false)
+
+    userFileId BigInt
+    userFile   UserFile @relation(fields: [userFileId], references: [id], onDelete: Cascade)
+
+    createdBy String
+    updatedBy String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([userFileId, sharedUserId])
+}
