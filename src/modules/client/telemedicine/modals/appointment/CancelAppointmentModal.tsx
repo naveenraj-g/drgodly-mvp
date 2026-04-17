@@ -35,7 +35,7 @@ export const CancelAppointmentModal = () => {
   const modalType = useAppointmentModalStore((state) => state.type);
   const isOpen = useAppointmentModalStore((state) => state.isOpen);
   const appointment = useAppointmentModalStore(
-    (state) => state.appointmentData
+    (state) => state.appointmentData,
   );
 
   const isModalOpen = isOpen && modalType === "cancelAppointment";
@@ -73,7 +73,7 @@ export const CancelAppointmentModal = () => {
   });
 
   async function handleCancelAppointment(values: TCancelMessage) {
-    if (!session || !session.data?.user.currentOrgId) {
+    if (!session || !session.data?.session.activeOrganizationId) {
       return;
     }
 
@@ -85,7 +85,7 @@ export const CancelAppointmentModal = () => {
     await execute({
       cancelReason: values.cancelMessage,
       appointmentId: appointment.id,
-      orgId: session.data?.user.currentOrgId,
+      orgId: session.data.session.activeOrganizationId,
       userId: session.data?.user.id,
     });
   }

@@ -3,7 +3,6 @@
 import DataTable from "@/modules/shared/components/table/data-table";
 import { doctorsProfileListTableColumn } from "./doctors-profile-list-table-column";
 import type { ZSAError } from "zsa";
-import { useTranslations } from "next-intl";
 import { TDoctorDatas } from "@/modules/shared/entities/models/telemedicine/doctorProfile";
 import { useServerAction } from "zsa-react";
 import { createDoctorInitialProfile } from "../../../server-actions/doctorProfile-actions";
@@ -33,11 +32,10 @@ export const DoctorsProfileListTable = ({
   user,
 }: IAppsListTable) => {
   const router = useRouter();
-  const t = useTranslations("admin.manageApps");
   const openModal = useAdminModalStore((state) => state.onOpen);
 
   const { execute, isPending, isSuccess } = useServerAction(
-    createDoctorInitialProfile
+    createDoctorInitialProfile,
   );
 
   if (isPending) {
@@ -82,7 +80,7 @@ export const DoctorsProfileListTable = ({
           </Button>
         </div>
         <DataTable
-          columns={doctorsProfileListTableColumn(t, user.currentOrgId)}
+          columns={doctorsProfileListTableColumn(user.currentOrgId)}
           data={doctorDatas?.doctorDatas ?? []}
           dataSize={doctorDatas?.total}
           label="All Doctor Profiles"

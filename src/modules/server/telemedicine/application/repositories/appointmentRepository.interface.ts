@@ -2,6 +2,7 @@ import {
   TAppointment,
   TAppointments,
   TBookAppointment,
+  TBookConsultationAppointment,
   TBookIntakeAppointment,
   TCancelAppointment,
   TGetAppointmentByIds,
@@ -25,6 +26,9 @@ export interface IAppointmentRepository {
   bookAppointment(appointmentData: TBookAppointment): Promise<TAppointment>;
   bookIntakeAppointment(
     appointmentData: TBookIntakeAppointment
+  ): Promise<TIntakeAppointment>;
+  bookConsultationAppointment(
+    appointmentData: TBookConsultationAppointment
   ): Promise<TIntakeAppointment>;
   rescheduleAppointment(
     rescheduleData: TRescheduleAppointment,

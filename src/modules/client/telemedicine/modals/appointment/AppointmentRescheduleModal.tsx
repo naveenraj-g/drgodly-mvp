@@ -27,16 +27,16 @@ export function AppointmentRescheduleModal() {
   const modalType = useAppointmentModalStore((state) => state.type);
   const isOpen = useAppointmentModalStore((state) => state.isOpen);
   const appointment = useAppointmentModalStore(
-    (state) => state.appointmentData
+    (state) => state.appointmentData,
   );
 
   const isModalOpen = isOpen && modalType === "rescheduleAppointment";
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(
-    appointment?.appointmentDate ?? null
+    appointment?.appointmentDate ?? null,
   );
   const [selectedTime, setSelectedTime] = useState<string | null>(
-    appointment?.time ?? null
+    appointment?.time ?? null,
   );
 
   useEffect(() => {
@@ -64,7 +64,7 @@ export function AppointmentRescheduleModal() {
     if (
       !session ||
       !session.data ||
-      !session.data.user.currentOrgId ||
+      !session.data.session.activeOrganizationId ||
       !appointment
     )
       return;
@@ -79,7 +79,7 @@ export function AppointmentRescheduleModal() {
       time: selectedTime,
       appointmentDate: selectedDate,
       userId: session.data?.user.id,
-      orgId: session.data?.user.currentOrgId,
+      orgId: session.data.session.activeOrganizationId,
     });
   }
 

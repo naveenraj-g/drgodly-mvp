@@ -2,6 +2,7 @@
 
 import {
   bookAppointmentController,
+  bookConsultationAppointmentController,
   bookIntakeAppointmentController,
   cancelAppointmentController,
   confirmAppointmentController,
@@ -11,6 +12,7 @@ import {
   getAppointmentsForPatientController,
   rescheduleAppointmentController,
   TBookAppointmentControllerOutput,
+  TBookConsultationAppointmentControllerOutput,
   TBookIntakeAppointmentControllerOutput,
   TCancelAppointmentControllerOutput,
   TConfirmAppointmentControllerOutput,
@@ -22,6 +24,7 @@ import {
 } from "@/modules/server/telemedicine/interface-adapters/controllers/appointment";
 import {
   BookAppointmentValidationSchema,
+  BookConsultationAppointmentValidationSchema,
   BookIntakeAppointmentValidationSchema,
   CancelAppointmentValidationSchema,
   DeleteAppointmentValidationSchema,
@@ -129,6 +132,18 @@ export const deleteAppointment = createServerAction()
         revalidatePath: true,
         url: "/bezs/telemedicine/patient/appointments",
         operationErrorMessage: "Failed to delete appointment.",
+      }
+    );
+  });
+
+export const bookConsultationAppointment = createServerAction()
+  .input(BookConsultationAppointmentValidationSchema, { skipInputParsing: true })
+  .handler(async ({ input }) => {
+    return await withMonitoring<TBookConsultationAppointmentControllerOutput>(
+      "bookConsultationAppointment",
+      () => bookConsultationAppointmentController(input),
+      {
+        operationErrorMessage: "Failed to book consultation appointment.",
       }
     );
   });

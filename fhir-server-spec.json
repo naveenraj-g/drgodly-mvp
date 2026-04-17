@@ -1,0 +1,6634 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FHIR Server",
+    "description": "\nA FHIR R4-compliant REST API server for managing healthcare resources.\n\nThis server provides CRUD operations for core FHIR resources including Patient,\nPractitioner, and Encounter. All resources are validated against the HL7 FHIR R4\nspecification using the `fhir.resources` library.\n\nDesigned for integration with AI agents via FastMCP dynamic tool generation.\n",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/fhir/v1/patients/": {
+      "get": {
+        "tags": ["Patients"],
+        "summary": "List all Patient resources",
+        "operationId": "list_patients",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PatientResponseSchema"
+                  },
+                  "type": "array",
+                  "title": "Response List Patients"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Patients"],
+        "summary": "Create a new Patient resource",
+        "operationId": "create_patient",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatientCreateSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fhir/v1/patients/me": {
+      "get": {
+        "tags": ["Patients"],
+        "summary": "Get the Patient profile for the currently authenticated user",
+        "operationId": "get_my_patient_profile",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientResponseSchema"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fhir/v1/patients/{patient_id}": {
+      "get": {
+        "tags": ["Patients"],
+        "summary": "Retrieve a Patient resource by public patient_id",
+        "operationId": "get_patient_by_id",
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Public patient identifier.",
+              "title": "Patient Id"
+            },
+            "description": "Public patient identifier."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Patients"],
+        "summary": "Partially update a Patient resource",
+        "description": "Only supplied fields are written. Omitted fields are unchanged.",
+        "operationId": "patch_patient",
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Public patient identifier.",
+              "title": "Patient Id"
+            },
+            "description": "Public patient identifier."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatientPatchSchema"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Patients"],
+        "summary": "Delete a Patient resource",
+        "operationId": "delete_patient",
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Public patient identifier.",
+              "title": "Patient Id"
+            },
+            "description": "Public patient identifier."
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fhir/v1/patients/{patient_id}/identifiers": {
+      "post": {
+        "tags": ["Patients"],
+        "summary": "Add an identifier to a Patient",
+        "operationId": "add_patient_identifier",
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Public patient identifier.",
+              "title": "Patient Id"
+            },
+            "description": "Public patient identifier."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IdentifierCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fhir/v1/patients/{patient_id}/telecom": {
+      "post": {
+        "tags": ["Patients"],
+        "summary": "Add a contact point (telecom) to a Patient",
+        "operationId": "add_patient_telecom",
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Public patient identifier.",
+              "title": "Patient Id"
+            },
+            "description": "Public patient identifier."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TelecomCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fhir/v1/patients/{patient_id}/addresses": {
+      "post": {
+        "tags": ["Patients"],
+        "summary": "Add an address to a Patient",
+        "operationId": "add_patient_address",
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Public patient identifier.",
+              "title": "Patient Id"
+            },
+            "description": "Public patient identifier."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddressCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fhir/v1/practitioners/": {
+      "get": {
+        "tags": ["Practitioners"],
+        "summary": "List all Practitioner resources",
+        "operationId": "list_practitioners",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PractitionerResponseSchema"
+                  },
+                  "type": "array",
+                  "title": "Response List Practitioners"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Practitioners"],
+        "summary": "Create a new Practitioner resource",
+        "description": "Creates a Practitioner with core demographics. Add names, identifiers, telecom, addresses, and qualifications via the sub-resource endpoints.",
+        "operationId": "create_practitioner",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PractitionerCreateSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PractitionerResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fhir/v1/practitioners/me": {
+      "get": {
+        "tags": ["Practitioners"],
+        "summary": "Get the Practitioner profile for the currently authenticated user",
+        "operationId": "get_my_practitioner_profile",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PractitionerResponseSchema"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fhir/v1/practitioners/{practitioner_id}": {
+      "get": {
+        "tags": ["Practitioners"],
+        "summary": "Retrieve a Practitioner resource by public practitioner_id",
+        "operationId": "get_practitioner_by_id",
+        "parameters": [
+          {
+            "name": "practitioner_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Public practitioner identifier.",
+              "title": "Practitioner Id"
+            },
+            "description": "Public practitioner identifier."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PractitionerResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Practitioners"],
+        "summary": "Partially update a Practitioner resource",
+        "description": "Only supplied fields are written. Omitted fields are unchanged.",
+        "operationId": "patch_practitioner",
+        "parameters": [
+          {
+            "name": "practitioner_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Public practitioner identifier.",
+              "title": "Practitioner Id"
+            },
+            "description": "Public practitioner identifier."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PractitionerPatchSchema"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PractitionerResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Practitioners"],
+        "summary": "Delete a Practitioner resource",
+        "operationId": "delete_practitioner",
+        "parameters": [
+          {
+            "name": "practitioner_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Public practitioner identifier.",
+              "title": "Practitioner Id"
+            },
+            "description": "Public practitioner identifier."
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fhir/v1/practitioners/{practitioner_id}/identifiers": {
+      "post": {
+        "tags": ["Practitioners"],
+        "summary": "Add a business identifier to a Practitioner (e.g. NPI, license number)",
+        "operationId": "add_practitioner_identifier",
+        "parameters": [
+          {
+            "name": "practitioner_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Public practitioner identifier.",
+              "title": "Practitioner Id"
+            },
+            "description": "Public practitioner identifier."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PractitionerIdentifierCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PractitionerResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fhir/v1/practitioners/{practitioner_id}/telecom": {
+      "post": {
+        "tags": ["Practitioners"],
+        "summary": "Add a contact point (telecom) to a Practitioner",
+        "operationId": "add_practitioner_telecom",
+        "parameters": [
+          {
+            "name": "practitioner_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Public practitioner identifier.",
+              "title": "Practitioner Id"
+            },
+            "description": "Public practitioner identifier."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PractitionerTelecomCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PractitionerResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fhir/v1/practitioners/{practitioner_id}/addresses": {
+      "post": {
+        "tags": ["Practitioners"],
+        "summary": "Add an address to a Practitioner",
+        "operationId": "add_practitioner_address",
+        "parameters": [
+          {
+            "name": "practitioner_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Public practitioner identifier.",
+              "title": "Practitioner Id"
+            },
+            "description": "Public practitioner identifier."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PractitionerAddressCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PractitionerResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fhir/v1/practitioners/{practitioner_id}/qualifications": {
+      "post": {
+        "tags": ["Practitioners"],
+        "summary": "Add a professional qualification to a Practitioner",
+        "description": "Records a degree, certification, accreditation, or license — e.g. MD, board certification, DEA number.",
+        "operationId": "add_practitioner_qualification",
+        "parameters": [
+          {
+            "name": "practitioner_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Public practitioner identifier.",
+              "title": "Practitioner Id"
+            },
+            "description": "Public practitioner identifier."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PractitionerQualificationCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PractitionerResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fhir/v1/encounters/": {
+      "post": {
+        "tags": ["Encounters"],
+        "summary": "Create a new Encounter resource",
+        "description": "Creates an Encounter event. All sub-resources (types, participants, reason codes, diagnoses, locations) are submitted as part of the single document.",
+        "operationId": "create_encounter",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EncounterCreateSchema"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EncounterResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Encounters"],
+        "summary": "List all Encounter resources",
+        "description": "Returns all encounters. Filter by subject patient using `?patient_id={patient_id}` (public patient_id).",
+        "operationId": "list_encounters",
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Patient Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EncounterResponseSchema"
+                  },
+                  "title": "Response List Encounters"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fhir/v1/encounters/me": {
+      "get": {
+        "tags": ["Encounters"],
+        "summary": "List all Encounter resources for the currently authenticated user",
+        "operationId": "get_my_encounters",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EncounterResponseSchema"
+                  },
+                  "type": "array",
+                  "title": "Response Get My Encounters"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fhir/v1/encounters/{encounter_id}": {
+      "get": {
+        "tags": ["Encounters"],
+        "summary": "Retrieve an Encounter resource by public encounter_id",
+        "operationId": "get_encounter_by_id",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Public encounter identifier.",
+              "title": "Encounter Id"
+            },
+            "description": "Public encounter identifier."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EncounterResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Encounters"],
+        "summary": "Partially update an Encounter resource",
+        "description": "Only lifecycle fields are patchable: status, period_end, priority. Structural data cannot be changed after creation.",
+        "operationId": "patch_encounter",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Public encounter identifier.",
+              "title": "Encounter Id"
+            },
+            "description": "Public encounter identifier."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EncounterPatchSchema"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EncounterResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Encounters"],
+        "summary": "Delete an Encounter resource",
+        "operationId": "delete_encounter",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Public encounter identifier.",
+              "title": "Encounter Id"
+            },
+            "description": "Public encounter identifier."
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fhir/v1/appointments/": {
+      "post": {
+        "tags": ["Appointments"],
+        "summary": "Create a new Appointment resource",
+        "description": "Books an Appointment for a patient and/or practitioner(s). At least one participant is required. References use public IDs (e.g. Patient/10001, Practitioner/30001).",
+        "operationId": "create_appointment",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppointmentCreateSchema"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppointmentResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Appointments"],
+        "summary": "List all Appointment resources",
+        "description": "Returns all appointments. Filter by `?patient_id=` or `?encounter_id=` (public IDs).",
+        "operationId": "list_appointments",
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Patient Id"
+            }
+          },
+          {
+            "name": "encounter_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Encounter Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AppointmentResponseSchema"
+                  },
+                  "title": "Response List Appointments"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fhir/v1/appointments/me": {
+      "get": {
+        "tags": ["Appointments"],
+        "summary": "List all Appointment resources for the currently authenticated user",
+        "operationId": "get_my_appointments",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AppointmentResponseSchema"
+                  },
+                  "type": "array",
+                  "title": "Response Get My Appointments"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fhir/v1/appointments/{appointment_id}": {
+      "get": {
+        "tags": ["Appointments"],
+        "summary": "Retrieve an Appointment resource by public appointment_id",
+        "operationId": "get_appointment_by_id",
+        "parameters": [
+          {
+            "name": "appointment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Public appointment identifier.",
+              "title": "Appointment Id"
+            },
+            "description": "Public appointment identifier."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppointmentResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Appointments"],
+        "summary": "Partially update an Appointment resource",
+        "description": "Patchable fields: status, start, end, minutes_duration, description, comment, patient_instruction, priority_value. Participants and service fields cannot be changed after creation.",
+        "operationId": "patch_appointment",
+        "parameters": [
+          {
+            "name": "appointment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Public appointment identifier.",
+              "title": "Appointment Id"
+            },
+            "description": "Public appointment identifier."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppointmentPatchSchema"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppointmentResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Appointments"],
+        "summary": "Delete an Appointment resource",
+        "operationId": "delete_appointment",
+        "parameters": [
+          {
+            "name": "appointment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Public appointment identifier.",
+              "title": "Appointment Id"
+            },
+            "description": "Public appointment identifier."
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fhir/v1/questionnaire-responses/": {
+      "post": {
+        "tags": ["QuestionnaireResponses"],
+        "summary": "Create a new QuestionnaireResponse resource",
+        "description": "Records answers to a Questionnaire. Supports nested items, groups, and all FHIR R4 answer value types. References use public IDs (Patient/10001, Encounter/20001, Practitioner/30001).",
+        "operationId": "create_questionnaire_response",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuestionnaireResponseCreateSchema"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuestionnaireResponseResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["QuestionnaireResponses"],
+        "summary": "List all QuestionnaireResponse resources",
+        "description": "Returns all questionnaire responses. Filter by `?patient_id=` or `?encounter_id=` (public IDs).",
+        "operationId": "list_questionnaire_responses",
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Patient Id"
+            }
+          },
+          {
+            "name": "encounter_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Encounter Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuestionnaireResponseResponseSchema"
+                  },
+                  "title": "Response List Questionnaire Responses"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fhir/v1/questionnaire-responses/me": {
+      "get": {
+        "tags": ["QuestionnaireResponses"],
+        "summary": "List all QuestionnaireResponse resources for the currently authenticated user",
+        "operationId": "get_my_questionnaire_responses",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/QuestionnaireResponseResponseSchema"
+                  },
+                  "type": "array",
+                  "title": "Response Get My Questionnaire Responses"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fhir/v1/questionnaire-responses/{questionnaire_response_id}": {
+      "get": {
+        "tags": ["QuestionnaireResponses"],
+        "summary": "Retrieve a QuestionnaireResponse resource by public questionnaire_response_id",
+        "operationId": "get_questionnaire_response_by_id",
+        "parameters": [
+          {
+            "name": "questionnaire_response_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Public questionnaire response identifier.",
+              "title": "Questionnaire Response Id"
+            },
+            "description": "Public questionnaire response identifier."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuestionnaireResponseResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["QuestionnaireResponses"],
+        "summary": "Partially update a QuestionnaireResponse resource",
+        "description": "Only lifecycle fields are patchable: status, authored. To replace items/answers, re-create the resource.",
+        "operationId": "patch_questionnaire_response",
+        "parameters": [
+          {
+            "name": "questionnaire_response_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Public questionnaire response identifier.",
+              "title": "Questionnaire Response Id"
+            },
+            "description": "Public questionnaire response identifier."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuestionnaireResponsePatchSchema"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuestionnaireResponseResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["QuestionnaireResponses"],
+        "summary": "Delete a QuestionnaireResponse resource",
+        "operationId": "delete_questionnaire_response",
+        "parameters": [
+          {
+            "name": "questionnaire_response_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Public questionnaire response identifier.",
+              "title": "Questionnaire Response Id"
+            },
+            "description": "Public questionnaire response identifier."
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AddressCreate": {
+        "properties": {
+          "line": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Line",
+            "description": "Street address line (e.g. '123 Main St')."
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "State"
+          },
+          "postal_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Postal Code"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "AddressCreate"
+      },
+      "AddressType": {
+        "type": "string",
+        "enum": ["postal", "physical", "both"],
+        "title": "AddressType",
+        "description": "FHIR AddressType value set.\n\nThe type of address."
+      },
+      "AddressUse": {
+        "type": "string",
+        "enum": ["home", "work", "temp", "old", "billing"],
+        "title": "AddressUse",
+        "description": "FHIR AddressUse value set.\n\nThe purpose of this address."
+      },
+      "AdministrativeGender": {
+        "type": "string",
+        "enum": ["male", "female", "other", "unknown"],
+        "title": "AdministrativeGender",
+        "description": "FHIR AdministrativeGender value set.\n\nThe gender of a person for administrative purposes."
+      },
+      "AnswerCodingInput": {
+        "properties": {
+          "system": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System"
+          },
+          "code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          },
+          "display": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "AnswerCodingInput"
+      },
+      "AnswerInput": {
+        "properties": {
+          "value_boolean": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value Boolean"
+          },
+          "value_decimal": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value Decimal"
+          },
+          "value_integer": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value Integer"
+          },
+          "value_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value Date",
+            "description": "Date answer (YYYY-MM-DD).",
+            "examples": ["2024-06-01"]
+          },
+          "value_datetime": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value Datetime"
+          },
+          "value_time": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value Time",
+            "description": "Time answer (HH:MM:SS).",
+            "examples": ["09:00:00"]
+          },
+          "value_string": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value String"
+          },
+          "value_uri": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value Uri"
+          },
+          "value_coding": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnswerCodingInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "value_quantity": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnswerQuantityInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "value_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value Reference",
+            "description": "Reference answer using the public resource ID, e.g. 'Patient/10001'."
+          },
+          "item": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ItemInput"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "AnswerInput",
+        "description": "A single answer value within a QuestionnaireResponse item.\nSet exactly one value_ field."
+      },
+      "AnswerQuantityInput": {
+        "properties": {
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          },
+          "system": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System"
+          },
+          "code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "AnswerQuantityInput"
+      },
+      "AppointmentCreateSchema": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/AppointmentStatus"
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subject",
+            "description": "Patient reference using the public patient_id, e.g. 'Patient/10001'."
+          },
+          "subject_display": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subject Display",
+            "description": "Human-readable display name for the subject, e.g. 'John Doe'."
+          },
+          "encounter_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Encounter Id",
+            "description": "Public encounter_id this appointment belongs to (e.g. 20001)."
+          },
+          "start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End"
+          },
+          "minutes_duration": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Minutes Duration",
+            "description": "Expected duration in minutes."
+          },
+          "created": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created",
+            "description": "Date this appointment was initially created."
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "comment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comment"
+          },
+          "patient_instruction": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Patient Instruction"
+          },
+          "priority_value": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Priority Value",
+            "description": "Priority (0 = not prioritized, higher = more urgent)."
+          },
+          "service_category_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Service Category Code"
+          },
+          "service_category_display": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Service Category Display"
+          },
+          "service_type_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Service Type Code"
+          },
+          "service_type_display": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Service Type Display"
+          },
+          "specialty_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Specialty Code"
+          },
+          "specialty_display": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Specialty Display"
+          },
+          "appointment_type_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Appointment Type Code"
+          },
+          "appointment_type_display": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Appointment Type Display"
+          },
+          "cancellation_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cancellation Reason",
+            "description": "Reason for cancellation (e.g. 'Patient request')."
+          },
+          "cancellation_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cancellation Date",
+            "description": "Date/time the appointment was cancelled."
+          },
+          "reason_codes": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/AppointmentReasonInput"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason Codes"
+          },
+          "participant": {
+            "items": {
+              "$ref": "#/components/schemas/AppointmentParticipantInput"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Participant"
+          },
+          "recurrence_id": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recurrence Id",
+            "description": "For a recurring instance: which occurrence in the series this is."
+          },
+          "occurrence_changed": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Occurrence Changed",
+            "description": "True if this instance was changed from the recurrence template."
+          },
+          "recurrence_template": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RecurrenceTemplateInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["status", "participant"],
+        "title": "AppointmentCreateSchema",
+        "description": "Payload for creating an Appointment.\n\nAn Appointment is a booking of a healthcare event for a patient and/or\npractitioner(s) at a specific date and time. At least one participant is required.\nReferences use public IDs (e.g. Patient/10001, Practitioner/30001).",
+        "example": {
+          "appointment_type_code": "FOLLOWUP",
+          "appointment_type_display": "A follow up visit from a previous appointment",
+          "comment": "Patient prefers morning appointments",
+          "description": "Follow-up visit for hypertension management",
+          "encounter_id": 20001,
+          "end": "2026-06-01T09:30:00Z",
+          "minutes_duration": 30,
+          "participant": [
+            {
+              "actor": "Patient/10001",
+              "actor_display": "Jane Doe",
+              "required": "required",
+              "status": "accepted"
+            },
+            {
+              "actor": "Practitioner/30001",
+              "actor_display": "Dr. Smith",
+              "required": "required",
+              "status": "accepted",
+              "type_code": "ATND",
+              "type_display": "attender"
+            }
+          ],
+          "patient_instruction": "Please arrive 10 minutes early.",
+          "priority_value": 5,
+          "reason_codes": [
+            {
+              "coding_code": "274640006",
+              "coding_display": "Fever with chills",
+              "coding_system": "http://snomed.info/sct",
+              "text": "Fever with chills"
+            }
+          ],
+          "service_category_code": "gp",
+          "service_category_display": "General Practice",
+          "service_type_code": "11429006",
+          "service_type_display": "Consultation",
+          "specialty_code": "394814009",
+          "specialty_display": "General practice",
+          "start": "2026-06-01T09:00:00Z",
+          "status": "booked",
+          "subject": "Patient/10001",
+          "subject_display": "John Doe"
+        }
+      },
+      "AppointmentParticipantInput": {
+        "properties": {
+          "actor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor",
+            "description": "FHIR reference using the public resource ID, e.g. 'Practitioner/30001' or 'Patient/10001'.",
+            "examples": ["Practitioner/30001"]
+          },
+          "actor_display": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor Display",
+            "description": "Display name for the actor, e.g. 'Dr. Smith'."
+          },
+          "type_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Type Code",
+            "description": "Participant role code, e.g. 'ATND'."
+          },
+          "type_display": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Type Display",
+            "description": "Human-readable role label, e.g. 'attender'."
+          },
+          "type_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Type Text",
+            "description": "Free-text role description."
+          },
+          "required": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AppointmentParticipantRequired"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/AppointmentParticipantStatus",
+            "description": "Participation acceptance status.",
+            "default": "needs-action"
+          },
+          "period_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period Start"
+          },
+          "period_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period End"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "AppointmentParticipantInput",
+        "description": "A participant involved in the appointment."
+      },
+      "AppointmentParticipantRequired": {
+        "type": "string",
+        "enum": ["required", "optional", "information-only"],
+        "title": "AppointmentParticipantRequired"
+      },
+      "AppointmentParticipantStatus": {
+        "type": "string",
+        "enum": ["accepted", "declined", "tentative", "needs-action"],
+        "title": "AppointmentParticipantStatus"
+      },
+      "AppointmentPatchSchema": {
+        "properties": {
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AppointmentStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End"
+          },
+          "minutes_duration": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Minutes Duration"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "comment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comment"
+          },
+          "patient_instruction": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Patient Instruction"
+          },
+          "priority_value": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Priority Value"
+          },
+          "cancellation_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cancellation Reason"
+          },
+          "cancellation_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cancellation Date"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "AppointmentPatchSchema",
+        "description": "Partial update for an Appointment.\n\nAllows updating scheduling and lifecycle fields. Structural data\n(participants, service fields) cannot be changed after creation."
+      },
+      "AppointmentReasonInput": {
+        "properties": {
+          "coding_system": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coding System"
+          },
+          "coding_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coding Code"
+          },
+          "coding_display": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coding Display"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "AppointmentReasonInput",
+        "description": "A coded reason / chief complaint for the appointment."
+      },
+      "AppointmentResponseSchema": {
+        "properties": {
+          "resourceType": {
+            "type": "string",
+            "const": "Appointment",
+            "title": "Resourcetype",
+            "default": "Appointment"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Public appointment identifier (e.g. '40001')."
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FHIRReference"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "encounter": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FHIRReference"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End"
+          },
+          "minutesDuration": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Minutesduration"
+          },
+          "created": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "comment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comment"
+          },
+          "patientInstruction": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Patientinstruction"
+          },
+          "priority": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Priority"
+          },
+          "cancellationReason": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FHIRCodeableConcept"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cancellationDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cancellationdate"
+          },
+          "serviceCategory": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FHIRCodeableConcept"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Servicecategory"
+          },
+          "serviceType": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FHIRCodeableConcept"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Servicetype"
+          },
+          "specialty": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FHIRCodeableConcept"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Specialty"
+          },
+          "appointmentType": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FHIRCodeableConcept"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reasonCode": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FHIRCodeableConcept"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reasoncode"
+          },
+          "participant": {
+            "items": {
+              "$ref": "#/components/schemas/FHIRAppointmentParticipant"
+            },
+            "type": "array",
+            "title": "Participant"
+          },
+          "recurrenceId": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recurrenceid"
+          },
+          "occurrenceChanged": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Occurrencechanged"
+          },
+          "recurrenceTemplate": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FHIRRecurrenceTemplate"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": ["id", "status", "participant"],
+        "title": "AppointmentResponseSchema",
+        "description": "FHIR R4 Appointment resource returned by all read/write endpoints.\n\n- `id` is the PUBLIC appointment_id (e.g. '40001') — never the internal PK.\n- References in subject and participant use public IDs (Patient/10001, Practitioner/30001)."
+      },
+      "AppointmentStatus": {
+        "type": "string",
+        "enum": [
+          "proposed",
+          "pending",
+          "booked",
+          "arrived",
+          "fulfilled",
+          "cancelled",
+          "noshow",
+          "entered-in-error",
+          "checked-in",
+          "waitlist"
+        ],
+        "title": "AppointmentStatus"
+      },
+      "ContactPointSystem": {
+        "type": "string",
+        "enum": ["phone", "fax", "email", "pager", "url", "sms", "other"],
+        "title": "ContactPointSystem",
+        "description": "FHIR ContactPointSystem value set.\n\nTelecommunications form for contact point."
+      },
+      "ContactPointUse": {
+        "type": "string",
+        "enum": ["home", "work", "temp", "old", "mobile"],
+        "title": "ContactPointUse",
+        "description": "FHIR ContactPointUse value set.\n\nPurpose of the contact point."
+      },
+      "EncounterBasedOnInput": {
+        "properties": {
+          "reference": {
+            "type": "string",
+            "title": "Reference",
+            "description": "FHIR reference, e.g. 'ServiceRequest/1234' or 'CarePlan/456'.",
+            "examples": ["ServiceRequest/1234"]
+          },
+          "display": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display",
+            "description": "Human-readable label for the referenced resource."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["reference"],
+        "title": "EncounterBasedOnInput",
+        "description": "A request that this encounter fulfils (e.g. a ServiceRequest or CarePlan)."
+      },
+      "EncounterClass": {
+        "type": "string",
+        "enum": [
+          "inpatient",
+          "ambulatory",
+          "observation",
+          "emergency",
+          "virtual",
+          "home_health"
+        ],
+        "title": "EncounterClass",
+        "description": "FHIR Encounter class value set."
+      },
+      "EncounterCreateSchema": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/EncounterStatus"
+          },
+          "class_code": {
+            "$ref": "#/components/schemas/EncounterClass",
+            "description": "Encounter class: ambulatory | inpatient | emergency | virtual | observation | home_health."
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subject",
+            "description": "Patient reference using the public patient_id, e.g. 'Patient/10001'."
+          },
+          "period_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period Start"
+          },
+          "period_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period End"
+          },
+          "priority": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EncounterPriority"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Urgency: routine | urgent | stat | asap."
+          },
+          "type": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/EncounterTypeInput"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Type"
+          },
+          "participant": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/EncounterParticipantInput"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Participant"
+          },
+          "reason_codes": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/EncounterReasonCodeInput"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason Codes"
+          },
+          "diagnoses": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/EncounterDiagnosisInput"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Diagnoses"
+          },
+          "locations": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/EncounterLocationInput"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Locations"
+          },
+          "based_on": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/EncounterBasedOnInput"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Based On"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["status", "class_code"],
+        "title": "EncounterCreateSchema",
+        "description": "Payload for creating a complete Encounter event.\n\nAll data is submitted as a single document; there are no sub-resource\nendpoints. References use public IDs (e.g. Patient/10001, Practitioner/30001).",
+        "example": {
+          "based_on": [
+            {
+              "display": "Annual check-up request",
+              "reference": "ServiceRequest/1234"
+            }
+          ],
+          "class_code": "ambulatory",
+          "diagnoses": [
+            {
+              "condition_reference": "Condition/99999",
+              "rank": 1,
+              "use_text": "admission"
+            }
+          ],
+          "locations": [
+            {
+              "location_reference": "Location/room-3",
+              "status": "completed"
+            }
+          ],
+          "participant": [
+            {
+              "individual": "Practitioner/30001",
+              "period_end": "2026-04-01T09:30:00Z",
+              "period_start": "2026-04-01T09:00:00Z",
+              "type_text": "Primary Physician"
+            }
+          ],
+          "period_end": "2026-04-01T09:30:00Z",
+          "period_start": "2026-04-01T09:00:00Z",
+          "priority": "routine",
+          "reason_codes": [
+            {
+              "coding_code": "25064002",
+              "coding_display": "Headache",
+              "coding_system": "http://snomed.info/sct",
+              "text": "Headache"
+            }
+          ],
+          "status": "completed",
+          "subject": "Patient/10001",
+          "type": [
+            {
+              "coding_code": "185349003",
+              "coding_display": "Consultation",
+              "coding_system": "http://snomed.info/sct",
+              "text": "Consultation"
+            }
+          ]
+        }
+      },
+      "EncounterDiagnosisInput": {
+        "properties": {
+          "condition_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Condition Reference",
+            "description": "Reference to the Condition, e.g. 'Condition/99999'."
+          },
+          "use_text": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EncounterDiagnosisUse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Role of this diagnosis: admission | discharge | billing | other."
+          },
+          "rank": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rank",
+            "description": "1 = primary diagnosis."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "EncounterDiagnosisInput",
+        "description": "A diagnosis relevant to this encounter."
+      },
+      "EncounterDiagnosisUse": {
+        "type": "string",
+        "enum": ["admission", "discharge", "billing", "other"],
+        "title": "EncounterDiagnosisUse",
+        "description": "FHIR Encounter diagnosis use value set."
+      },
+      "EncounterLocationInput": {
+        "properties": {
+          "location_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location Reference",
+            "description": "Reference to the Location, e.g. 'Location/room-3'."
+          },
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EncounterLocationStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "period_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period Start"
+          },
+          "period_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period End"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "EncounterLocationInput",
+        "description": "A physical location involved in the encounter."
+      },
+      "EncounterLocationStatus": {
+        "type": "string",
+        "enum": ["planned", "active", "reserved", "completed"],
+        "title": "EncounterLocationStatus",
+        "description": "FHIR Encounter location status value set."
+      },
+      "EncounterParticipantInput": {
+        "properties": {
+          "type_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Type Text",
+            "description": "Participant role, e.g. 'Primary Physician'. Comma-separate multiple roles."
+          },
+          "individual": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Individual",
+            "description": "FHIR reference using the public resource ID, e.g. 'Practitioner/30001'.",
+            "examples": ["Practitioner/30001"]
+          },
+          "period_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period Start"
+          },
+          "period_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period End"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "EncounterParticipantInput",
+        "description": "A person who participated in the encounter (provider, patient, etc.)."
+      },
+      "EncounterPatchSchema": {
+        "properties": {
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EncounterStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "period_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period End",
+            "description": "Close the encounter by setting the period end time."
+          },
+          "priority": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EncounterPriority"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "EncounterPatchSchema",
+        "description": "Partial update for an Encounter.\n\nOnly lifecycle fields are patchable after creation."
+      },
+      "EncounterPriority": {
+        "type": "string",
+        "enum": ["routine", "urgent", "stat", "asap"],
+        "title": "EncounterPriority",
+        "description": "FHIR Encounter priority value set."
+      },
+      "EncounterReasonCodeInput": {
+        "properties": {
+          "coding_system": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coding System"
+          },
+          "coding_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coding Code"
+          },
+          "coding_display": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coding Display"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "EncounterReasonCodeInput",
+        "description": "A coded reason / chief complaint for the encounter."
+      },
+      "EncounterResponseSchema": {
+        "properties": {
+          "resourceType": {
+            "type": "string",
+            "const": "Encounter",
+            "title": "Resourcetype",
+            "default": "Encounter"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Public encounter identifier (e.g. '20001')."
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "class": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FHIRCoding"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "type": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FHIRCodeableConcept"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Type"
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FHIRReference"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "participant": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FHIREncounterParticipant"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Participant"
+          },
+          "period": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FHIRPeriod"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reasonCode": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FHIRCodeableConcept"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reasoncode"
+          },
+          "diagnosis": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FHIREncounterDiagnosis"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Diagnosis"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FHIREncounterLocation"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "priority": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FHIRCodeableConcept"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "basedOn": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FHIRReference"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Basedon"
+          }
+        },
+        "type": "object",
+        "required": ["id"],
+        "title": "EncounterResponseSchema",
+        "description": "FHIR R4 Encounter resource returned by all read/write endpoints.\n\n- `id` is the PUBLIC encounter_id (e.g. '20001') — never the internal PK.\n- References in subject and participant use public IDs (Patient/10001, Practitioner/30001)."
+      },
+      "EncounterStatus": {
+        "type": "string",
+        "enum": [
+          "planned",
+          "in-progress",
+          "on-hold",
+          "discharged",
+          "completed",
+          "cancelled",
+          "discontinued",
+          "entered-in-error",
+          "unknown"
+        ],
+        "title": "EncounterStatus",
+        "description": "FHIR Encounter status value set."
+      },
+      "EncounterTypeInput": {
+        "properties": {
+          "coding_system": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coding System",
+            "description": "Terminology system URI, e.g. 'http://snomed.info/sct'."
+          },
+          "coding_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coding Code",
+            "description": "Code value, e.g. '185349003'."
+          },
+          "coding_display": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coding Display",
+            "description": "Human-readable code label."
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text",
+            "description": "Plain-text description of the encounter type."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "EncounterTypeInput",
+        "description": "One entry in Encounter.type (a coded concept for the encounter's clinical category)."
+      },
+      "FHIRAddress": {
+        "properties": {
+          "line": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Line",
+            "default": []
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "State"
+          },
+          "postalCode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Postalcode"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          }
+        },
+        "type": "object",
+        "title": "FHIRAddress"
+      },
+      "FHIRAnswerSchema": {
+        "properties": {
+          "valueBoolean": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valueboolean"
+          },
+          "valueDecimal": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valuedecimal"
+          },
+          "valueInteger": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valueinteger"
+          },
+          "valueDate": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valuedate"
+          },
+          "valueDateTime": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valuedatetime"
+          },
+          "valueTime": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valuetime"
+          },
+          "valueString": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valuestring"
+          },
+          "valueUri": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valueuri"
+          },
+          "valueCoding": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FHIRCoding"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "valueQuantity": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FHIRQuantity"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "valueReference": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FHIRReference"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "item": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FHIRItemSchema"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item"
+          }
+        },
+        "type": "object",
+        "title": "FHIRAnswerSchema"
+      },
+      "FHIRAppointmentParticipant": {
+        "properties": {
+          "type": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FHIRCodeableConcept"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Type"
+          },
+          "actor": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FHIRReference"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "required": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Required"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "period": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FHIRPeriod"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": ["status"],
+        "title": "FHIRAppointmentParticipant"
+      },
+      "FHIRCodeableConcept": {
+        "properties": {
+          "coding": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FHIRCoding"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coding"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "title": "FHIRCodeableConcept"
+      },
+      "FHIRCoding": {
+        "properties": {
+          "system": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System"
+          },
+          "code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          },
+          "display": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display"
+          }
+        },
+        "type": "object",
+        "title": "FHIRCoding"
+      },
+      "FHIREncounterDiagnosis": {
+        "properties": {
+          "condition": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FHIRReference"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "use": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FHIRCodeableConcept"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rank"
+          }
+        },
+        "type": "object",
+        "title": "FHIREncounterDiagnosis"
+      },
+      "FHIREncounterLocation": {
+        "properties": {
+          "location": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FHIRReference"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "period": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FHIRPeriod"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "title": "FHIREncounterLocation"
+      },
+      "FHIREncounterParticipant": {
+        "properties": {
+          "type": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FHIRCodeableConcept"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Type"
+          },
+          "individual": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FHIRReference"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "period": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FHIRPeriod"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "title": "FHIREncounterParticipant"
+      },
+      "FHIRHumanName": {
+        "properties": {
+          "use": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Use"
+          },
+          "family": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Family"
+          },
+          "given": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Given",
+            "default": []
+          }
+        },
+        "type": "object",
+        "title": "FHIRHumanName"
+      },
+      "FHIRIdentifier": {
+        "properties": {
+          "system": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "title": "FHIRIdentifier"
+      },
+      "FHIRItemSchema": {
+        "properties": {
+          "linkId": {
+            "type": "string",
+            "title": "Linkid"
+          },
+          "definition": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Definition"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          },
+          "answer": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FHIRAnswerSchema"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answer"
+          },
+          "item": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FHIRItemSchema"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item"
+          }
+        },
+        "type": "object",
+        "required": ["linkId"],
+        "title": "FHIRItemSchema"
+      },
+      "FHIRMonthlyTemplate": {
+        "properties": {
+          "dayOfMonth": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dayofmonth"
+          },
+          "nthWeekOfMonth": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FHIRCoding"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dayOfWeek": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FHIRCoding"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "monthInterval": {
+            "type": "integer",
+            "title": "Monthinterval"
+          }
+        },
+        "type": "object",
+        "required": ["monthInterval"],
+        "title": "FHIRMonthlyTemplate"
+      },
+      "FHIRPeriod": {
+        "properties": {
+          "start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End"
+          }
+        },
+        "type": "object",
+        "title": "FHIRPeriod"
+      },
+      "FHIRPractitionerAddress": {
+        "properties": {
+          "use": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Use"
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Type"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          },
+          "line": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Line",
+            "default": []
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "district": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "District"
+          },
+          "state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "State"
+          },
+          "postalCode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Postalcode"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          }
+        },
+        "type": "object",
+        "title": "FHIRPractitionerAddress"
+      },
+      "FHIRPractitionerIdentifier": {
+        "properties": {
+          "system": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "use": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Use"
+          }
+        },
+        "type": "object",
+        "title": "FHIRPractitionerIdentifier"
+      },
+      "FHIRPractitionerTelecom": {
+        "properties": {
+          "system": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "use": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Use"
+          },
+          "rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rank"
+          }
+        },
+        "type": "object",
+        "title": "FHIRPractitionerTelecom"
+      },
+      "FHIRQualification": {
+        "properties": {
+          "identifier": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FHIRQualificationIdentifier"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Identifier"
+          },
+          "code": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FHIRQualificationCode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "issuer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FHIRQualificationIssuer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "title": "FHIRQualification"
+      },
+      "FHIRQualificationCode": {
+        "properties": {
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "title": "FHIRQualificationCode"
+      },
+      "FHIRQualificationIdentifier": {
+        "properties": {
+          "system": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "title": "FHIRQualificationIdentifier"
+      },
+      "FHIRQualificationIssuer": {
+        "properties": {
+          "display": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display"
+          }
+        },
+        "type": "object",
+        "title": "FHIRQualificationIssuer"
+      },
+      "FHIRQuantity": {
+        "properties": {
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          },
+          "system": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System"
+          },
+          "code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          }
+        },
+        "type": "object",
+        "title": "FHIRQuantity"
+      },
+      "FHIRRecurrenceTemplate": {
+        "properties": {
+          "timezone": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FHIRCodeableConcept"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "recurrenceType": {
+            "$ref": "#/components/schemas/FHIRCodeableConcept"
+          },
+          "lastOccurrenceDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lastoccurrencedate"
+          },
+          "occurrenceCount": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Occurrencecount"
+          },
+          "occurrenceDates": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Occurrencedates"
+          },
+          "excludingDate": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Excludingdate"
+          },
+          "excludingRecurrenceId": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Excludingrecurrenceid"
+          },
+          "weeklyTemplate": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FHIRWeeklyTemplate"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "monthlyTemplate": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FHIRMonthlyTemplate"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "yearlyTemplate": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FHIRYearlyTemplate"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": ["recurrenceType"],
+        "title": "FHIRRecurrenceTemplate"
+      },
+      "FHIRReference": {
+        "properties": {
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference"
+          },
+          "display": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display"
+          }
+        },
+        "type": "object",
+        "title": "FHIRReference"
+      },
+      "FHIRTelecom": {
+        "properties": {
+          "system": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "use": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Use"
+          }
+        },
+        "type": "object",
+        "title": "FHIRTelecom"
+      },
+      "FHIRWeeklyTemplate": {
+        "properties": {
+          "monday": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monday"
+          },
+          "tuesday": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tuesday"
+          },
+          "wednesday": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wednesday"
+          },
+          "thursday": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thursday"
+          },
+          "friday": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Friday"
+          },
+          "saturday": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Saturday"
+          },
+          "sunday": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sunday"
+          },
+          "weekInterval": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weekinterval"
+          }
+        },
+        "type": "object",
+        "title": "FHIRWeeklyTemplate"
+      },
+      "FHIRYearlyTemplate": {
+        "properties": {
+          "yearInterval": {
+            "type": "integer",
+            "title": "Yearinterval"
+          }
+        },
+        "type": "object",
+        "required": ["yearInterval"],
+        "title": "FHIRYearlyTemplate"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "IdentifierCreate": {
+        "properties": {
+          "system": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System",
+            "description": "URI of the identifier namespace."
+          },
+          "value": {
+            "type": "string",
+            "title": "Value",
+            "description": "Identifier value within the given system."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["value"],
+        "title": "IdentifierCreate"
+      },
+      "IdentifierUse": {
+        "type": "string",
+        "enum": ["usual", "official", "temp", "secondary", "old"],
+        "title": "IdentifierUse",
+        "description": "FHIR IdentifierUse value set.\n\nIndicates the purpose of the identifier."
+      },
+      "ItemInput": {
+        "properties": {
+          "link_id": {
+            "type": "string",
+            "title": "Link Id",
+            "description": "Pointer to the specific item from the Questionnaire.",
+            "examples": ["1.1"]
+          },
+          "definition": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Definition"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text",
+            "description": "Question text or group name.",
+            "examples": ["What is your date of birth?"]
+          },
+          "answer": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/AnswerInput"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answer"
+          },
+          "item": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ItemInput"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["link_id"],
+        "title": "ItemInput",
+        "description": "A group or question item within the QuestionnaireResponse.\nItems can be nested to represent grouped questions."
+      },
+      "PatientCreateSchema": {
+        "properties": {
+          "given_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Given Name"
+          },
+          "family_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Family Name"
+          },
+          "gender": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AdministrativeGender"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "birth_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Birth Date"
+          },
+          "active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active",
+            "default": true
+          },
+          "deceased_boolean": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deceased Boolean",
+            "default": false
+          },
+          "deceased_datetime": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deceased Datetime"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "PatientCreateSchema",
+        "description": "Payload accepted when creating a new Patient (basic demographics only).",
+        "example": {
+          "active": true,
+          "birth_date": "1985-04-12",
+          "family_name": "Doe",
+          "gender": "male",
+          "given_name": "John"
+        }
+      },
+      "PatientPatchSchema": {
+        "properties": {
+          "given_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Given Name"
+          },
+          "family_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Family Name"
+          },
+          "gender": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AdministrativeGender"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "birth_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Birth Date"
+          },
+          "active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active"
+          },
+          "deceased_boolean": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deceased Boolean"
+          },
+          "deceased_datetime": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deceased Datetime"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "PatientPatchSchema",
+        "description": "Partial-update payload — only supplied fields are written."
+      },
+      "PatientResponseSchema": {
+        "properties": {
+          "resourceType": {
+            "type": "string",
+            "const": "Patient",
+            "title": "Resourcetype",
+            "default": "Patient"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Public patient identifier (e.g. '10001')."
+          },
+          "active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FHIRHumanName"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "gender": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gender"
+          },
+          "birthDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Birthdate"
+          },
+          "deceasedBoolean": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deceasedboolean"
+          },
+          "deceasedDateTime": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deceaseddatetime"
+          },
+          "identifier": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FHIRIdentifier"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Identifier"
+          },
+          "telecom": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FHIRTelecom"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Telecom"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FHIRAddress"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          }
+        },
+        "type": "object",
+        "required": ["id"],
+        "title": "PatientResponseSchema",
+        "description": "FHIR R4 Patient resource returned by all read/write endpoints.\n\n- `id` is the PUBLIC patient_id (e.g. 10001) — the internal DB pk is\n  never included.\n- Sub-resources (identifier, telecom, address) are omitted when empty."
+      },
+      "PractitionerAddressCreate": {
+        "properties": {
+          "use": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AddressUse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Purpose of this address."
+          },
+          "type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AddressType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "postal | physical | both."
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text",
+            "description": "Full address as plain text."
+          },
+          "line": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Line",
+            "description": "Street address line(s), comma-separated for multiple."
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "district": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "District"
+          },
+          "state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "State"
+          },
+          "postal_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Postal Code"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "PractitionerAddressCreate"
+      },
+      "PractitionerCreateSchema": {
+        "properties": {
+          "given_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Given Name"
+          },
+          "family_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Family Name"
+          },
+          "active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active",
+            "default": true
+          },
+          "gender": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AdministrativeGender"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "birth_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Birth Date"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PractitionerRole"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "specialty": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Specialty"
+          },
+          "deceased_boolean": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deceased Boolean",
+            "default": false
+          },
+          "deceased_datetime": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deceased Datetime"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "PractitionerCreateSchema",
+        "description": "Payload accepted when creating a new Practitioner (core demographics only).\nSub-resources (names, identifiers, telecom, addresses, qualifications) are\nadded via their respective POST sub-resource endpoints.",
+        "example": {
+          "active": true,
+          "birth_date": "1978-03-15",
+          "family_name": "Smith",
+          "gender": "female",
+          "given_name": "Jane"
+        }
+      },
+      "PractitionerIdentifierCreate": {
+        "properties": {
+          "system": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System",
+            "description": "URI of the identifier namespace (e.g. NPI system)."
+          },
+          "value": {
+            "type": "string",
+            "title": "Value",
+            "description": "Identifier value (e.g. NPI number, license number)."
+          },
+          "use": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IdentifierUse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Purpose of this identifier."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["value"],
+        "title": "PractitionerIdentifierCreate"
+      },
+      "PractitionerPatchSchema": {
+        "properties": {
+          "given_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Given Name"
+          },
+          "family_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Family Name"
+          },
+          "active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active"
+          },
+          "gender": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AdministrativeGender"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "birth_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Birth Date"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PractitionerRole"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "specialty": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Specialty"
+          },
+          "deceased_boolean": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deceased Boolean"
+          },
+          "deceased_datetime": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deceased Datetime"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "PractitionerPatchSchema",
+        "description": "Partial-update payload — only supplied fields are written."
+      },
+      "PractitionerQualificationCreate": {
+        "properties": {
+          "identifier_system": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Identifier System",
+            "description": "Namespace URI for the qualification identifier."
+          },
+          "identifier_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Identifier Value",
+            "description": "Qualification or license number."
+          },
+          "code_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code Text",
+            "description": "Human-readable qualification type, e.g. 'MD - Doctor of Medicine'."
+          },
+          "issuer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Issuer",
+            "description": "Display name of the issuing organization."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "PractitionerQualificationCreate"
+      },
+      "PractitionerResponseSchema": {
+        "properties": {
+          "resourceType": {
+            "type": "string",
+            "const": "Practitioner",
+            "title": "Resourcetype",
+            "default": "Practitioner"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Public practitioner identifier (e.g. '30001')."
+          },
+          "active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active"
+          },
+          "gender": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gender"
+          },
+          "birthDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Birthdate"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "specialty": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Specialty"
+          },
+          "deceasedBoolean": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deceasedboolean"
+          },
+          "deceasedDateTime": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deceaseddatetime"
+          },
+          "identifier": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FHIRPractitionerIdentifier"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Identifier"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FHIRHumanName"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "telecom": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FHIRPractitionerTelecom"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Telecom"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FHIRPractitionerAddress"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          },
+          "qualification": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FHIRQualification"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Qualification"
+          }
+        },
+        "type": "object",
+        "required": ["id"],
+        "title": "PractitionerResponseSchema",
+        "description": "FHIR R4 Practitioner resource returned by all read/write endpoints.\n\n- `id` is the PUBLIC practitioner_id (e.g. 30001) — the internal DB pk is never included.\n- Sub-resources are omitted when empty."
+      },
+      "PractitionerRole": {
+        "type": "string",
+        "enum": ["doctor", "nurse"],
+        "title": "PractitionerRole"
+      },
+      "PractitionerTelecomCreate": {
+        "properties": {
+          "system": {
+            "$ref": "#/components/schemas/ContactPointSystem",
+            "description": "Type of contact point."
+          },
+          "value": {
+            "type": "string",
+            "title": "Value",
+            "description": "Contact value (phone number, email address, etc.)."
+          },
+          "use": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContactPointUse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Purpose of this contact point."
+          },
+          "rank": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rank",
+            "description": "Preferred contact order (1 = most preferred)."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["system", "value"],
+        "title": "PractitionerTelecomCreate"
+      },
+      "QuestionnaireResponseCreateSchema": {
+        "properties": {
+          "questionnaire": {
+            "type": "string",
+            "title": "Questionnaire",
+            "description": "Canonical URL or id of the Questionnaire this response answers.",
+            "examples": ["http://example.org/fhir/Questionnaire/phq-9"]
+          },
+          "status": {
+            "$ref": "#/components/schemas/QuestionnaireResponseStatus"
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subject",
+            "description": "Subject reference using the public patient_id, e.g. 'Patient/10001'."
+          },
+          "subject_display": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subject Display"
+          },
+          "encounter": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Encounter",
+            "description": "Encounter reference, e.g. 'Encounter/20001'."
+          },
+          "authored": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Authored",
+            "description": "Date/time the answers were gathered."
+          },
+          "author": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Author",
+            "description": "Who recorded the answers, e.g. 'Practitioner/30001' or 'Patient/10001'."
+          },
+          "author_display": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Author Display"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source",
+            "description": "Who answered the questions (if different from author), e.g. 'Patient/10001'."
+          },
+          "source_display": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Display"
+          },
+          "item": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ItemInput"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["questionnaire", "status"],
+        "title": "QuestionnaireResponseCreateSchema",
+        "description": "Payload for creating a QuestionnaireResponse.\n\nA QuestionnaireResponse is a completed or in-progress set of answers to\nquestions from a Questionnaire. References use public IDs\n(e.g. Patient/10001, Encounter/20001, Practitioner/30001).",
+        "example": {
+          "author": "Practitioner/30001",
+          "authored": "2024-06-01T09:00:00Z",
+          "encounter": "Encounter/20001",
+          "item": [
+            {
+              "answer": [
+                {
+                  "value_coding": {
+                    "code": "LA6568-5",
+                    "display": "Not at all",
+                    "system": "http://loinc.org"
+                  }
+                }
+              ],
+              "link_id": "1",
+              "text": "Over the last 2 weeks, how often have you felt down, depressed, or hopeless?"
+            },
+            {
+              "item": [
+                {
+                  "answer": [
+                    {
+                      "value_boolean": false
+                    }
+                  ],
+                  "link_id": "2.1",
+                  "text": "Do you have difficulty concentrating?"
+                }
+              ],
+              "link_id": "2",
+              "text": "Mental health group"
+            }
+          ],
+          "questionnaire": "http://example.org/fhir/Questionnaire/phq-9",
+          "source": "Patient/10001",
+          "status": "completed",
+          "subject": "Patient/10001"
+        }
+      },
+      "QuestionnaireResponsePatchSchema": {
+        "properties": {
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/QuestionnaireResponseStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "authored": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Authored"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "QuestionnaireResponsePatchSchema",
+        "description": "Partial update for a QuestionnaireResponse.\n\nOnly lifecycle fields are patchable after creation. To replace items,\nre-create the resource."
+      },
+      "QuestionnaireResponseResponseSchema": {
+        "properties": {
+          "resourceType": {
+            "type": "string",
+            "const": "QuestionnaireResponse",
+            "title": "Resourcetype",
+            "default": "QuestionnaireResponse"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Public questionnaire response identifier (e.g. '60001')."
+          },
+          "questionnaire": {
+            "type": "string",
+            "title": "Questionnaire"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FHIRReference"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "encounter": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FHIRReference"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "authored": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Authored"
+          },
+          "author": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FHIRReference"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FHIRReference"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "item": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FHIRItemSchema"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item"
+          }
+        },
+        "type": "object",
+        "required": ["id", "questionnaire", "status"],
+        "title": "QuestionnaireResponseResponseSchema",
+        "description": "FHIR R4 QuestionnaireResponse resource returned by all read/write endpoints.\n\n- `id` is the PUBLIC questionnaire_response_id (e.g. '60001') — never the internal PK.\n- References use public IDs (Patient/10001, Encounter/20001, Practitioner/30001)."
+      },
+      "QuestionnaireResponseStatus": {
+        "type": "string",
+        "enum": [
+          "in-progress",
+          "completed",
+          "amended",
+          "entered-in-error",
+          "stopped"
+        ],
+        "title": "QuestionnaireResponseStatus"
+      },
+      "RecurrenceMonthlyTemplateInput": {
+        "properties": {
+          "day_of_month": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 31,
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Day Of Month",
+            "description": "Fixed day of the month (e.g. 15)."
+          },
+          "nth_week_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nth Week Code",
+            "description": "Nth week ordinal code, e.g. '1' (1st), '-1' (last)."
+          },
+          "nth_week_display": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nth Week Display"
+          },
+          "day_of_week_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Day Of Week Code",
+            "description": "Day of week code: mon | tue | wed | thu | fri | sat | sun."
+          },
+          "day_of_week_display": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Day Of Week Display"
+          },
+          "month_interval": {
+            "type": "integer",
+            "minimum": 1,
+            "title": "Month Interval",
+            "description": "Months between occurrences."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["month_interval"],
+        "title": "RecurrenceMonthlyTemplateInput",
+        "description": "Monthly recurrence — either a fixed day-of-month or an nth weekday."
+      },
+      "RecurrenceTemplateInput": {
+        "properties": {
+          "recurrence_type_code": {
+            "type": "string",
+            "title": "Recurrence Type Code",
+            "description": "Frequency of recurrence: daily | weekly | monthly | yearly.",
+            "examples": ["weekly"]
+          },
+          "recurrence_type_display": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recurrence Type Display"
+          },
+          "recurrence_type_system": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recurrence Type System"
+          },
+          "timezone_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timezone Code",
+            "description": "IANA timezone, e.g. 'America/New_York'."
+          },
+          "timezone_display": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timezone Display"
+          },
+          "last_occurrence_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Occurrence Date",
+            "description": "Date after which no more occurrences."
+          },
+          "occurrence_count": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Occurrence Count",
+            "description": "Total number of occurrences."
+          },
+          "occurrence_dates": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Occurrence Dates",
+            "description": "Explicit list of occurrence dates."
+          },
+          "excluding_dates": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Excluding Dates",
+            "description": "Dates within the series to skip."
+          },
+          "excluding_recurrence_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Excluding Recurrence Ids",
+            "description": "Recurrence IDs (ordinal positions) to skip."
+          },
+          "weekly_template": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RecurrenceWeeklyTemplateInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "monthly_template": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RecurrenceMonthlyTemplateInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "yearly_template": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RecurrenceYearlyTemplateInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["recurrence_type_code"],
+        "title": "RecurrenceTemplateInput",
+        "description": "Defines the recurrence pattern for a series of appointments.\nExactly one of weekly_template, monthly_template, or yearly_template\nshould be provided to match recurrence_type_code."
+      },
+      "RecurrenceWeeklyTemplateInput": {
+        "properties": {
+          "monday": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monday"
+          },
+          "tuesday": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tuesday"
+          },
+          "wednesday": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wednesday"
+          },
+          "thursday": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thursday"
+          },
+          "friday": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Friday"
+          },
+          "saturday": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Saturday"
+          },
+          "sunday": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sunday"
+          },
+          "week_interval": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Week Interval",
+            "description": "Weeks between occurrences (default 1)."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "RecurrenceWeeklyTemplateInput",
+        "description": "Days of the week on which the appointment recurs."
+      },
+      "RecurrenceYearlyTemplateInput": {
+        "properties": {
+          "year_interval": {
+            "type": "integer",
+            "minimum": 1,
+            "title": "Year Interval",
+            "description": "Years between occurrences."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["year_interval"],
+        "title": "RecurrenceYearlyTemplateInput",
+        "description": "Yearly recurrence."
+      },
+      "TelecomCreate": {
+        "properties": {
+          "system": {
+            "$ref": "#/components/schemas/ContactPointSystem",
+            "description": "Type of contact point."
+          },
+          "value": {
+            "type": "string",
+            "title": "Value",
+            "description": "Contact point value (phone number, email, etc.)."
+          },
+          "use": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContactPointUse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Purpose of this contact point."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["system", "value"],
+        "title": "TelecomCreate"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": ["loc", "msg", "type"],
+        "title": "ValidationError"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Patients",
+      "description": "Operations for managing FHIR Patient resources — individuals receiving care. Supports create, read, update, list, and delete."
+    },
+    {
+      "name": "Practitioners",
+      "description": "Operations for managing FHIR Practitioner resources — healthcare providers such as physicians, nurses, and therapists. Supports create, read, update, list, and delete."
+    },
+    {
+      "name": "Encounters",
+      "description": "Operations for managing FHIR Encounter resources — clinical interactions between patients and providers (visits, admissions, telehealth). Supports create, read, update, list, and delete."
+    },
+    {
+      "name": "Appointments",
+      "description": "Operations for managing FHIR Appointment resources — scheduled healthcare events for patients and practitioners at a specific date and time. Supports create, read, update, list, and delete."
+    }
+  ]
+}

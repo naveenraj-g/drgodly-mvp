@@ -76,6 +76,7 @@ enum ReviewStatus {
 enum DoctorType {
     HUMAN
     INTAKE
+    AIDOCTOR
 }
 
 // ───────────────────────────

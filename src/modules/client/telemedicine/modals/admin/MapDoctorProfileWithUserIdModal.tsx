@@ -29,7 +29,7 @@ import { useAdminModalStore } from "../../stores/admin-modal-store";
 import { useEffect, useState } from "react";
 
 type UserOption = {
-  id: string;
+  userId: string;
   name: string;
   email: string;
   username: string | null;
@@ -52,7 +52,8 @@ export function MapDoctorProfileModal() {
     isError,
   } = useServerAction(getUserForDoctorProfileMapping, {
     onSuccess({ data }) {
-      setUsers(data);
+      console.log(data);
+      setUsers(data.members);
     },
     onError({ err }) {
       toast.error("Failed to load users", {
@@ -84,7 +85,7 @@ export function MapDoctorProfileModal() {
           description: err?.message,
         });
       },
-    }
+    },
   );
 
   function handleClose() {
@@ -136,7 +137,7 @@ export function MapDoctorProfileModal() {
                 </div>
               )}
               {users.map((u) => (
-                <SelectItem key={u.id} value={u.id}>
+                <SelectItem key={u.userId} value={u.userId}>
                   <div className="flex flex-col">
                     <span className="font-medium">
                       {u.name ?? u.username ?? "Unnamed User"}

@@ -149,5 +149,26 @@ export const telemedicineSidebarData = {
     //     },
     //   ],
     // },
+    {
+      title: "Application Admin",
+      items: [
+        {
+          title: "Dashboard",
+          url: "/bezs/telemedicine/admin",
+          icon: "layout-dashboard",
+        },
+        {
+          title: "Manage Doctors",
+          url: "/bezs/telemedicine/admin/manage-doctors",
+          icon: "hospital",
+        },
+        {
+          title: "Manage Doctor",
+          url: "/bezs/telemedicine/admin/manage-doctors/:type",
+          icon: "hospital",
+          visible: false,
+        },
+      ],
+    },
   ],
 };

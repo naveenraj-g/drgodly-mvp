@@ -144,6 +144,27 @@ export type TBookIntakeAppointmentUseCase = z.infer<
   typeof BookIntakeAppointmentUseCase
 >;
 
+export const BookConsultationAppointmentSchema = BookAppointmentSchema.omit({
+  virtualRoomId: true,
+  intakeId: true,
+}).extend(
+  z.object({
+    virtualConversation: z.any().nullable(),
+  }).shape
+);
+export type TBookConsultationAppointment = z.infer<
+  typeof BookConsultationAppointmentSchema
+>;
+
+export const BookConsultationAppointmentUseCase = z.object({
+  orgId: z.string(),
+  patientUserId: z.string(),
+  virtualConversation: z.any().nullable(),
+});
+export type TBookConsultationAppointmentUseCase = z.infer<
+  typeof BookConsultationAppointmentUseCase
+>;
+
 export const RescheduleAppointmentSchema = BookAppointmentSchema.pick({
   userId: true,
   orgId: true,

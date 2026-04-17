@@ -375,3 +375,10 @@ export const CreateDoctorByHPRidSchema = z.object({
     .min(1, "HPR ID is required"),
 });
 export type TCreateDoctorByHPRid = z.infer<typeof CreateDoctorByHPRidSchema>;
+
+
+export const SeedAgentDoctorsValidationSchema = z.object({
+  orgId: z.string({ required_error: "Organization ID is required." }),
+  createdBy: z.string({ required_error: "Creator ID is required." }),
+});
+export type TSeedAgentDoctorsValidation = z.infer<typeof SeedAgentDoctorsValidationSchema>;

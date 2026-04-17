@@ -77,23 +77,8 @@ function buildNavGroups(apps: ContextApp[]): NavGroupProps[] {
       .map((group) => ({
         title: group.label,
         items: group.children
-          .filter((child) => child.isVisible)
+          .filter((child) => child.type === "ITEM" && child.isVisible)
           .map((child) => {
-            if (child.type === "GROUP") {
-              // Nested sub-group → collapsible item with its children as sub-items
-              return {
-                title: child.label,
-                icon: child.icon ?? undefined,
-                items: child.children
-                  .filter((sub) => sub.isVisible)
-                  .map((sub) => ({
-                    title: sub.label,
-                    url: sub.href ?? "#",
-                    icon: sub.icon ?? undefined,
-                  })),
-              };
-            }
-            // Regular ITEM — may itself have visible sub-items
             const visibleSubs = child.children.filter((sub) => sub.isVisible);
             if (visibleSubs.length > 0) {
               return {
@@ -173,6 +158,7 @@ export function MenuBar(user: TUser) {
     return fetch(url, { credentials: "include" })
       .then((res) => res.json() as Promise<ContextResponse>)
       .then((data) => {
+        console.log(data);
         setAllApps(data.apps ?? []);
         setOrganizations(data.organizations ?? []);
         setActiveOrganizationId(data.activeOrganizationId ?? null);

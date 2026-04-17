@@ -38,6 +38,9 @@ export type Session = {
   permissions: string[];
   organizations: Organization[];
   activeOrganizationRoles: string[];
+  activeRoleId: string;
+  activeRole: string;
+  activeRoleRedirectUrl: string | null;
 };
 
 export type AuthResponse = {

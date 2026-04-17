@@ -1,6 +1,7 @@
 "use server";
 
-import { prismaMain, prismaTelemedicine } from "@/modules/server/prisma/prisma";
+import { prismaTelemedicine } from "@/modules/server/prisma/prisma";
+import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import z from "zod";
 import { createServerAction } from "zsa";
@@ -9,45 +10,34 @@ export const getUserForDoctorProfileMapping = createServerAction()
   .input(
     z.object({
       orgId: z.string().min(1),
-    })
+    }),
   )
   .handler(async ({ input }) => {
     const { orgId } = input;
 
     try {
-      // 1. Get doctor userIds from telemedicine DB
-      const doctors = await prismaTelemedicine.doctor.findMany({
-        where: { orgId },
-        select: { userId: true },
-      });
+      const hdrs = await headers();
+      const params = {
+        orgId: orgId,
+        rolename: "doctor",
+      };
 
-      const doctorUserIds = doctors
-        .map((d) => d.userId)
-        .filter((id): id is string => id !== null);
+      const queryParams = new URLSearchParams(params).toString();
+      const res = await fetch(
+        `${process.env.BETTER_AUTH_URL}/api/admin/org-members?${queryParams}`,
+        {
+          method: "GET",
+          headers: hdrs,
+        },
+      );
+      const data = await res.json();
 
-      // 2. Get users NOT in doctor table
-      const users = await prismaMain.user.findMany({
-        where: {
-          // currentOrgId: orgId,
-          role: "doctor",
-          id: {
-            notIn: doctorUserIds.length ? doctorUserIds : undefined,
-          },
-        },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          username: true,
-        },
-        orderBy: {
-          id: "asc",
-        },
-      });
-
-      return users;
+      if (!res.ok) {
+        throw new Error("Failed to fetch user for doctor profile mapping");
+      }
+      return data;
     } catch (err) {
-      throw new Error("Failed to fetch user for doctor profile mapping");
+      throw new Error((err as Error).message);
     }
   });
 
@@ -57,7 +47,7 @@ export const mapDoctorProfile = createServerAction()
       id: z.string().min(1),
       userId: z.string().min(1),
       orgId: z.string().min(1),
-    })
+    }),
   )
   .handler(async ({ input }) => {
     const { userId, orgId, id } = input;

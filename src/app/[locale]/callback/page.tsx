@@ -59,7 +59,7 @@ function CallbackContent() {
       }
     }
 
-    window.location.href = "/";
+    window.location.href = data.redirectUrl ?? "/";
   }
 
   if (error) {

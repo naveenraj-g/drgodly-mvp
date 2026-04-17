@@ -11,7 +11,6 @@ import { TanstackTableColumnSorting } from "@/modules/shared/components/table/ta
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import {
-  Edit,
   Ellipsis,
   PencilLine,
   Trash2,
@@ -24,8 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 export const doctorsProfileListTableColumn = (
-  t: (key: string) => string,
-  orgId?: string | null
+  orgId?: string | null,
 ): ColumnDef<TDoctor>[] => [
   {
     header: ({ column }) => {
@@ -57,7 +55,9 @@ export const doctorsProfileListTableColumn = (
       return (
         <Badge
           className={cn(
-            isCompleted ? "bg-green-600 text-white" : "bg-orange-500 text-white"
+            isCompleted
+              ? "bg-green-600 text-white"
+              : "bg-orange-500 text-white",
           )}
         >
           {isCompleted ? "Completed" : "Pending"}
@@ -115,7 +115,7 @@ export const doctorsProfileListTableColumn = (
 
       return (
         <TanstackTableColumnSorting
-          label={t("table.columns.createdAt")}
+          label="Created At"
           column={column}
           isSorted={isSorted}
         />
@@ -146,7 +146,7 @@ export const doctorsProfileListTableColumn = (
                   className="flex items-center gap-2"
                 >
                   <PencilLine />
-                  {t("table.actions.edit")}
+                  Edit
                 </Link>
               </DropdownMenuItem>
               {/* <DropdownMenuSeparator /> */}
@@ -161,7 +161,7 @@ export const doctorsProfileListTableColumn = (
               >
                 <div className="flex items-center gap-2">
                   <Trash2 />
-                  {t("table.actions.delete")}
+                  Delete
                 </div>
                 <TriangleAlert className="text-rose-600" />
               </DropdownMenuItem>

@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import bezsConfig from "../../../../../bezs.json";
+import { getServerSession } from "@/modules/server/auth/get-session";
 
 export async function POST(request: Request) {
   const { code, code_verifier, redirect_uri } = await request.json();
+  const session = await getServerSession();
 
   const clientId = process.env.NEXT_PUBLIC_BETTER_AUTH_CLIENT_ID;
   const clientSecret = process.env.BETTER_AUTH_CLIENT_SECRET;
@@ -53,5 +55,8 @@ export async function POST(request: Request) {
     );
   }
 
-  return NextResponse.json(tokenData);
+  return NextResponse.json({
+    ...tokenData,
+    redirectUrl: session?.session.activeRoleRedirectUrl,
+  });
 }

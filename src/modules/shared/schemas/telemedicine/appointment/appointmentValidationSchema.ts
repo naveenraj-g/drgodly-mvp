@@ -38,6 +38,15 @@ export type TBookIntakeAppointmentValidation = z.infer<
   typeof BookIntakeAppointmentValidationSchema
 >;
 
+export const BookConsultationAppointmentValidationSchema = z.object({
+  orgId: z.string({ required_error: "Organization ID is required." }),
+  patientUserId: z.string({ required_error: "Patient user ID is required." }),
+  virtualConversation: z.any().nullable(),
+});
+export type TBookConsultationAppointmentValidation = z.infer<
+  typeof BookConsultationAppointmentValidationSchema
+>;
+
 export const GetAppointmentValidationSchema = IdSchema.pick({
   userId: true,
   orgId: true,

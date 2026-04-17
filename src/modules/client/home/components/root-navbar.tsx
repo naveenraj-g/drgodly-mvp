@@ -103,9 +103,8 @@ const RootNavBarPage = ({
                   size="sm"
                   className="rounded-full px-6 shadow-md hover:shadow-lg transition-all"
                   onClick={() => {
-                    const role = session?.user.role;
                     const url =
-                      session?.roleBasedRedirectUrls?.[role] ?? "/bezs";
+                      session?.session?.activeRoleRedirectUrl ?? "/bezs";
                     router.push(url);
                   }}
                 >

@@ -13,13 +13,13 @@ export class DashboardRepository implements IDashboardRepository {
   constructor() {}
 
   async getDashboardAppointmentsData(
-    payload: TGetDashboardAppointmentsDataPayload
+    payload: TGetDashboardAppointmentsDataPayload,
   ): Promise<TAppointments> {
     const startTimeMs = Date.now();
     const operationId = randomUUID();
 
     logOperation("start", {
-      name: "getPatientDashboardDataRepository",
+      name: "getDashboardAppointmentsDataRepository",
       startTimeMs,
       context: { operationId },
     });
@@ -82,15 +82,14 @@ export class DashboardRepository implements IDashboardRepository {
           });
 
           return appointments;
-        }
+        },
       );
 
-      const parsedData = await DashboardAppointmentsSchema.parseAsync(
-        dashboardData
-      );
+      const parsedData =
+        await DashboardAppointmentsSchema.parseAsync(dashboardData);
 
       logOperation("success", {
-        name: "getPatientDashboardDataRepository",
+        name: "getDashboardAppointmentsDataRepository",
         startTimeMs,
         context: { operationId },
       });
@@ -98,7 +97,7 @@ export class DashboardRepository implements IDashboardRepository {
       return parsedData;
     } catch (error) {
       logOperation("error", {
-        name: "getPatientDashboardDataRepository",
+        name: "getDashboardAppointmentsDataRepository",
         startTimeMs,
         err: error,
         context: { operationId },

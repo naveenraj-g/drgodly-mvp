@@ -12,6 +12,7 @@ import {
   TAppointment,
   TAppointments,
   TBookAppointment,
+  TBookConsultationAppointment,
   TBookIntakeAppointment,
   TCancelAppointment,
   TGetAppointmentByIds,
@@ -457,6 +458,65 @@ export class AppointmentRepository implements IAppointmentRepository {
         context: {
           operationId,
         },
+      });
+
+      if (error instanceof Error) {
+        throw new OperationError(error.message, { cause: error });
+      }
+
+      throw new OperationError("An unexpected error occurred", {
+        cause: error,
+      });
+    }
+  }
+
+  async bookConsultationAppointment(
+    appointmentData: TBookConsultationAppointment
+  ): Promise<TIntakeAppointment> {
+    const startTimeMs = Date.now();
+    const operationId = randomUUID();
+
+    logOperation("start", {
+      name: "bookConsultationAppointment",
+      startTimeMs,
+      context: { operationId },
+    });
+
+    const { userId, orgId, virtualConversation, ...rest } = appointmentData;
+
+    try {
+      const appointment = await prismaTelemedicine.appointment.create({
+        data: {
+          ...rest,
+          orgId,
+          createdBy: userId,
+          updatedBy: userId,
+          appointmentActual: {
+            create: {
+              orgId,
+              virtualConversation,
+            },
+          },
+        },
+        select: { id: true },
+      });
+
+      const data = await IntakeAppointmentSchema.parseAsync(appointment);
+
+      logOperation("success", {
+        name: "bookConsultationAppointment",
+        startTimeMs,
+        context: { operationId },
+      });
+
+      return data;
+    } catch (error) {
+      logOperation("error", {
+        name: "bookConsultationAppointment",
+        startTimeMs,
+        err: error,
+        errName: "UnknownRepositoryError",
+        context: { operationId },
       });
 
       if (error instanceof Error) {

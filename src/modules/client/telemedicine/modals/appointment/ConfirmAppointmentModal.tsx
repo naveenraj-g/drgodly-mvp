@@ -23,7 +23,7 @@ export const ConfirmAppointmentModal = () => {
   const modalType = useAppointmentModalStore((state) => state.type);
   const isOpen = useAppointmentModalStore((state) => state.isOpen);
   const appointment = useAppointmentModalStore(
-    (state) => state.appointmentData
+    (state) => state.appointmentData,
   );
 
   const isModalOpen = isOpen && modalType === "confirmAppointment";
@@ -41,7 +41,7 @@ export const ConfirmAppointmentModal = () => {
   });
 
   async function handleConfirmAppointment() {
-    if (!session || !session.data?.user.currentOrgId) {
+    if (!session || !session.data?.session.activeOrganizationId) {
       return;
     }
 
@@ -51,7 +51,7 @@ export const ConfirmAppointmentModal = () => {
     }
 
     await execute({
-      orgId: session.data?.user.currentOrgId,
+      orgId: session.data.session.activeOrganizationId,
       userId: session.data?.user.id,
       appointmentId: appointment.id,
     });
