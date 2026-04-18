@@ -82,7 +82,7 @@ export const DashboardAppointmentSchema = z.object({
   priceCurrency: z.string().nullable(),
   note: z.string().nullable(),
 
-  appointmentMode: z.enum(["VIRTUAL", "INPERSON"]),
+  appointmentMode: z.enum(["VIRTUAL", "INPERSON", "INTAKE"]),
   virtualRoomId: z.string().nullable(),
 
   cancelReason: z.string().nullable(),
@@ -90,6 +90,10 @@ export const DashboardAppointmentSchema = z.object({
 
   isPatientDeleted: z.boolean(),
   isDoctorDeleted: z.boolean(),
+
+  /* Follow-up/intake links */
+  intakeMapping: z.object({ followUpAppointmentId: z.string() }).nullable().optional(),
+  followUpMapping: z.object({ intakeAppointmentId: z.string() }).nullable().optional(),
 });
 
 export const DashboardAppointmentsSchema = z.array(DashboardAppointmentSchema);

@@ -168,9 +168,6 @@ export class AppointmentRepository implements IAppointmentRepository {
           patientId,
           orgId,
           isPatientDeleted: false,
-          appointmentMode: {
-            not: "INTAKE",
-          },
         },
         orderBy: [{ appointmentDate: "asc" }, { time: "asc" }],
         omit: {
@@ -184,8 +181,48 @@ export class AppointmentRepository implements IAppointmentRepository {
               createdBy: true,
               updatedAt: true,
               updatedBy: true,
-              intakeConversation: true,
-              virtualConversation: true,
+            },
+          },
+          intakeMapping: {
+            select: {
+              followUpAppointmentId: true,
+              followUpAppointment: {
+                select: {
+                  id: true,
+                  type: true,
+                  status: true,
+                  appointmentDate: true,
+                  time: true,
+                  appointmentMode: true,
+                  doctor: {
+                    select: {
+                      userId: true,
+                      personal: { select: { fullName: true } },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          followUpMapping: {
+            select: {
+              intakeAppointmentId: true,
+              intakeAppointment: {
+                select: {
+                  id: true,
+                  type: true,
+                  status: true,
+                  appointmentDate: true,
+                  time: true,
+                  appointmentMode: true,
+                  doctor: {
+                    select: {
+                      userId: true,
+                      personal: { select: { fullName: true } },
+                    },
+                  },
+                },
+              },
             },
           },
           patient: {

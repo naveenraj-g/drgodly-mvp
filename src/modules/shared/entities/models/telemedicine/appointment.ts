@@ -49,6 +49,29 @@ const AppointmentActual = z.object({
   virtualConversation: z.any().nullable(),
 });
 
+const LinkedAppointmentSnapshotSchema = z.object({
+  id: z.string(),
+  type: z.string(),
+  status: AppointmentStatusEnum,
+  appointmentDate: z.date(),
+  time: z.string(),
+  appointmentMode: ZodEAppointmentMode,
+  doctor: z.object({
+    userId: z.string().nullable(),
+    personal: z.object({ fullName: z.string() }).nullable(),
+  }).nullable(),
+});
+
+const IntakeMappingSchema = z.object({
+  followUpAppointmentId: z.string(),
+  followUpAppointment: LinkedAppointmentSnapshotSchema.nullable().optional(),
+}).nullable();
+
+const FollowUpMappingSchema = z.object({
+  intakeAppointmentId: z.string(),
+  intakeAppointment: LinkedAppointmentSnapshotSchema.nullable().optional(),
+}).nullable();
+
 // --- Main Appointment Schema ---
 export const AppointmentSchema = z.object({
   id: z.string(),
@@ -67,6 +90,8 @@ export const AppointmentSchema = z.object({
   createdAt: z.date(),
   updatedAt: z.date(),
   appointmentActual: AppointmentActual.nullable(),
+  intakeMapping: IntakeMappingSchema.optional(),
+  followUpMapping: FollowUpMappingSchema.optional(),
   doctor: DoctorSchema,
   patient: PatientSchema,
 });
