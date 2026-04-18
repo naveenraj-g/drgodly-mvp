@@ -3,6 +3,10 @@ import type {
   FhirPractitionerCreatePayload,
   FhirPractitionerPatchPayload,
   FhirPractitionerResponse,
+  FhirPractitionerTelecomPayload,
+  FhirPractitionerAddressPayload,
+  FhirPractitionerIdentifierPayload,
+  FhirPractitionerQualificationPayload,
 } from "./types";
 
 /**
@@ -45,5 +49,65 @@ export async function deleteFhirPractitioner(
   return fhirRequest<void>(
     "DELETE",
     `/api/fhir/v1/practitioners/${fhirPractitionerId}`,
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Sub-resource endpoints (require an existing FHIR practitioner id)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Adds a contact point (phone / email / etc.) to a Practitioner.
+ */
+export async function addFhirPractitionerTelecom(
+  fhirPractitionerId: string,
+  payload: FhirPractitionerTelecomPayload,
+): Promise<FhirPractitionerResponse> {
+  return fhirRequest<FhirPractitionerResponse>(
+    "POST",
+    `/api/fhir/v1/practitioners/${fhirPractitionerId}/telecom`,
+    payload,
+  );
+}
+
+/**
+ * Adds an address to a Practitioner.
+ */
+export async function addFhirPractitionerAddress(
+  fhirPractitionerId: string,
+  payload: FhirPractitionerAddressPayload,
+): Promise<FhirPractitionerResponse> {
+  return fhirRequest<FhirPractitionerResponse>(
+    "POST",
+    `/api/fhir/v1/practitioners/${fhirPractitionerId}/addresses`,
+    payload,
+  );
+}
+
+/**
+ * Adds a business identifier (e.g. NPI, council registration number) to a Practitioner.
+ */
+export async function addFhirPractitionerIdentifier(
+  fhirPractitionerId: string,
+  payload: FhirPractitionerIdentifierPayload,
+): Promise<FhirPractitionerResponse> {
+  return fhirRequest<FhirPractitionerResponse>(
+    "POST",
+    `/api/fhir/v1/practitioners/${fhirPractitionerId}/identifiers`,
+    payload,
+  );
+}
+
+/**
+ * Adds a professional qualification (degree, certification, licence) to a Practitioner.
+ */
+export async function addFhirPractitionerQualification(
+  fhirPractitionerId: string,
+  payload: FhirPractitionerQualificationPayload,
+): Promise<FhirPractitionerResponse> {
+  return fhirRequest<FhirPractitionerResponse>(
+    "POST",
+    `/api/fhir/v1/practitioners/${fhirPractitionerId}/qualifications`,
+    payload,
   );
 }

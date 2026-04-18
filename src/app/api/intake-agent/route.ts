@@ -4,10 +4,11 @@ import { headers } from "next/headers";
 async function getAgentToken(): Promise<string> {
   const hdrs = await headers();
 
-  const res = await fetch(
-    `${process.env.BETTER_AUTH_URL}/api/auth/token`,
-    { method: "GET", headers: hdrs, cache: "no-store" },
-  );
+  const res = await fetch(`${process.env.BETTER_AUTH_URL}/api/auth/token`, {
+    method: "GET",
+    headers: hdrs,
+    cache: "no-store",
+  });
 
   if (!res.ok) {
     throw new Error(`Failed to fetch agent token: ${res.status}`);
@@ -36,7 +37,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const upstream = await fetch(`${agentUrl}/api/agent/chat`, {
+    const upstream = await fetch(`${agentUrl}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -73,6 +74,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     console.error("[intake-agent] proxy error:", err);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }

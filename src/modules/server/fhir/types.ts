@@ -321,6 +321,48 @@ export interface FhirQuestionnaireResponseResponse {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Practitioner sub-resource payloads
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type TelecomSystem = "phone" | "fax" | "email" | "pager" | "url" | "sms" | "other";
+export type TelecomUse = "home" | "work" | "temp" | "old" | "mobile";
+export type AddressUse = "home" | "work" | "temp" | "old" | "billing";
+export type AddressType = "postal" | "physical" | "both";
+export type IdentifierUse = "usual" | "official" | "temp" | "secondary" | "old";
+
+export interface FhirPractitionerTelecomPayload {
+  system: TelecomSystem;
+  value: string;
+  use?: TelecomUse | null;
+  rank?: number | null;
+}
+
+export interface FhirPractitionerAddressPayload {
+  use?: AddressUse | null;
+  type?: AddressType | null;
+  text?: string | null;
+  line?: string | null; // comma-separated lines
+  city?: string | null;
+  district?: string | null;
+  state?: string | null;
+  postal_code?: string | null;
+  country?: string | null;
+}
+
+export interface FhirPractitionerIdentifierPayload {
+  value: string;
+  system?: string | null;
+  use?: IdentifierUse | null;
+}
+
+export interface FhirPractitionerQualificationPayload {
+  code_text?: string | null;   // human-readable qualification name, e.g. "MD"
+  issuer?: string | null;      // issuing organization display name
+  identifier_system?: string | null;
+  identifier_value?: string | null;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Helper: composite result for appointment create flow
 // ─────────────────────────────────────────────────────────────────────────────
 

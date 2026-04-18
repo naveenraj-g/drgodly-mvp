@@ -1,3 +1,4 @@
+import TokenButton from "@/components/TokenButton";
 import { redirect } from "@/i18n/navigation";
 import { getServerSession } from "@/modules/server/auth/get-session";
 import { getLocale } from "next-intl/server";
@@ -21,6 +22,7 @@ const BezsPage = async () => {
   return (
     <div className="h-full p-4">
       <h1>Bezs</h1>
+      <TokenButton />
     </div>
   );
 };

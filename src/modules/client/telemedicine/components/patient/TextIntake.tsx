@@ -61,8 +61,13 @@ function TextIntake({ user }: TProps) {
     ): { token: string | null; done: boolean; sessionId?: string } => {
       const line = raw.startsWith("data:") ? raw.slice(5).trim() : raw.trim();
 
-      if (!line || line === "[DONE]") return { token: null, done: line === "[DONE]" };
-      if (raw.startsWith("event:") || raw.startsWith("id:") || raw.startsWith("retry:"))
+      if (!line || line === "[DONE]")
+        return { token: null, done: line === "[DONE]" };
+      if (
+        raw.startsWith("event:") ||
+        raw.startsWith("id:") ||
+        raw.startsWith("retry:")
+      )
         return { token: null, done: false };
 
       try {
@@ -86,10 +91,18 @@ function TextIntake({ user }: TProps) {
 
         // Generic { type: "token"|"message"|"chunk", content/data.content: string }
         if (
-          type === "token" || type === "message" ||
-          type === "chunk" || type === "stream" || type === "text"
+          type === "token" ||
+          type === "message" ||
+          type === "chunk" ||
+          type === "stream" ||
+          type === "text"
         ) {
-          const text = data?.content ?? parsed.content ?? parsed.text ?? parsed.delta ?? "";
+          const text =
+            data?.content ??
+            parsed.content ??
+            parsed.text ??
+            parsed.delta ??
+            "";
           return { token: String(text), done: false };
         }
 
@@ -101,8 +114,10 @@ function TextIntake({ user }: TProps) {
         // OpenAI delta: { choices: [{ delta: { content: "..." } }] }
         if (Array.isArray(parsed.choices)) {
           const content = parsed.choices[0]?.delta?.content;
-          if (content !== undefined) return { token: String(content), done: false };
-          if (parsed.choices[0]?.finish_reason) return { token: null, done: true };
+          if (content !== undefined)
+            return { token: String(content), done: false };
+          if (parsed.choices[0]?.finish_reason)
+            return { token: null, done: true };
         }
 
         // Flat fallback
@@ -204,7 +219,7 @@ function TextIntake({ user }: TProps) {
         abortRef.current = null;
       }
     },
-    [isStreaming, sessionId, parseChunkLine]
+    [isStreaming, sessionId, parseChunkLine],
   );
 
   const cancelStream = () => abortRef.current?.abort();
@@ -231,7 +246,7 @@ function TextIntake({ user }: TProps) {
   };
 
   return (
-    <div className="flex flex-col gap-3 w-full overflow-hidden h-[calc(100dvh-144px)]">
+    <div className="flex flex-col gap-3 w-full overflow-hidden h-[calc(100dvh-152px)]">
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-3 rounded-2xl border bg-card shadow-sm">
         <div
@@ -243,7 +258,9 @@ function TextIntake({ user }: TProps) {
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-sm leading-none">Bezs AI</p>
-          <p className="text-xs text-muted-foreground mt-0.5">Intake Assistant</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Intake Assistant
+          </p>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
           <span

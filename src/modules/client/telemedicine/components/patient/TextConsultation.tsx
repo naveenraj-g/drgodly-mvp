@@ -9,8 +9,8 @@ import { toast } from "sonner";
 import { useServerAction } from "zsa-react";
 import { bookConsultationAppointment } from "../../server-actions/appointment-action";
 import { TSharedUser } from "@/modules/shared/types";
-import { usePatientModalStore } from "../../stores/patient-modal-store";
 import ConversationChat from "./chat/Conversation";
+import { useRouter } from "@/i18n/navigation";
 
 type TMessageItem = {
   key: string;
@@ -30,8 +30,7 @@ interface TProps {
 }
 
 function TextConsultation({ user }: TProps) {
-  const openModal = usePatientModalStore((state) => state.onOpen);
-
+  const router = useRouter();
   const [messages, setMessages] = useState<TMessageItem[]>([]);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [input, setInput] = useState("");
@@ -41,11 +40,11 @@ function TextConsultation({ user }: TProps) {
   const liveTextRef = useRef("");
 
   const { execute, isPending } = useServerAction(bookConsultationAppointment, {
-    onSuccess({ data }) {
+    onSuccess() {
       toast.success("Consultation session completed.", {
         description: "Your consultation has been saved.",
       });
-      openModal({ type: "intakeComplete", intakeAppointmentId: data.id });
+      router.push("/bezs/telemedicine/patient/appointments");
     },
     onError() {
       toast.error("Something went wrong!", {

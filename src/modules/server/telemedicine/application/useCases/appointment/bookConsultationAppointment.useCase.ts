@@ -10,18 +10,28 @@ const get24HrTime = () => {
 };
 
 export async function bookConsultationAppointmentUseCase(
-  createData: TBookConsultationAppointmentUseCase
+  createData: TBookConsultationAppointmentUseCase,
 ): Promise<TIntakeAppointment> {
-  const appointmentRepository = getTelemedicineInjection("IAppointmentRepository");
-  const idResolverRepository = getTelemedicineInjection("IIdResolverRepository");
+  const appointmentRepository = getTelemedicineInjection(
+    "IAppointmentRepository",
+  );
+  const idResolverRepository = getTelemedicineInjection(
+    "IIdResolverRepository",
+  );
 
   const { patientUserId, ...rest } = createData;
 
   if (!rest.orgId) throw new Error("Organization is required");
 
   const [doctorId, patientId] = await Promise.all([
-    idResolverRepository.resolveDoctorIdByUserIdAndOrgId("INTAKE", rest.orgId),
-    idResolverRepository.resolvePatientIdByUserIdAndOrgId(patientUserId, rest.orgId),
+    idResolverRepository.resolveDoctorIdByUserIdAndOrgId(
+      "AIDOCTOR",
+      rest.orgId,
+    ),
+    idResolverRepository.resolvePatientIdByUserIdAndOrgId(
+      patientUserId,
+      rest.orgId,
+    ),
   ]);
 
   if (!doctorId) throw new Error("Doctor not found");
