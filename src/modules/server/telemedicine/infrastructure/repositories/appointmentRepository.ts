@@ -109,6 +109,55 @@ export class AppointmentRepository implements IAppointmentRepository {
               },
             },
           },
+          intakeMapping: {
+            select: {
+              followUpAppointmentId: true,
+              followUpAppointment: {
+                select: {
+                  id: true,
+                  type: true,
+                  status: true,
+                  appointmentDate: true,
+                  time: true,
+                  appointmentMode: true,
+                  doctor: {
+                    select: {
+                      userId: true,
+                      personal: { select: { fullName: true } },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          followUpMapping: {
+            select: {
+              intakeAppointmentId: true,
+              intakeAppointment: {
+                select: {
+                  id: true,
+                  type: true,
+                  status: true,
+                  appointmentDate: true,
+                  time: true,
+                  appointmentMode: true,
+                  appointmentActual: {
+                    select: {
+                      intakeConversation: true,
+                      intakeReport: true,
+                      virtualConversation: true,
+                    },
+                  },
+                  doctor: {
+                    select: {
+                      userId: true,
+                      personal: { select: { fullName: true } },
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       });
 

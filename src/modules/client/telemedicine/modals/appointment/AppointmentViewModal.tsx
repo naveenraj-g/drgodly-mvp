@@ -23,6 +23,11 @@ import {
   Brain,
   ArrowRight,
   LinkIcon,
+  ClipboardList,
+  AlertCircle,
+  ListChecks,
+  TriangleAlert,
+  FileText,
 } from "lucide-react";
 import { format } from "date-fns";
 import { useSession } from "@/modules/client/auth/betterauth/auth-client";
@@ -114,6 +119,157 @@ function safeParseMessages(raw: unknown): MessageItem[] {
   }
 }
 
+interface IntakeReport {
+  summary?: string;
+  subjective?: {
+    chief_complaint?: string;
+    history_of_present_illness?: string;
+    associated_symptoms?: string[];
+  };
+  objective?: {
+    observations?: string[];
+  };
+  assessment?: {
+    possible_conditions?: string[];
+    clinical_reasoning?: string;
+  };
+  plan?: {
+    next_steps?: string[];
+    when_to_seek_care?: string;
+  };
+}
+
+function safeParseReport(raw: unknown): IntakeReport | null {
+  if (raw == null) return null;
+  if (typeof raw === "object" && !Array.isArray(raw)) return raw as IntakeReport;
+  if (typeof raw === "string") {
+    try { return JSON.parse(raw) as IntakeReport; } catch { return null; }
+  }
+  return null;
+}
+
+function IntakeReportView({ report }: { report: IntakeReport }) {
+  return (
+    <div className="space-y-4">
+      {report.summary && (
+        <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-primary mb-1">Overview</p>
+          <p className="text-sm text-foreground leading-relaxed">{report.summary}</p>
+        </div>
+      )}
+
+      {report.subjective && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-1.5">
+            <ClipboardList className="size-3.5 text-primary" />
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Subjective</p>
+          </div>
+          {report.subjective.chief_complaint && (
+            <div>
+              <p className="text-xs text-muted-foreground mb-0.5">Chief Complaint</p>
+              <p className="text-sm text-foreground">{report.subjective.chief_complaint}</p>
+            </div>
+          )}
+          {report.subjective.history_of_present_illness && (
+            <div>
+              <p className="text-xs text-muted-foreground mb-0.5">History of Present Illness</p>
+              <p className="text-sm text-foreground leading-relaxed">{report.subjective.history_of_present_illness}</p>
+            </div>
+          )}
+          {report.subjective.associated_symptoms && report.subjective.associated_symptoms.length > 0 && (
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">Associated Symptoms</p>
+              <div className="flex flex-wrap gap-1.5">
+                {report.subjective.associated_symptoms.map((s, i) => (
+                  <Badge key={i} variant="secondary" className="text-xs font-normal">{s}</Badge>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {report.objective?.observations && report.objective.observations.length > 0 && (
+        <>
+          <Separator />
+          <div className="space-y-2">
+            <div className="flex items-center gap-1.5">
+              <Stethoscope className="size-3.5 text-primary" />
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Objective</p>
+            </div>
+            <ul className="space-y-1">
+              {report.objective.observations.map((obs, i) => (
+                <li key={i} className="text-sm text-foreground flex gap-2">
+                  <span className="text-muted-foreground mt-0.5">•</span>{obs}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </>
+      )}
+
+      {report.assessment && (
+        <>
+          <Separator />
+          <div className="space-y-2">
+            <div className="flex items-center gap-1.5">
+              <AlertCircle className="size-3.5 text-primary" />
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Assessment</p>
+            </div>
+            {report.assessment.possible_conditions && report.assessment.possible_conditions.length > 0 && (
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Possible Conditions</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {report.assessment.possible_conditions.map((c, i) => (
+                    <Badge key={i} className="text-xs font-normal bg-amber-100 text-amber-800 border-amber-200 hover:bg-amber-100">{c}</Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+            {report.assessment.clinical_reasoning && (
+              <div>
+                <p className="text-xs text-muted-foreground mb-0.5">Clinical Reasoning</p>
+                <p className="text-sm text-foreground leading-relaxed">{report.assessment.clinical_reasoning}</p>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      {report.plan && (
+        <>
+          <Separator />
+          <div className="space-y-2">
+            <div className="flex items-center gap-1.5">
+              <ListChecks className="size-3.5 text-primary" />
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Plan</p>
+            </div>
+            {report.plan.next_steps && report.plan.next_steps.length > 0 && (
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Next Steps</p>
+                <ol className="space-y-1 list-decimal list-inside">
+                  {report.plan.next_steps.map((step, i) => (
+                    <li key={i} className="text-sm text-foreground leading-relaxed">{step}</li>
+                  ))}
+                </ol>
+              </div>
+            )}
+            {report.plan.when_to_seek_care && (
+              <div className="rounded-md border border-amber-200 bg-amber-50 p-3 flex gap-2">
+                <TriangleAlert className="size-4 text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs font-medium text-amber-800 mb-0.5">When to Seek Care</p>
+                  <p className="text-xs text-amber-700 leading-relaxed">{report.plan.when_to_seek_care}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 // ── modal ────────────────────────────────────────────────────────────────────
 
 export function AppointmentViewModal() {
@@ -151,9 +307,10 @@ export function AppointmentViewModal() {
 
   const intakeMessages = safeParseMessages(actual?.intakeConversation);
   const consultationMessages = safeParseMessages(actual?.virtualConversation);
-  const intakeReport = actual?.intakeReport;
+  const intakeReport = safeParseReport(actual?.intakeReport);
 
   const hasConversation = intakeMessages.length > 0 || consultationMessages.length > 0;
+  const hasAiData = hasConversation || intakeReport != null;
   const isFollowUp = !!appointment.followUpMapping;
   const hasFollowUp = !!appointment.intakeMapping;
 
@@ -305,23 +462,24 @@ export function AppointmentViewModal() {
           </div>
         )}
 
-        {/* Conversation / Intake Report */}
-        {hasConversation && (
+        {/* AI Data: Intake Report + Conversations */}
+        {hasAiData && (
           <>
             <Separator className="my-2" />
             <div className="space-y-4">
-              <ConversationViewer messages={intakeMessages} title="Intake Conversation" />
-              <ConversationViewer messages={consultationMessages} title="Consultation Conversation" />
               {intakeReport && (
-                <div className="space-y-2">
-                  <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">Intake Report</p>
-                  <div className="bg-muted/40 rounded-xl border p-4 text-sm whitespace-pre-wrap">
-                    {typeof intakeReport === "string"
-                      ? intakeReport
-                      : JSON.stringify(intakeReport, null, 2)}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <FileText className="size-4 text-primary" />
+                    <p className="text-sm font-semibold">Intake Report</p>
+                  </div>
+                  <div className="rounded-xl border bg-muted/30 p-4">
+                    <IntakeReportView report={intakeReport} />
                   </div>
                 </div>
               )}
+              <ConversationViewer messages={intakeMessages} title="Intake Conversation" />
+              <ConversationViewer messages={consultationMessages} title="Consultation Conversation" />
             </div>
           </>
         )}
