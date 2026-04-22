@@ -1,21 +1,59 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { FileText, AlertTriangle } from "lucide-react";
-import { IntakeData } from "@/modules/client/telemedicine/datas/doctor-dashboard";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { FileText, MessageSquare, FileSearch } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RiExpandHorizontalLine } from "react-icons/ri";
 import { CgCompress } from "react-icons/cg";
 import ActionTooltipProvider from "@/modules/shared/providers/action-tooltip-provider";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { TAppointment } from "@/modules/shared/entities/models/telemedicine/appointment";
 
 interface IntakeInsightsProps {
-  intake: IntakeData;
+  appointment: TAppointment;
 }
 
-export const IntakeInsights = ({ intake }: IntakeInsightsProps) => {
+interface ConversationMessage {
+  key: string;
+  from: "user" | "assistant";
+  content?: string;
+  versions?: { id: string; content: string }[];
+}
+
+function safeParseMessages(raw: unknown): ConversationMessage[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.filter(
+    (m): m is ConversationMessage =>
+      m != null && typeof m === "object" && "from" in m,
+  );
+}
+
+function getMessageContent(msg: ConversationMessage): string {
+  if (msg.content) return msg.content;
+  if (msg.versions && msg.versions.length > 0)
+    return msg.versions[0].content ?? "";
+  return "";
+}
+
+export const IntakeInsights = ({ appointment }: IntakeInsightsProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+
+  const intakeConversationRaw =
+    appointment.followUpMapping?.intakeAppointment?.appointmentActual
+      ?.intakeConversation ?? null;
+
+  const messages = safeParseMessages(intakeConversationRaw);
+  const hasIntakeData = messages.length > 0;
+
+  const lastAssistantMsg = [...messages]
+    .reverse()
+    .find((m) => m.from === "assistant");
+  const summaryText = lastAssistantMsg
+    ? getMessageContent(lastAssistantMsg)
+    : null;
 
   return (
     <Card className={cn(isExpanded ? "col-span-2" : "col-auto")}>
@@ -28,7 +66,7 @@ export const IntakeInsights = ({ intake }: IntakeInsightsProps) => {
           <Button
             size="sm"
             variant="outline"
-            onClick={() => setIsExpanded((prevState) => !prevState)}
+            onClick={() => setIsExpanded((prev) => !prev)}
           >
             {isExpanded ? (
               <CgCompress className="size-6 text-muted-foreground" />
@@ -38,76 +76,74 @@ export const IntakeInsights = ({ intake }: IntakeInsightsProps) => {
           </Button>
         </ActionTooltipProvider>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div>
-          <h4 className="font-medium text-foreground mb-2 flex items-center gap-2">
-            Symptoms
-          </h4>
-          <div className="flex flex-wrap gap-2">
-            {intake.symptoms.map((symptom, idx) => (
-              <Badge key={idx} variant="outline" className="bg-muted">
-                {symptom}
-              </Badge>
-            ))}
+
+      <CardContent>
+        {!hasIntakeData ? (
+          <div className="flex flex-col items-center justify-center py-10 gap-3 text-muted-foreground">
+            <FileSearch className="size-10 opacity-40" />
+            <p className="text-sm">No intake data for this appointment.</p>
           </div>
-        </div>
+        ) : (
+          <Tabs defaultValue="summary" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="summary" className="flex items-center gap-1">
+                <FileText className="h-3 w-3" />
+                Summary
+              </TabsTrigger>
+              <TabsTrigger
+                value="conversation"
+                className="flex items-center gap-1"
+              >
+                <MessageSquare className="h-3 w-3" />
+                Conversation
+              </TabsTrigger>
+            </TabsList>
 
-        <Separator />
+            <TabsContent value="summary" className="mt-4">
+              {summaryText ? (
+                <div className="rounded-md bg-muted p-4 text-sm text-foreground whitespace-pre-wrap leading-relaxed">
+                  {summaryText}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground py-6 text-center">
+                  No summary available.
+                </p>
+              )}
+            </TabsContent>
 
-        <div>
-          <h4 className="font-medium text-foreground mb-2">Medical History</h4>
-          <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-            {intake.medicalHistory.map((item, idx) => (
-              <li key={idx}>{item}</li>
-            ))}
-          </ul>
-        </div>
-
-        <Separator />
-
-        <div>
-          <h4 className="font-medium text-foreground mb-2">
-            Current Medications
-          </h4>
-          <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-            {intake.currentMedications.map((med, idx) => (
-              <li key={idx}>{med}</li>
-            ))}
-          </ul>
-        </div>
-
-        {intake.redFlags.length > 0 && (
-          <>
-            <Separator />
-            <div>
-              <h4 className="font-medium text-destructive mb-2 flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4" />
-                Red Flags
-              </h4>
-              <div className="flex flex-wrap gap-2">
-                {intake.redFlags.map((flag, idx) => (
-                  <Badge
-                    key={idx}
-                    className="bg-destructive text-destructive-foreground"
-                  >
-                    {flag}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          </>
+            <TabsContent value="conversation" className="mt-4">
+              <ScrollArea className="h-96 pr-3">
+                <div className="flex flex-col gap-3">
+                  {messages.map((msg) => {
+                    const text = getMessageContent(msg);
+                    if (!text) return null;
+                    const isUser = msg.from === "user";
+                    return (
+                      <div
+                        key={msg.key}
+                        className={cn(
+                          "flex",
+                          isUser ? "justify-end" : "justify-start",
+                        )}
+                      >
+                        <div
+                          className={cn(
+                            "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm",
+                            isUser
+                              ? "bg-primary text-primary-foreground rounded-tr-sm"
+                              : "bg-muted text-foreground rounded-tl-sm",
+                          )}
+                        >
+                          {text}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
+            </TabsContent>
+          </Tabs>
         )}
-
-        <Separator />
-
-        <div>
-          <h4 className="font-medium text-foreground mb-2">Patient Concerns</h4>
-          <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-            {intake.concerns.map((concern, idx) => (
-              <li key={idx}>{concern}</li>
-            ))}
-          </ul>
-        </div>
       </CardContent>
     </Card>
   );

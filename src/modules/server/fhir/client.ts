@@ -24,7 +24,7 @@ async function getFhirToken(): Promise<string> {
   const data = await res.json();
   // Better Auth JWT plugin returns { token: string }
   const token: string | undefined = data.token ?? data.jwt ?? data.access_token;
-  console.log(token);
+
   if (!token) {
     throw new Error(
       `FHIR auth token not found in response: ${JSON.stringify(data)}`,

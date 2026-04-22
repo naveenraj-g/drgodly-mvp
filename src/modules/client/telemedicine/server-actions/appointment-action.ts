@@ -10,6 +10,7 @@ import {
   getAppointmentForOnlineConsultationController,
   getAppointmentsForDoctorController,
   getAppointmentsForPatientController,
+  getDoctorDashboardAppointmentsController,
   rescheduleAppointmentController,
   TBookAppointmentControllerOutput,
   TBookConsultationAppointmentControllerOutput,
@@ -20,6 +21,7 @@ import {
   TGetAppointmentForOnlineConsultationControllerOutput,
   TGetAppointmentsForDoctorControllerOutput,
   TGetAppointmentsForPatientControllerOutput,
+  TGetDoctorDashboardAppointmentsControllerOutput,
   TRescheduleAppointmentControllerOutput,
 } from "@/modules/server/telemedicine/interface-adapters/controllers/appointment";
 import {
@@ -211,6 +213,18 @@ export const getDoctorAppointments = createServerAction()
       () => getAppointmentsForDoctorController(input),
       {
         operationErrorMessage: "Failed to get appointments.",
+      }
+    );
+  });
+
+export const getDoctorDashboardAppointments = createServerAction()
+  .input(GetAppointmentValidationSchema, { skipInputParsing: true })
+  .handler(async ({ input }) => {
+    return await withMonitoring<TGetDoctorDashboardAppointmentsControllerOutput>(
+      "getDoctorDashboardAppointments",
+      () => getDoctorDashboardAppointmentsController(input),
+      {
+        operationErrorMessage: "Failed to get dashboard appointments.",
       }
     );
   });

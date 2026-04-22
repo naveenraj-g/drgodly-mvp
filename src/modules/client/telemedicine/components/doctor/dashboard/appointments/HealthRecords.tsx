@@ -10,7 +10,7 @@ import { CgCompress } from "react-icons/cg";
 import { RiExpandHorizontalLine } from "@remixicon/react";
 
 interface HealthRecordsProps {
-  records: HealthRecord[];
+  records?: HealthRecord[];
 }
 
 export const HealthRecords = ({ records }: HealthRecordsProps) => {
@@ -42,6 +42,11 @@ export const HealthRecords = ({ records }: HealthRecordsProps) => {
         </ActionTooltipProvider>
       </CardHeader>
       <CardContent>
+        {!records || records.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-6 text-center">
+            No health records attached.
+          </p>
+        ) : (
         <div className="space-y-3">
           {records.map((record) => (
             <div
@@ -72,6 +77,7 @@ export const HealthRecords = ({ records }: HealthRecordsProps) => {
             </div>
           ))}
         </div>
+        )}
       </CardContent>
     </Card>
   );

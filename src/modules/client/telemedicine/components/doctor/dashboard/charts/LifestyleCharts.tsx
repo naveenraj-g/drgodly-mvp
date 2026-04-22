@@ -14,7 +14,7 @@ import { SleepChart } from "./sleepChart";
 import { ActivityChart } from "./activityChart";
 
 interface LifestyleChartsProps {
-  lifestyle: LifestyleData;
+  lifestyle?: LifestyleData;
 }
 
 export const LifestyleCharts = ({ lifestyle }: LifestyleChartsProps) => {
@@ -42,6 +42,11 @@ export const LifestyleCharts = ({ lifestyle }: LifestyleChartsProps) => {
         </ActionTooltipProvider>
       </CardHeader>
       <CardContent>
+        {!lifestyle ? (
+          <p className="text-sm text-muted-foreground py-6 text-center">
+            No lifestyle data available.
+          </p>
+        ) : (
         <Tabs defaultValue="heart-rate" className="w-full">
           <TabsList className="grid w-full h-fit grid-cols-2 sm:grid-cols-4">
             <TabsTrigger value="heart-rate" className="flex items-center gap-1">
@@ -78,6 +83,7 @@ export const LifestyleCharts = ({ lifestyle }: LifestyleChartsProps) => {
             <ActivityChart activity={lifestyle.activity} />
           </TabsContent>
         </Tabs>
+        )}
       </CardContent>
     </Card>
   );

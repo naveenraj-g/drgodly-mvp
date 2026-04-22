@@ -32,3 +32,4 @@ export {
 } from "./getAppointmentForOnlineConsultation.controller";
 export * from "./bookIntakeAppointment.controller";
 export * from "./bookConsultationAppointment.controller";
+export * from "./getDoctorDashboardAppointments.controller";

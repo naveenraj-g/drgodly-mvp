@@ -19,6 +19,10 @@ export interface IAppointmentRepository {
     doctorId: string,
     orgId: string
   ): Promise<TAppointments>;
+  getDashboardAppointmentsForDoctor(
+    doctorId: string,
+    orgId: string
+  ): Promise<TAppointments>;
   getAppointmentForOnlineConsultation(
     appointmentId: string,
     orgId: string

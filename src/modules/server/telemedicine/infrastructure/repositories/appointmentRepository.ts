@@ -146,6 +146,172 @@ export class AppointmentRepository implements IAppointmentRepository {
     }
   }
 
+  async getDashboardAppointmentsForDoctor(
+    doctorId: string,
+    orgId: string
+  ): Promise<TAppointments> {
+    const startTimeMs = Date.now();
+    const operationId = randomUUID();
+
+    logOperation("start", {
+      name: "getDashboardAppointmentsForDoctorRepository",
+      startTimeMs,
+      context: { operationId },
+    });
+
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
+
+    try {
+      const appointments = await prismaTelemedicine.appointment.findMany({
+        where: {
+          doctorId,
+          orgId,
+          isDoctorDeleted: false,
+          appointmentDate: { gte: todayStart, lte: todayEnd },
+        },
+        orderBy: { time: "asc" },
+        omit: {
+          doctorId: true,
+          patientId: true,
+        },
+        include: {
+          appointmentActual: {
+            omit: {
+              createdAt: true,
+              createdBy: true,
+              updatedAt: true,
+              updatedBy: true,
+            },
+          },
+          intakeMapping: {
+            select: {
+              followUpAppointmentId: true,
+              followUpAppointment: {
+                select: {
+                  id: true,
+                  type: true,
+                  status: true,
+                  appointmentDate: true,
+                  time: true,
+                  appointmentMode: true,
+                  doctor: {
+                    select: {
+                      userId: true,
+                      personal: { select: { fullName: true } },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          followUpMapping: {
+            select: {
+              intakeAppointmentId: true,
+              intakeAppointment: {
+                select: {
+                  id: true,
+                  type: true,
+                  status: true,
+                  appointmentDate: true,
+                  time: true,
+                  appointmentMode: true,
+                  appointmentActual: {
+                    select: {
+                      intakeConversation: true,
+                      intakeReport: true,
+                      virtualConversation: true,
+                    },
+                  },
+                  doctor: {
+                    select: {
+                      userId: true,
+                      personal: { select: { fullName: true } },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          patient: {
+            omit: {
+              id: true,
+              patientId: true,
+              isABHAPatientProfile: true,
+              isCompleted: true,
+              createdAt: true,
+              updatedAt: true,
+              updatedBy: true,
+              createdBy: true,
+            },
+            include: {
+              personal: {
+                select: {
+                  name: true,
+                  orgId: true,
+                  id: true,
+                  gender: true,
+                },
+              },
+            },
+          },
+          doctor: {
+            omit: {
+              doctorId: true,
+              id: true,
+              isABDMDoctorProfile: true,
+              registrationNumber: true,
+              registrationProvider: true,
+              isCompleted: true,
+              createdAt: true,
+              updatedAt: true,
+              updatedBy: true,
+              createdBy: true,
+            },
+            include: {
+              personal: {
+                select: {
+                  fullName: true,
+                  orgId: true,
+                  id: true,
+                  gender: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      const data = await AppointmentsSchema.parseAsync(appointments);
+
+      logOperation("success", {
+        name: "getDashboardAppointmentsForDoctorRepository",
+        startTimeMs,
+        context: { operationId },
+      });
+
+      return data;
+    } catch (error) {
+      logOperation("error", {
+        name: "getDashboardAppointmentsForDoctorRepository",
+        startTimeMs,
+        err: error,
+        errName: "UnknownRepositoryError",
+        context: { operationId },
+      });
+
+      if (error instanceof Error) {
+        throw new OperationError(error.message, { cause: error });
+      }
+
+      throw new OperationError("An unexpected error occurred", {
+        cause: error,
+      });
+    }
+  }
+
   async getAppointmentsForPatient(
     patientId: string,
     orgId: string

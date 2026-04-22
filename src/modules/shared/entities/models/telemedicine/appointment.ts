@@ -56,6 +56,11 @@ const LinkedAppointmentSnapshotSchema = z.object({
   appointmentDate: z.date(),
   time: z.string(),
   appointmentMode: ZodEAppointmentMode,
+  appointmentActual: z.object({
+    intakeConversation: z.any().nullable(),
+    intakeReport: z.any().nullable(),
+    virtualConversation: z.any().nullable(),
+  }).nullable().optional(),
   doctor: z.object({
     userId: z.string().nullable(),
     personal: z.object({ fullName: z.string() }).nullable(),

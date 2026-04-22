@@ -1,41 +1,39 @@
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
-import { Activity, Clock, Mars, Venus } from "lucide-react";
-import { Appointment } from "@/modules/client/telemedicine/datas/doctor-dashboard";
+import { Activity, Clock, Mars, Venus, Brain, ArrowRight } from "lucide-react";
+import { TAppointment, TAppointments } from "@/modules/shared/entities/models/telemedicine/appointment";
 import { cn } from "@/lib/utils";
 import { StatusIndicator } from "@/modules/shared/utils/status-indicator";
 
 interface AppointmentListProps {
-  appointments: Appointment[];
+  appointments: TAppointments;
   selectedId: string | null;
   onSelect: (id: string) => void;
   isSticky: boolean;
 }
 
-const statusConfig = {
-  scheduled: {
-    label: "Scheduled",
-    className: "bg-blue-500 text-white",
-  },
-  "in-progress": {
-    label: "In Progress",
-    className: "bg-orange-500 text-white",
-  },
-  completed: {
-    label: "Completed",
-    className: "bg-green-500 text-white",
-  },
-  cancelled: {
-    label: "Cancelled",
-    className: "bg-muted text-white",
-  },
+const STATUS_MAP: Record<string, { label: string; indicatorKey: string }> = {
+  SCHEDULED:   { label: "Scheduled",   indicatorKey: "SCHEDULED" },
+  PENDING:     { label: "Scheduled",   indicatorKey: "SCHEDULED" },
+  RESCHEDULED: { label: "Scheduled",   indicatorKey: "SCHEDULED" },
+  COMPLETED:   { label: "Completed",   indicatorKey: "COMPLETED" },
+  CANCELLED:   { label: "Cancelled",   indicatorKey: "CANCELLED" },
 };
+
+function patientName(apt: TAppointment): string {
+  return apt.patient.personal?.name ?? "Unknown Patient";
+}
+
+function patientGender(apt: TAppointment): string {
+  return (apt.patient.personal?.gender ?? "").toLowerCase();
+}
+
+function isFollowUp(apt: TAppointment): boolean {
+  return !!apt.followUpMapping;
+}
 
 export const AppointmentList = ({
   appointments,
@@ -43,9 +41,15 @@ export const AppointmentList = ({
   onSelect,
   isSticky,
 }: AppointmentListProps) => {
-  const selectedAppointment = appointments.find(
-    (appointment) => appointment.id === selectedId
-  );
+  const selected = appointments.find((a) => a.id === selectedId);
+
+  if (appointments.length === 0) {
+    return (
+      <Card className="h-full flex items-center justify-center p-6">
+        <p className="text-muted-foreground text-sm">No appointments for today.</p>
+      </Card>
+    );
+  }
 
   return (
     <Card
@@ -54,28 +58,21 @@ export const AppointmentList = ({
         isSticky && "rounded-t-none py-4"
       )}
     >
-      {/* {!isSticky && (
-        <CardHeader>
-          <CardTitle>Today&apos;s Appointments</CardTitle>
-          <CardDescription>
-            {appointments.length} appointments scheduled
-          </CardDescription>
-        </CardHeader>
-      )} */}
-
       <CardContent
         className={cn(
           "flex-1 flex gap-3 w-full overflow-auto",
           isSticky && "px-4"
         )}
       >
-        {appointments.map((appointment) => {
-          const status = statusConfig[appointment.status];
-          const isSelected = selectedId === appointment.id;
+        {appointments.map((apt) => {
+          const status = STATUS_MAP[apt.status] ?? STATUS_MAP.SCHEDULED;
+          const isSelected = selectedId === apt.id;
+          const gender = patientGender(apt);
+          const followUp = isFollowUp(apt);
 
           return (
             <Card
-              key={appointment.id}
+              key={apt.id}
               className={cn(
                 "w-fit shrink-0 p-4 cursor-pointer transition-all hover:shadow-md",
                 !isSticky && "mb-2",
@@ -83,74 +80,82 @@ export const AppointmentList = ({
                   ? "border-primary shadow-md bg-primary/5"
                   : "border-border hover:border-primary/50"
               )}
-              onClick={() => onSelect(appointment.id)}
+              onClick={() => onSelect(apt.id)}
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-2">
                     <Clock className="h-4 w-4 text-primary shrink-0" />
                     <span className="text-sm font-medium text-foreground">
-                      {appointment.time}
+                      {apt.time}
                     </span>
                     <StatusIndicator
-                      status={status.label.replaceAll(" ", "").toUpperCase()}
+                      status={status.indicatorKey}
                       className="h-6"
                     />
                   </div>
 
                   <div className="flex items-center gap-2 mb-1">
-                    {appointment.patient.gender.toLocaleLowerCase() ===
-                      "male" && (
+                    {gender === "male" && (
                       <Mars className="h-4 w-4 text-muted-foreground shrink-0" />
                     )}
-                    {appointment.patient.gender.toLocaleLowerCase() ===
-                      "female" && (
+                    {gender === "female" && (
                       <Venus className="h-4 w-4 text-muted-foreground shrink-0" />
                     )}
                     <h3 className="font-semibold text-foreground truncate">
-                      {appointment.patientName}
+                      {patientName(apt)}
                     </h3>
                   </div>
 
-                  <p
+                  <div
                     className={cn(
-                      "text-xs text-muted-foreground line-clamp-2",
+                      "flex items-center gap-1 text-xs text-muted-foreground",
                       isSticky && "hidden"
                     )}
                   >
-                    {appointment.reason}
-                  </p>
+                    {followUp && (
+                      <ArrowRight className="size-3 rotate-180 text-blue-500" />
+                    )}
+                    <span className="line-clamp-1">{apt.type}</span>
+                  </div>
                 </div>
               </div>
             </Card>
           );
         })}
       </CardContent>
+
       <CardFooter className={cn("-mt-2", isSticky && "hidden")}>
-        {selectedAppointment ? (
+        {selected && (
           <div className="flex items-center gap-6 w-full">
             <div className="flex items-start gap-2">
-              {/* <Activity className="h-4 w-4 text-primary mt-0.5 shrink-0" /> */}
               <div className="flex-1">
-                <p className="text-sm text-muted-foreground">Age</p>
-                <p className="font-medium text-foreground">
-                  {selectedAppointment.patient.age} years
+                <p className="text-sm text-muted-foreground">Mode</p>
+                <p className="font-medium text-foreground capitalize">
+                  {selected.appointmentMode.toLowerCase()}
                 </p>
               </div>
             </div>
             <div className="flex items-start gap-2">
               <Activity className="h-4 w-4 text-primary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-sm text-muted-foreground">
-                  Primary Complaint
-                </p>
-                <p className="font-medium text-foreground">
-                  {selectedAppointment.patient.primaryComplaint}
-                </p>
+                <p className="text-sm text-muted-foreground">Type</p>
+                <p className="font-medium text-foreground">{selected.type}</p>
               </div>
             </div>
+            {isFollowUp(selected) && (
+              <div className="flex items-start gap-2">
+                <Brain className="h-4 w-4 text-blue-500 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Intake</p>
+                  <p className="font-medium text-foreground text-xs">
+                    Follow-up from AI intake
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
-        ) : null}
+        )}
       </CardFooter>
     </Card>
   );

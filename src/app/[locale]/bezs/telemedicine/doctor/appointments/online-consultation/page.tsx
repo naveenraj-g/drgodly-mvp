@@ -21,7 +21,7 @@ const PatientOnlineConsultationPage = async (
 
   const [data, error] = await getAppointmentForOnlineConsultation({
     appointmentId,
-    orgId: session?.user.currentOrgId,
+    orgId: session?.session.activeOrganizationId,
     userId: session?.user.id,
   });
 

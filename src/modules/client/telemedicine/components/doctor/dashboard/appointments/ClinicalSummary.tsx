@@ -43,7 +43,7 @@ Treatment plan initiated as outlined in treatment pathway. Patient educated on d
         <CardTitle>
           <div className="flex items-center gap-2">
             <FileCheck className="h-5 w-5 text-primary" />
-            AI Clinical Summary
+            Previous Appointment Clinical Summary
           </div>
         </CardTitle>
         <div className="flex items-center gap-2">
