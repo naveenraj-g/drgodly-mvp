@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Brain, AlertCircle, Beaker, Route, Shield } from "lucide-react";
@@ -20,7 +21,7 @@ export const TreatmentEngine = ({ recommendations }: TreatmentEngineProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <Card className={cn(isExpanded ? "col-span-2" : "col-auto")}>
+    <Card className={cn("h-full flex flex-col", isExpanded ? "col-span-2" : "col-auto")}>
       <CardHeader className="flex items-center gap-2 justify-between">
         <CardTitle className="flex items-center gap-2">
           <Brain className="h-5 w-5 text-primary" />
@@ -40,7 +41,8 @@ export const TreatmentEngine = ({ recommendations }: TreatmentEngineProps) => {
           </Button>
         </ActionTooltipProvider>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="flex-1 overflow-hidden">
+        <ScrollArea className="h-full pr-2"><div className="space-y-4">
         {!recommendations ? (
           <p className="text-sm text-muted-foreground py-6 text-center">
             No AI recommendations available.
@@ -139,6 +141,7 @@ export const TreatmentEngine = ({ recommendations }: TreatmentEngineProps) => {
             )}
           </>
         )}
+        </div></ScrollArea>
       </CardContent>
     </Card>
   );

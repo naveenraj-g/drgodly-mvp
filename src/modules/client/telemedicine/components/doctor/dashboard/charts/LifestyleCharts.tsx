@@ -21,7 +21,7 @@ export const LifestyleCharts = ({ lifestyle }: LifestyleChartsProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <Card className={cn(isExpanded ? "col-span-2" : "col-auto")}>
+    <Card className={cn("h-full flex flex-col", isExpanded ? "col-span-2" : "col-auto")}>
       <CardHeader className="flex items-center gap-2 justify-between">
         <CardTitle className="flex items-center gap-2">
           <Activity className="h-5 w-5 text-primary" />
@@ -41,7 +41,7 @@ export const LifestyleCharts = ({ lifestyle }: LifestyleChartsProps) => {
           </Button>
         </ActionTooltipProvider>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1 overflow-hidden">
         {!lifestyle ? (
           <p className="text-sm text-muted-foreground py-6 text-center">
             No lifestyle data available.

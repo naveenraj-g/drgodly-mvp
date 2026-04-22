@@ -685,7 +685,7 @@ export class AppointmentRepository implements IAppointmentRepository {
       context: { operationId },
     });
 
-    const { userId, orgId, virtualConversation, ...rest } = appointmentData;
+    const { userId, orgId, virtualConversation, intakeReport, ...rest } = appointmentData;
 
     try {
       const appointment = await prismaTelemedicine.appointment.create({
@@ -698,6 +698,7 @@ export class AppointmentRepository implements IAppointmentRepository {
             create: {
               orgId,
               virtualConversation,
+              intakeReport: intakeReport ?? null,
             },
           },
         },

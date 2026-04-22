@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { FileCheck, Edit2, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import ActionTooltipProvider from "@/modules/shared/providers/action-tooltip-provider";
@@ -38,7 +39,7 @@ Treatment plan initiated as outlined in treatment pathway. Patient educated on d
   };
 
   return (
-    <Card className={cn(isExpanded ? "col-span-2" : "col-auto")}>
+    <Card className={cn("h-full flex flex-col", isExpanded ? "col-span-2" : "col-auto")}>
       <CardHeader className="flex items-center justify-between">
         <CardTitle>
           <div className="flex items-center gap-2">
@@ -70,22 +71,26 @@ Treatment plan initiated as outlined in treatment pathway. Patient educated on d
           </ActionTooltipProvider>
         </div>
       </CardHeader>
-      <CardContent className="flex flex-col gap-4 h-full">
-        {isEditing ? (
-          <Textarea
-            value={summary}
-            onChange={(e) => setSummary(e.target.value)}
-            className="min-h-[400px] font-mono text-sm flex-1"
-          />
-        ) : (
-          <div className="whitespace-pre-wrap text-sm text-foreground bg-muted p-4 rounded-md font-mono flex-1">
-            {summary}
-          </div>
-        )}
+      <CardContent className="flex flex-col gap-3 flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden">
+          {isEditing ? (
+            <Textarea
+              value={summary}
+              onChange={(e) => setSummary(e.target.value)}
+              className="h-full resize-none font-mono text-sm"
+            />
+          ) : (
+            <ScrollArea className="h-full">
+              <div className="whitespace-pre-wrap text-sm text-foreground bg-muted p-4 rounded-md font-mono">
+                {summary}
+              </div>
+            </ScrollArea>
+          )}
+        </div>
 
         <Button
           onClick={handleApprove}
-          className="w-full"
+          className="w-full shrink-0"
           disabled={!isEditing}
         >
           <CheckCircle className="h-4 w-4 mr-2" />

@@ -29,7 +29,7 @@ export const AppointmentDetails = ({
       </CardHeader>
 
       <CardContent className="flex-1 px-0">
-        <div className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-3 grid-flow-dense">
+        <div className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-3 grid-flow-dense auto-rows-[660px]">
           <IntakeInsights appointment={appointment} />
           <ClinicalSummary patientName={patientName} />
           <TreatmentEngine />

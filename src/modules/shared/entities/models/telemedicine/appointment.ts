@@ -190,6 +190,7 @@ export const BookConsultationAppointmentUseCase = z.object({
   orgId: z.string(),
   patientUserId: z.string(),
   virtualConversation: z.any().nullable(),
+  intakeReport: z.any().nullable().optional(),
 });
 export type TBookConsultationAppointmentUseCase = z.infer<
   typeof BookConsultationAppointmentUseCase

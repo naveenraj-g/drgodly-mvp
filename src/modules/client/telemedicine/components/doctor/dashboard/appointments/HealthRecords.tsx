@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { FileText, Image, ExternalLink } from "lucide-react";
 import { HealthRecord } from "@/modules/client/telemedicine/datas/doctor-dashboard";
@@ -21,7 +22,7 @@ export const HealthRecords = ({ records }: HealthRecordsProps) => {
   };
 
   return (
-    <Card className={cn(isExpanded ? "col-span-2" : "col-auto")}>
+    <Card className={cn("h-full flex flex-col", isExpanded ? "col-span-2" : "col-auto")}>
       <CardHeader className="flex items-center gap-2 justify-between">
         <CardTitle className="flex items-center gap-2">
           <FileText className="h-5 w-5 text-primary" />
@@ -41,13 +42,13 @@ export const HealthRecords = ({ records }: HealthRecordsProps) => {
           </Button>
         </ActionTooltipProvider>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1 overflow-hidden">
         {!records || records.length === 0 ? (
           <p className="text-sm text-muted-foreground py-6 text-center">
             No health records attached.
           </p>
         ) : (
-        <div className="space-y-3">
+        <ScrollArea className="h-full pr-2"><div className="space-y-3">
           {records.map((record) => (
             <div
               key={record.id}
@@ -76,7 +77,7 @@ export const HealthRecords = ({ records }: HealthRecordsProps) => {
               </Button>
             </div>
           ))}
-        </div>
+        </div></ScrollArea>
         )}
       </CardContent>
     </Card>

@@ -36,6 +36,7 @@ function TextConsultation({ user }: TProps) {
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [liveTranscript, setLiveTranscript] = useState("");
+  const [endingPhase, setEndingPhase] = useState<"idle" | "report" | "saving">("idle");
   const abortRef = useRef<AbortController | null>(null);
   const liveTextRef = useRef("");
 
@@ -222,17 +223,49 @@ function TextConsultation({ user }: TProps) {
 
   const cancelStream = () => abortRef.current?.abort();
 
+  const generateReport = async (
+    conversation: TMessageItem[]
+  ): Promise<unknown> => {
+    try {
+      const formatted = conversation.map((m) => {
+        const text = m.content ?? m.versions?.[0]?.content ?? "";
+        const speaker =
+          m.from === "assistant" ? "consultation-agent" : "patient";
+        return `${speaker}: ${text}`;
+      });
+
+      const res = await fetch("/api/report-agent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ conversation: formatted }),
+      });
+
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  };
+
   const endConsultation = async () => {
     if (isStreaming) cancelStream();
     if (messages.length === 0) {
       toast.info("No conversation to save yet.");
       return;
     }
-    await execute({
-      orgId: user.orgId,
-      patientUserId: user.id,
-      virtualConversation: messages,
-    });
+    try {
+      setEndingPhase("report");
+      const intakeReport = await generateReport(messages);
+      setEndingPhase("saving");
+      await execute({
+        orgId: user.orgId,
+        patientUserId: user.id,
+        virtualConversation: messages,
+        intakeReport,
+      });
+    } finally {
+      setEndingPhase("idle");
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -285,7 +318,7 @@ function TextConsultation({ user }: TProps) {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Describe your symptoms or ask a question..."
-          disabled={isStreaming || isPending}
+          disabled={isStreaming || endingPhase !== "idle"}
           className="flex-1"
         />
         {isStreaming ? (
@@ -301,7 +334,7 @@ function TextConsultation({ user }: TProps) {
           <Button
             size="icon"
             onClick={() => sendMessage(input)}
-            disabled={!input.trim() || isPending}
+            disabled={!input.trim() || endingPhase !== "idle"}
           >
             <Send className="size-4" />
           </Button>
@@ -310,10 +343,15 @@ function TextConsultation({ user }: TProps) {
           size="sm"
           variant="destructive"
           onClick={endConsultation}
-          disabled={isPending || (messages.length === 0 && !isStreaming)}
+          disabled={endingPhase !== "idle" || (messages.length === 0 && !isStreaming)}
           className="px-4 rounded-2xl h-7"
         >
-          {isPending ? (
+          {endingPhase === "report" ? (
+            <>
+              <Loader2 className="animate-spin mr-1 size-3" />
+              Generating...
+            </>
+          ) : endingPhase === "saving" ? (
             <>
               <Loader2 className="animate-spin mr-1 size-3" />
               Saving...
