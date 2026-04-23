@@ -5,7 +5,8 @@ import {
 import { getTelemedicineInjection } from "../../../di/container";
 
 export async function createOrUpdateDoctorQualificationDetailsUseCase(
-  createOrUpdateData: TCreateOrUpdateDoctorQualificationDetail
+  createOrUpdateData: TCreateOrUpdateDoctorQualificationDetail,
+  fhirPractitionerId?: number
 ): Promise<TDoctorQualifications> {
   const doctorProfileRepository = getTelemedicineInjection(
     "IDoctorProfileRepository"
@@ -15,11 +16,13 @@ export async function createOrUpdateDoctorQualificationDetailsUseCase(
 
   if (createOrUpdateData.id) {
     data = await doctorProfileRepository.updateDoctorQualificationDetails(
-      createOrUpdateData
+      createOrUpdateData,
+      fhirPractitionerId
     );
   } else {
     data = await doctorProfileRepository.createDoctorQualificationDetails(
-      createOrUpdateData
+      createOrUpdateData,
+      fhirPractitionerId
     );
   }
 

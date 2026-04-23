@@ -22,7 +22,8 @@ export class PatientProfileRepository implements IPatientProfileRepository {
     orgId: string,
     userId: string,
     createdBy: string,
-    isABHAPatientProfile: boolean
+    isABHAPatientProfile: boolean,
+    fhirPatientId?: number
   ): Promise<TPatientInitialProfile> {
     const startTimeMs = Date.now();
     const operationId = randomUUID();
@@ -43,13 +44,18 @@ export class PatientProfileRepository implements IPatientProfileRepository {
     }
 
     try {
-      const initialPatientProfile = await prismaTelemedicine.patient.create({
-        data: {
+      const initialPatientProfile = await prismaTelemedicine.patient.upsert({
+        where: { orgId_userId: { orgId, userId } },
+        create: {
           orgId,
           userId,
           isABHAPatientProfile,
           createdBy,
           updatedBy: createdBy,
+          ...(fhirPatientId && { fhirPatientId }),
+        },
+        update: {
+          ...(fhirPatientId && { fhirPatientId }),
         },
       });
 
@@ -160,7 +166,8 @@ export class PatientProfileRepository implements IPatientProfileRepository {
   }
 
   async createPatientPersonalDetails(
-    createData: TPatientCreateOrUpdatePatientProfile
+    createData: TPatientCreateOrUpdatePatientProfile,
+    fhirPatientId?: number
   ): Promise<TPatientPersonalDetails> {
     const startTimeMs = Date.now();
     const operationId = randomUUID();
@@ -187,14 +194,24 @@ export class PatientProfileRepository implements IPatientProfileRepository {
     }
 
     try {
-      const patientPersonalDetails =
-        await prismaTelemedicine.patientPersonalDetail.create({
-          data: {
-            ...rest,
-            createdBy: operationBy,
-            updatedBy: operationBy,
-          },
-        });
+      const patientPersonalDetails = await prismaTelemedicine.$transaction(
+        async (tx) => {
+          const detail = await tx.patientPersonalDetail.create({
+            data: {
+              ...rest,
+              createdBy: operationBy,
+              updatedBy: operationBy,
+            },
+          });
+          if (fhirPatientId) {
+            await tx.patient.update({
+              where: { id: rest.patientId },
+              data: { fhirPatientId },
+            });
+          }
+          return detail;
+        }
+      );
 
       const data = await PatientPersonalDetailsSchema.parseAsync(
         patientPersonalDetails
@@ -233,7 +250,8 @@ export class PatientProfileRepository implements IPatientProfileRepository {
   }
 
   async updatePatientPersonalDetails(
-    updateData: TPatientCreateOrUpdatePatientProfile
+    updateData: TPatientCreateOrUpdatePatientProfile,
+    fhirPatientId?: number
   ): Promise<TPatientPersonalDetails> {
     const startTimeMs = Date.now();
     const operationId = randomUUID();
@@ -254,18 +272,28 @@ export class PatientProfileRepository implements IPatientProfileRepository {
     }
 
     try {
-      const patientPersonalDetails =
-        await prismaTelemedicine.patientPersonalDetail.update({
-          where: {
-            id: id,
-            orgId,
-            patientId,
-          },
-          data: {
-            ...rest,
-            updatedBy: operationBy,
-          },
-        });
+      const patientPersonalDetails = await prismaTelemedicine.$transaction(
+        async (tx) => {
+          const detail = await tx.patientPersonalDetail.update({
+            where: {
+              id: id,
+              orgId,
+              patientId,
+            },
+            data: {
+              ...rest,
+              updatedBy: operationBy,
+            },
+          });
+          if (fhirPatientId) {
+            await tx.patient.update({
+              where: { id: patientId },
+              data: { fhirPatientId },
+            });
+          }
+          return detail;
+        }
+      );
 
       const data = await PatientPersonalDetailsSchema.parseAsync(
         patientPersonalDetails

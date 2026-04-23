@@ -19,7 +19,6 @@ async function PatientProfilePage() {
   if (error) {
     throw new Error(error.message);
   }
-
   const user = {
     id: session.user.id,
     name: session.user.name,

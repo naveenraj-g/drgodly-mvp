@@ -8,7 +8,9 @@ const generateRoomId = () =>
   `room_${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
 export async function bookAppointmentUseCase(
-  createData: TBookAppointmentUseCase
+  createData: TBookAppointmentUseCase,
+  fhirEncounterId?: number,
+  fhirAppointmentId?: number
 ): Promise<TAppointment> {
   const appointmentRepository = getTelemedicineInjection(
     "IAppointmentRepository"
@@ -76,7 +78,7 @@ export async function bookAppointmentUseCase(
     userId: patientUserId,
   };
 
-  const data = await appointmentRepository.bookAppointment(payload);
+  const data = await appointmentRepository.bookAppointment(payload, fhirEncounterId, fhirAppointmentId);
 
   return data;
 }

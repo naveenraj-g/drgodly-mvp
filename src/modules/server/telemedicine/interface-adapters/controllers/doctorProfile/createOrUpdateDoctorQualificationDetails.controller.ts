@@ -1,4 +1,4 @@
-import { DoctorQualificationCreateOrUpdateValidation } from "../../../../../shared/schemas/telemedicine/doctorProfile/doctorProfileValidationSchema";
+﻿import { DoctorQualificationCreateOrUpdateValidation } from "../../../../../shared/schemas/telemedicine/doctorProfile/doctorProfileValidationSchema";
 import { InputParseError } from "../../../../../shared/entities/errors/commonError";
 import { TDoctorQualifications } from "../../../../../shared/entities/models/telemedicine/doctorProfile";
 import { createOrUpdateDoctorQualificationDetailsUseCase } from "../../../application/useCases/doctorProfile/createOrUpdateDoctorQualificationDetails.useCase";
@@ -12,7 +12,8 @@ export type TCreateOrUpdateDoctorQualificationDetailsOutput = ReturnType<
 >;
 
 export async function createorUpdateDoctorQualificationDetailsController(
-  input: any
+  input: any,
+  fhirPractitionerId?: number
 ): Promise<TCreateOrUpdateDoctorQualificationDetailsOutput> {
   const { data, error: inputParseError } =
     await DoctorQualificationCreateOrUpdateValidation.safeParseAsync(input);
@@ -22,8 +23,10 @@ export async function createorUpdateDoctorQualificationDetailsController(
   }
 
   const doctorData = await createOrUpdateDoctorQualificationDetailsUseCase(
-    data
+    data,
+    fhirPractitionerId
   );
 
   return presenter(doctorData);
 }
+

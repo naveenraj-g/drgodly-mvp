@@ -27,7 +27,7 @@ export interface IAppointmentRepository {
     appointmentId: string,
     orgId: string
   ): Promise<TAppointment | null>;
-  bookAppointment(appointmentData: TBookAppointment): Promise<TAppointment>;
+  bookAppointment(appointmentData: TBookAppointment, fhirEncounterId?: number, fhirAppointmentId?: number): Promise<TAppointment>;
   bookIntakeAppointment(
     appointmentData: TBookIntakeAppointment
   ): Promise<TIntakeAppointment>;

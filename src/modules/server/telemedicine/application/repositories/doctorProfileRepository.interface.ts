@@ -18,7 +18,8 @@ export interface IDoctorProfileRepository {
   createDoctorInitialProfile(
     orgId: string,
     createdBy: string,
-    isABDMDoctorProfile: boolean
+    isABDMDoctorProfile: boolean,
+    fhirPractitionerId?: number
   ): Promise<TDoctorInitialProfile>;
   deleteDoctorProfile(id: string): Promise<TDoctorInitialProfile>;
   getDoctorDataById(id: string): Promise<TDoctor | null>;
@@ -28,17 +29,21 @@ export interface IDoctorProfileRepository {
     userId: string
   ): Promise<TDoctorInitialProfile | null>;
   createDoctorPersonalDetails(
-    createData: TCreateOrUpdateDoctorProfileDetail
+    createData: TCreateOrUpdateDoctorProfileDetail,
+    fhirPractitionerId?: number
   ): Promise<TDoctorPersonalDetails>;
   updateDoctorPersonalDetails(
-    updateData: TCreateOrUpdateDoctorProfileDetail
+    updateData: TCreateOrUpdateDoctorProfileDetail,
+    fhirPractitionerId?: number
   ): Promise<TDoctorPersonalDetails>;
 
   createDoctorQualificationDetails(
-    createData: TCreateOrUpdateDoctorQualificationDetail
+    createData: TCreateOrUpdateDoctorQualificationDetail,
+    fhirPractitionerId?: number
   ): Promise<TDoctorQualifications>;
   updateDoctorQualificationDetails(
-    updateData: TCreateOrUpdateDoctorQualificationDetail
+    updateData: TCreateOrUpdateDoctorQualificationDetail,
+    fhirPractitionerId?: number
   ): Promise<TDoctorQualifications>;
 
   createDoctorWorkDetails(
@@ -55,5 +60,8 @@ export interface IDoctorProfileRepository {
     updateData: TCreateOrUpdateDoctorConcent
   ): Promise<TDoctorConcent>;
 
-  submitDoctorFullProfile(data: TSubmitFullDoctorProfile): Promise<TDoctor>;
+  submitDoctorFullProfile(
+    data: TSubmitFullDoctorProfile,
+    fhirPractitionerId?: number
+  ): Promise<TDoctor>;
 }

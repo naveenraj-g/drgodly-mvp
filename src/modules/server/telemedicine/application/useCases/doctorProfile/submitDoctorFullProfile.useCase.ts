@@ -5,11 +5,12 @@ import {
 import { getTelemedicineInjection } from "../../../di/container";
 
 export async function submitDoctorFullProfileUseCase(
-  data: TSubmitFullDoctorProfile
+  data: TSubmitFullDoctorProfile,
+  fhirPractitionerId?: number
 ): Promise<TDoctor> {
   const doctorProfileRepository = getTelemedicineInjection(
     "IDoctorProfileRepository"
   );
 
-  return await doctorProfileRepository.submitDoctorFullProfile(data);
+  return await doctorProfileRepository.submitDoctorFullProfile(data, fhirPractitionerId);
 }

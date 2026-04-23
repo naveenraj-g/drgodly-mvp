@@ -104,7 +104,7 @@ export function PatientProfilePersonalDetails({
         toast.success(
           `Personal details ${
             data?.personal?.id ? "updated" : "created"
-          } successfully.`
+          } successfully.`,
         );
       },
       onError({ err }) {
@@ -112,7 +112,7 @@ export function PatientProfilePersonalDetails({
           description: err.message,
         });
       },
-    }
+    },
   );
 
   const form = useForm<TPatientPersonalDetails>({
@@ -214,7 +214,7 @@ export function PatientProfilePersonalDetails({
                       variant="outline"
                       className={cn(
                         "h-9 text-left font-medium",
-                        !field.value && "text-muted-foreground"
+                        !field.value && "text-muted-foreground",
                       )}
                     >
                       {field.value ? format(field.value, "PPP") : "Pick a date"}

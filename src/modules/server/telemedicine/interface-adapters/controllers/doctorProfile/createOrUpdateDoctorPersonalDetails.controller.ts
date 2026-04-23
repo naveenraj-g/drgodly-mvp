@@ -1,4 +1,4 @@
-import { DoctorProfileCreateOrUpdateValidationSchema } from "../../../../../shared/schemas/telemedicine/doctorProfile/doctorProfileValidationSchema";
+﻿import { DoctorProfileCreateOrUpdateValidationSchema } from "../../../../../shared/schemas/telemedicine/doctorProfile/doctorProfileValidationSchema";
 import { InputParseError } from "../../../../../shared/entities/errors/commonError";
 import { TDoctorPersonalDetails } from "../../../../../shared/entities/models/telemedicine/doctorProfile";
 import { createOrUpdateDoctorPersonalDetailsUseCase } from "../../../application/useCases/doctorProfile/createOrUpdateDoctorPersonalDetails.useCase";
@@ -12,7 +12,8 @@ export type TCreateOrUpdateDoctorPersonalDetailsOutput = ReturnType<
 >;
 
 export async function createorUpdateDoctorPersonalDetailsController(
-  input: any
+  input: any,
+  fhirPractitionerId?: number
 ): Promise<TCreateOrUpdateDoctorPersonalDetailsOutput> {
   const { data, error: inputParseError } =
     await DoctorProfileCreateOrUpdateValidationSchema.safeParseAsync(input);
@@ -21,7 +22,8 @@ export async function createorUpdateDoctorPersonalDetailsController(
     throw new InputParseError(inputParseError.name, { cause: inputParseError });
   }
 
-  const doctorData = await createOrUpdateDoctorPersonalDetailsUseCase(data);
+  const doctorData = await createOrUpdateDoctorPersonalDetailsUseCase(data, fhirPractitionerId);
 
   return presenter(doctorData);
 }
+

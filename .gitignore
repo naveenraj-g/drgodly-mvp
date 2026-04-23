@@ -58,3 +58,5 @@ next-env.d.ts
 /schemas
 
 /agents
+
+.claude

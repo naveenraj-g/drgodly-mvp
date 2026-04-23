@@ -5,7 +5,8 @@ export async function createPatientInitialProfileUseCase(
   orgId: string,
   userId: string,
   createdBy: string,
-  isABHAPatientProfile: boolean
+  isABHAPatientProfile: boolean,
+  fhirPatientId?: number
 ): Promise<TPatientInitialProfile> {
   const doctorProfileRepository = getTelemedicineInjection(
     "IPatientProfileRepository"
@@ -14,7 +15,8 @@ export async function createPatientInitialProfileUseCase(
     orgId,
     userId,
     createdBy,
-    isABHAPatientProfile
+    isABHAPatientProfile,
+    fhirPatientId
   );
   return data;
 }

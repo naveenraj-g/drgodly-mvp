@@ -92,6 +92,8 @@ export const AppointmentSchema = z.object({
   virtualRoomId: z.string().nullable(),
   cancelReason: z.string().nullable(),
   cancelledBy: z.enum(["PATIENT", "DOCTOR"]).nullable(),
+  fhirEncounterId: z.number().int().nullable(),
+  fhirAppointmentId: z.number().int().nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),
   appointmentActual: AppointmentActual.nullable(),

@@ -10,7 +10,8 @@ function presenter(data: TDoctorInitialProfile) {
 export type TCreateDoctorInitialProfileOutput = ReturnType<typeof presenter>;
 
 export async function createDoctorInitialProfileController(
-  input: any
+  input: any,
+  fhirPractitionerId?: number
 ): Promise<TCreateDoctorInitialProfileOutput> {
   const { data, error: inputParseError } =
     await CreateDoctorInitialProfileSchema.safeParseAsync(input);
@@ -22,7 +23,8 @@ export async function createDoctorInitialProfileController(
   const doctorInitialProfile = await createDoctorInitialProfileUseCase(
     data.orgId,
     data.createdBy,
-    data.isABDMDoctorProfile
+    data.isABDMDoctorProfile,
+    fhirPractitionerId
   );
 
   return presenter(doctorInitialProfile);

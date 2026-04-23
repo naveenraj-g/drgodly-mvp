@@ -10,7 +10,9 @@ function presenter(data: TAppointment) {
 export type TBookAppointmentControllerOutput = ReturnType<typeof presenter>;
 
 export async function bookAppointmentController(
-  input: any
+  input: any,
+  fhirEncounterId?: number,
+  fhirAppointmentId?: number
 ): Promise<TBookAppointmentControllerOutput> {
   const { data, error: inputParseError } =
     await BookAppointmentValidationSchema.safeParseAsync(input);
@@ -19,7 +21,7 @@ export async function bookAppointmentController(
     throw new InputParseError(inputParseError.name, { cause: inputParseError });
   }
 
-  const appointement = await bookAppointmentUseCase(data);
+  const appointement = await bookAppointmentUseCase(data, fhirEncounterId, fhirAppointmentId);
 
   return presenter(appointement);
 }

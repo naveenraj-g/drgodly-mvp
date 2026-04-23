@@ -524,7 +524,9 @@ export class AppointmentRepository implements IAppointmentRepository {
   }
 
   async bookAppointment(
-    appointmentData: TBookAppointment
+    appointmentData: TBookAppointment,
+    fhirEncounterId?: number,
+    fhirAppointmentId?: number
   ): Promise<TAppointment> {
     const startTimeMs = Date.now();
     const operationId = randomUUID();
@@ -547,6 +549,8 @@ export class AppointmentRepository implements IAppointmentRepository {
             ...rest,
             createdBy: userId,
             updatedBy: userId,
+            ...(fhirEncounterId && { fhirEncounterId }),
+            ...(fhirAppointmentId && { fhirAppointmentId }),
           },
           include: {
             appointmentActual: {

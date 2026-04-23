@@ -12,7 +12,8 @@ export type TCreateOrUpdatePatientPersonalDetailsOutput = ReturnType<
 >;
 
 export async function createorUpdatePatientPersonalDetailsController(
-  input: any
+  input: any,
+  fhirPatientId?: number
 ): Promise<TCreateOrUpdatePatientPersonalDetailsOutput> {
   const { data, error: inputParseError } =
     await PatientProfileCreateOrUpdateValidationSchema.safeParseAsync(input);
@@ -21,7 +22,7 @@ export async function createorUpdatePatientPersonalDetailsController(
     throw new InputParseError(inputParseError.name, { cause: inputParseError });
   }
 
-  const patientData = await createOrUpdatePatientPersonalDetailsUseCase(data);
+  const patientData = await createOrUpdatePatientPersonalDetailsUseCase(data, fhirPatientId);
 
   return presenter(patientData);
 }

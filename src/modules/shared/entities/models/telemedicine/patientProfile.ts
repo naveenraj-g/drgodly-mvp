@@ -17,6 +17,7 @@ export const PatientInitialProfileSchema = z
     patientId: z.number(),
     isCompleted: z.boolean(),
     isABHAPatientProfile: z.boolean(),
+    fhirPatientId: z.number().int().nullable(),
   })
   .extend(DefaultFieldsSchema.shape);
 export type TPatientInitialProfile = z.infer<

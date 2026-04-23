@@ -38,9 +38,12 @@ import { createServerAction } from "zsa";
 import {
   createFhirEncounter,
   createFhirQuestionnaireResponse,
+  createFhirAppointmentWithEncounter,
+  updateFhirAppointment,
 } from "@/modules/server/fhir";
 import { fhirRequest } from "@/modules/server/fhir/client";
 import type { EncounterClass, FhirAppointmentCreatePayload } from "@/modules/server/fhir";
+import { prismaTelemedicine } from "@/modules/server/prisma/prisma";
 
 // ── FHIR helpers ──────────────────────────────────────────────────────────────
 
@@ -115,30 +118,48 @@ async function syncEncounterAndAppointment({
 export const bookAppointment = createServerAction()
   .input(BookAppointmentValidationSchema, { skipInputParsing: true })
   .handler(async ({ input }) => {
-    const result = await withMonitoring<TBookAppointmentControllerOutput>(
+    let fhirEncounterId: number | undefined;
+    let fhirAppointmentId: number | undefined;
+
+    try {
+      const [patientRecord, doctorRecord] = await Promise.all([
+        prismaTelemedicine.patient.findUnique({
+          where: { orgId_userId: { orgId: input.orgId, userId: input.patientUserId } },
+          select: { fhirPatientId: true },
+        }),
+        prismaTelemedicine.doctor.findUnique({
+          where: { orgId_userId: { orgId: input.orgId, userId: input.doctorUserId } },
+          select: { fhirPractitionerId: true },
+        }),
+      ]);
+
+      if (patientRecord?.fhirPatientId && doctorRecord?.fhirPractitionerId) {
+        const startIso = buildIsoDatetime(new Date(input.appointmentDate), input.time);
+        const endIso = addMinutes(startIso, 30);
+        const { encounter, appointment } = await createFhirAppointmentWithEncounter({
+          fhirPatientId: String(patientRecord.fhirPatientId),
+          fhirPractitionerId: String(doctorRecord.fhirPractitionerId),
+          patientName: null,
+          practitionerName: null,
+          start: startIso,
+          end: endIso,
+          appointmentTypeMode: input.appointmentMode === "VIRTUAL" ? "virtual" : "in-person",
+          description: input.note ?? undefined,
+        });
+        fhirEncounterId = Number(encounter.id);
+        fhirAppointmentId = Number(appointment.id);
+      }
+    } catch (err) {
+      console.error("[FHIR] bookAppointment pre-sync failed:", err);
+    }
+
+    return await withMonitoring<TBookAppointmentControllerOutput>(
       "bookAppointment",
-      () => bookAppointmentController(input),
+      () => bookAppointmentController(input, fhirEncounterId, fhirAppointmentId),
       {
         operationErrorMessage: "Failed to book appointment.",
       }
     );
-
-    try {
-      const startIso = buildIsoDatetime(result.appointmentDate, result.time);
-      const endIso = addMinutes(startIso, 30);
-      await syncEncounterAndAppointment({
-        startIso,
-        endIso,
-        encounterClass: toEncounterClass(result.appointmentMode),
-        description: result.type,
-        patientDisplay: result.patient.personal?.name,
-        practitionerDisplay: result.doctor.personal?.fullName,
-      });
-    } catch (err) {
-      console.error("[FHIR] bookAppointment sync failed:", err);
-    }
-
-    return result;
   });
 
 export const bookIntakeAppointment = createServerAction()
@@ -244,7 +265,7 @@ export const getAppointmentForOnlineConsultation = createServerAction()
 export const rescheduleAppointment = createServerAction()
   .input(RescheduleAppointmentValidationSchema, { skipInputParsing: true })
   .handler(async ({ input }) => {
-    return await withMonitoring<TRescheduleAppointmentControllerOutput>(
+    const result = await withMonitoring<TRescheduleAppointmentControllerOutput>(
       "rescheduleAppointment",
       () => rescheduleAppointmentController(input),
       {
@@ -253,12 +274,28 @@ export const rescheduleAppointment = createServerAction()
         operationErrorMessage: "Failed to reschedule appointment.",
       }
     );
+
+    try {
+      if (result.fhirAppointmentId) {
+        const startIso = buildIsoDatetime(new Date(input.appointmentDate), input.time);
+        const endIso = addMinutes(startIso, 30);
+        await updateFhirAppointment(String(result.fhirAppointmentId), {
+          status: "booked",
+          start: startIso,
+          end: endIso,
+        });
+      }
+    } catch (err) {
+      console.error("[FHIR] rescheduleAppointment sync failed:", err);
+    }
+
+    return result;
   });
 
 export const cancelAppointment = createServerAction()
   .input(CancelAppointmentValidationSchema, { skipInputParsing: true })
   .handler(async ({ input }) => {
-    return await withMonitoring<TCancelAppointmentControllerOutput>(
+    const result = await withMonitoring<TCancelAppointmentControllerOutput>(
       "cancelAppointment",
       () => cancelAppointmentController(input),
       {
@@ -267,6 +304,20 @@ export const cancelAppointment = createServerAction()
         operationErrorMessage: "Failed to cancel appointment.",
       }
     );
+
+    try {
+      if (result.fhirAppointmentId) {
+        await updateFhirAppointment(String(result.fhirAppointmentId), {
+          status: "cancelled",
+          cancellation_reason: result.cancelReason ?? undefined,
+          cancellation_date: new Date().toISOString(),
+        });
+      }
+    } catch (err) {
+      console.error("[FHIR] cancelAppointment sync failed:", err);
+    }
+
+    return result;
   });
 
 export const deleteAppointment = createServerAction()

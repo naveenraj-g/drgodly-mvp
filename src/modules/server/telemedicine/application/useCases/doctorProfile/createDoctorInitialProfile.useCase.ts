@@ -4,7 +4,8 @@ import { getTelemedicineInjection } from "../../../di/container";
 export async function createDoctorInitialProfileUseCase(
   orgId: string,
   createdBy: string,
-  isABDMDoctorProfile: boolean
+  isABDMDoctorProfile: boolean,
+  fhirPractitionerId?: number
 ): Promise<TDoctorInitialProfile> {
   const doctorProfileRepository = getTelemedicineInjection(
     "IDoctorProfileRepository"
@@ -12,7 +13,8 @@ export async function createDoctorInitialProfileUseCase(
   const data = await doctorProfileRepository.createDoctorInitialProfile(
     orgId,
     createdBy,
-    isABDMDoctorProfile
+    isABDMDoctorProfile,
+    fhirPractitionerId
   );
   return data;
 }

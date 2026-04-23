@@ -10,16 +10,19 @@ export interface IPatientProfileRepository {
     orgId: string,
     userId: string,
     createdBy: string,
-    isABHAPatientProfile: boolean
+    isABHAPatientProfile: boolean,
+    fhirPatientId?: number
   ): Promise<TPatientInitialProfile>;
   getPatientWithPersonalProfile(
     orgId: string,
     userId: string
   ): Promise<TPatientWithPersonalProfile | null>;
   createPatientPersonalDetails(
-    createData: TPatientCreateOrUpdatePatientProfile
+    createData: TPatientCreateOrUpdatePatientProfile,
+    fhirPatientId?: number
   ): Promise<TPatientPersonalDetails>;
   updatePatientPersonalDetails(
-    updateData: TPatientCreateOrUpdatePatientProfile
+    updateData: TPatientCreateOrUpdatePatientProfile,
+    fhirPatientId?: number
   ): Promise<TPatientPersonalDetails>;
 }

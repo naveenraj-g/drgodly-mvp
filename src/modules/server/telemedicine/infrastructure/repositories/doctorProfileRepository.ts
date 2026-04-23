@@ -118,7 +118,8 @@ export class DoctorProfileRepository implements IDoctorProfileRepository {
   async createDoctorInitialProfile(
     orgId: string,
     createdBy: string,
-    isABDMDoctorProfile: boolean
+    isABDMDoctorProfile: boolean,
+    fhirPractitionerId?: number
   ): Promise<TDoctorInitialProfile> {
     const startTimeMs = Date.now();
     const operationId = randomUUID();
@@ -139,6 +140,7 @@ export class DoctorProfileRepository implements IDoctorProfileRepository {
           createdBy,
           updatedBy: createdBy,
           isABDMDoctorProfile,
+          ...(fhirPractitionerId && { fhirPractitionerId }),
         },
       });
 
@@ -459,7 +461,8 @@ export class DoctorProfileRepository implements IDoctorProfileRepository {
   }
 
   async createDoctorPersonalDetails(
-    createData: TCreateOrUpdateDoctorProfileDetail
+    createData: TCreateOrUpdateDoctorProfileDetail,
+    fhirPractitionerId?: number
   ): Promise<TDoctorPersonalDetails> {
     const startTimeMs = Date.now();
     const operationId = randomUUID();
@@ -524,36 +527,36 @@ export class DoctorProfileRepository implements IDoctorProfileRepository {
       })) ?? [];
 
     try {
-      const doctorPersonalDetails =
-        await prismaTelemedicine.doctorPersonalDetail.create({
-          data: {
-            ...rest,
-            createdBy: operationBy,
-            updatedBy: operationBy,
-            languagesSpoken: {
-              createMany: {
-                data: lang,
+      const doctorPersonalDetails = await prismaTelemedicine.$transaction(
+        async (tx) => {
+          const detail = await tx.doctorPersonalDetail.create({
+            data: {
+              ...rest,
+              createdBy: operationBy,
+              updatedBy: operationBy,
+              languagesSpoken: {
+                createMany: { data: lang },
               },
+              kycAddress: { create: kyc },
+              communicationAddress: { create: comm },
+              socialAccounts: { createMany: { data: social } },
             },
-            kycAddress: {
-              create: kyc,
+            include: {
+              communicationAddress: true,
+              kycAddress: true,
+              languagesSpoken: true,
+              socialAccounts: true,
             },
-            communicationAddress: {
-              create: comm,
-            },
-            socialAccounts: {
-              createMany: {
-                data: social,
-              },
-            },
-          },
-          include: {
-            communicationAddress: true,
-            kycAddress: true,
-            languagesSpoken: true,
-            socialAccounts: true,
-          },
-        });
+          });
+          if (fhirPractitionerId) {
+            await tx.doctor.update({
+              where: { id: rest.doctorId },
+              data: { fhirPractitionerId },
+            });
+          }
+          return detail;
+        }
+      );
 
       const data = await DoctorPersonalDetailsSchema.parseAsync(
         doctorPersonalDetails
@@ -592,7 +595,8 @@ export class DoctorProfileRepository implements IDoctorProfileRepository {
   }
 
   async updateDoctorPersonalDetails(
-    editData: TCreateOrUpdateDoctorProfileDetail
+    editData: TCreateOrUpdateDoctorProfileDetail,
+    fhirPractitionerId?: number
   ): Promise<TDoctorPersonalDetails> {
     const startTimeMs = Date.now();
     const operationId = randomUUID();
@@ -710,6 +714,13 @@ export class DoctorProfileRepository implements IDoctorProfileRepository {
           },
         });
 
+        if (fhirPractitionerId) {
+          await tx.doctor.update({
+            where: { id: rest.doctorId },
+            data: { fhirPractitionerId },
+          });
+        }
+
         // Finally, return full data with nested relations
         const fullProfileData =
           await prismaTelemedicine.doctorPersonalDetail.findUnique({
@@ -760,7 +771,8 @@ export class DoctorProfileRepository implements IDoctorProfileRepository {
   }
 
   async createDoctorQualificationDetails(
-    createData: TCreateOrUpdateDoctorQualificationDetail
+    createData: TCreateOrUpdateDoctorQualificationDetail,
+    fhirPractitionerId?: number
   ): Promise<TDoctorQualifications> {
     const startTimeMs = Date.now();
     const operationId = randomUUID();
@@ -788,22 +800,28 @@ export class DoctorProfileRepository implements IDoctorProfileRepository {
     }));
 
     try {
-      const qualificationData =
-        await prismaTelemedicine.doctorQualification.create({
-          data: {
-            ...rest,
-            createdBy: operationBy,
-            updatedBy: operationBy,
-            qualifications: {
-              createMany: {
-                data: qualificationsData,
+      const qualificationData = await prismaTelemedicine.$transaction(
+        async (tx) => {
+          const detail = await tx.doctorQualification.create({
+            data: {
+              ...rest,
+              createdBy: operationBy,
+              updatedBy: operationBy,
+              qualifications: {
+                createMany: { data: qualificationsData },
               },
             },
-          },
-          include: {
-            qualifications: true,
-          },
-        });
+            include: { qualifications: true },
+          });
+          if (fhirPractitionerId) {
+            await tx.doctor.update({
+              where: { id: rest.doctorId },
+              data: { fhirPractitionerId },
+            });
+          }
+          return detail;
+        }
+      );
 
       const data = await DoctorQualificationSchema.parseAsync(
         qualificationData
@@ -842,7 +860,8 @@ export class DoctorProfileRepository implements IDoctorProfileRepository {
   }
 
   async updateDoctorQualificationDetails(
-    updateData: TCreateOrUpdateDoctorQualificationDetail
+    updateData: TCreateOrUpdateDoctorQualificationDetail,
+    fhirPractitionerId?: number
   ): Promise<TDoctorQualifications> {
     const startTimeMs = Date.now();
     const operationId = randomUUID();
@@ -898,6 +917,13 @@ export class DoctorProfileRepository implements IDoctorProfileRepository {
               qualifications: true,
             },
           });
+
+          if (fhirPractitionerId) {
+            await tx.doctor.update({
+              where: { id: rest.doctorId },
+              data: { fhirPractitionerId },
+            });
+          }
 
           return qualification;
         }
@@ -1246,15 +1272,18 @@ export class DoctorProfileRepository implements IDoctorProfileRepository {
     }
   }
 
-  async submitDoctorFullProfile({
-    doctorId,
-    orgId,
-    operationBy,
-    personal,
-    qualification,
-    work,
-    concent,
-  }: TSubmitFullDoctorProfile): Promise<TDoctor> {
+  async submitDoctorFullProfile(
+    {
+      doctorId,
+      orgId,
+      operationBy,
+      personal,
+      qualification,
+      work,
+      concent,
+    }: TSubmitFullDoctorProfile,
+    fhirPractitionerId?: number
+  ): Promise<TDoctor> {
     const startTimeMs = Date.now();
     const operationId = randomUUID();
 
@@ -1472,6 +1501,7 @@ export class DoctorProfileRepository implements IDoctorProfileRepository {
           data: {
             isCompleted: true,
             updatedBy: operationBy,
+            ...(fhirPractitionerId && { fhirPractitionerId }),
           },
         });
 
