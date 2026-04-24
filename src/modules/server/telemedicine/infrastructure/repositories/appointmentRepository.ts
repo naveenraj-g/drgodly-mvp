@@ -146,6 +146,8 @@ export class AppointmentRepository implements IAppointmentRepository {
                       intakeConversation: true,
                       intakeReport: true,
                       virtualConversation: true,
+                      doctorReport: true,
+                      fullReport: true,
                     },
                   },
                   doctor: {
@@ -272,6 +274,8 @@ export class AppointmentRepository implements IAppointmentRepository {
                       intakeConversation: true,
                       intakeReport: true,
                       virtualConversation: true,
+                      doctorReport: true,
+                      fullReport: true,
                     },
                   },
                   doctor: {
@@ -332,6 +336,14 @@ export class AppointmentRepository implements IAppointmentRepository {
           },
         },
       });
+
+      const aiConsult = appointments.find((a) => a.type === "AI Consultation");
+      if (aiConsult) {
+        console.log(
+          "[getDashboardAppointmentsForDoctor] AI Consultation appointmentActual:",
+          JSON.stringify(aiConsult.appointmentActual, null, 2),
+        );
+      }
 
       const data = await AppointmentsSchema.parseAsync(appointments);
 
@@ -488,6 +500,14 @@ export class AppointmentRepository implements IAppointmentRepository {
           },
         },
       });
+
+      const aiConsultPatient = appointements.find((a) => a.type === "AI Consultation");
+      if (aiConsultPatient) {
+        console.log(
+          "[getAppointmentsForPatient] AI Consultation appointmentActual:",
+          JSON.stringify(aiConsultPatient.appointmentActual, null, 2),
+        );
+      }
 
       const data = await AppointmentsSchema.parseAsync(appointements);
 
@@ -738,7 +758,7 @@ export class AppointmentRepository implements IAppointmentRepository {
       context: { operationId },
     });
 
-    const { userId, orgId, virtualConversation, intakeReport, ...rest } =
+    const { userId, orgId, virtualConversation, fullReport, ...rest } =
       appointmentData;
 
     try {
@@ -752,7 +772,7 @@ export class AppointmentRepository implements IAppointmentRepository {
             create: {
               orgId,
               virtualConversation,
-              intakeReport: intakeReport ?? null,
+              fullReport: fullReport ?? null,
             },
           },
         },

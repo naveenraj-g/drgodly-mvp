@@ -36,7 +36,9 @@ function TextConsultation({ user }: TProps) {
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [liveTranscript, setLiveTranscript] = useState("");
-  const [endingPhase, setEndingPhase] = useState<"idle" | "report" | "saving">("idle");
+  const [endingPhase, setEndingPhase] = useState<"idle" | "report" | "saving">(
+    "idle",
+  );
   const abortRef = useRef<AbortController | null>(null);
   const liveTextRef = useRef("");
 
@@ -224,7 +226,7 @@ function TextConsultation({ user }: TProps) {
   const cancelStream = () => abortRef.current?.abort();
 
   const generateReport = async (
-    conversation: TMessageItem[]
+    conversation: TMessageItem[],
   ): Promise<unknown> => {
     try {
       const formatted = conversation.map((m) => {
@@ -234,7 +236,7 @@ function TextConsultation({ user }: TProps) {
         return `${speaker}: ${text}`;
       });
 
-      const res = await fetch("/api/report-agent", {
+      const res = await fetch("/api/full-report-agent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ conversation: formatted }),
@@ -255,13 +257,13 @@ function TextConsultation({ user }: TProps) {
     }
     try {
       setEndingPhase("report");
-      const intakeReport = await generateReport(messages);
+      const fullReport = await generateReport(messages);
       setEndingPhase("saving");
       await execute({
         orgId: user.orgId,
         patientUserId: user.id,
         virtualConversation: messages,
-        intakeReport,
+        fullReport,
       });
     } finally {
       setEndingPhase("idle");
@@ -343,7 +345,9 @@ function TextConsultation({ user }: TProps) {
           size="sm"
           variant="destructive"
           onClick={endConsultation}
-          disabled={endingPhase !== "idle" || (messages.length === 0 && !isStreaming)}
+          disabled={
+            endingPhase !== "idle" || (messages.length === 0 && !isStreaming)
+          }
           className="px-4 rounded-2xl h-7"
         >
           {endingPhase === "report" ? (

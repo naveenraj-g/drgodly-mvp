@@ -34,24 +34,38 @@ interface ConversationMessage {
   versions?: { id: string; content: string }[];
 }
 
+interface DiagnosticItem {
+  test?: string;
+  study?: string;
+  purpose?: string;
+}
+
+interface TreatmentItem {
+  condition?: string;
+  recommendation?: string;
+  rationale?: string;
+  route?: string;
+  duration?: string;
+}
+
+interface DifferentialItem {
+  condition?: string;
+  rationale?: string;
+  likelihood?: string;
+}
+
 interface IntakeReport {
-  summary?: string;
-  subjective?: {
-    chief_complaint?: string;
-    history_of_present_illness?: string;
-    associated_symptoms?: string[];
+  clinical_overview?: string;
+  risk_level?: string;
+  differential_diagnosis?: DifferentialItem[];
+  diagnostic_plan?: {
+    laboratory_tests?: DiagnosticItem[];
+    imaging?: DiagnosticItem[];
+    other?: DiagnosticItem[];
   };
-  objective?: {
-    observations?: string[];
-  };
-  assessment?: {
-    possible_conditions?: string[];
-    clinical_reasoning?: string;
-  };
-  plan?: {
-    next_steps?: string[];
-    when_to_seek_care?: string;
-  };
+  treatment_plan?: TreatmentItem[];
+  procedures?: string;
+  red_flags?: string[];
 }
 
 function safeParseMessages(raw: unknown): ConversationMessage[] {
@@ -64,16 +78,18 @@ function safeParseMessages(raw: unknown): ConversationMessage[] {
 
 function safeParseReport(raw: unknown): IntakeReport | null {
   if (raw == null) return null;
-  if (typeof raw === "object" && !Array.isArray(raw))
-    return raw as IntakeReport;
-  if (typeof raw === "string") {
-    try {
-      return JSON.parse(raw) as IntakeReport;
-    } catch {
-      return null;
+  try {
+    const obj: unknown = typeof raw === "string" ? JSON.parse(raw) : raw;
+    if (typeof obj !== "object" || Array.isArray(obj) || obj === null) return null;
+    const envelope = obj as Record<string, unknown>;
+    // Unwrap { status, data: { ... } } envelope
+    if (envelope.data && typeof envelope.data === "object" && !Array.isArray(envelope.data)) {
+      return envelope.data as IntakeReport;
     }
+    return obj as IntakeReport;
+  } catch {
+    return null;
   }
-  return null;
 }
 
 function getMessageContent(msg: ConversationMessage): string {
@@ -83,176 +99,167 @@ function getMessageContent(msg: ConversationMessage): string {
   return "";
 }
 
+function riskBadgeClass(level?: string) {
+  switch (level?.toUpperCase()) {
+    case "HIGH": return "bg-red-100 text-red-800 border-red-200 hover:bg-red-100";
+    case "MODERATE": return "bg-amber-100 text-amber-800 border-amber-200 hover:bg-amber-100";
+    case "LOW": return "bg-green-100 text-green-800 border-green-200 hover:bg-green-100";
+    default: return "";
+  }
+}
+
 function ReportView({ report }: { report: IntakeReport }) {
+  const diagItems = [
+    ...(report.diagnostic_plan?.laboratory_tests ?? []),
+    ...(report.diagnostic_plan?.imaging ?? []),
+    ...(report.diagnostic_plan?.other ?? []),
+  ];
+  const redFlags = (report.red_flags ?? []).filter((f) => f && f !== "Not reported");
+
   return (
     <ScrollArea className="h-full pr-2">
       <div className="space-y-4">
-        {report.summary && (
+
+        {/* Risk level */}
+        {report.risk_level && (
+          <div className="flex items-center gap-2">
+            <p className="text-xs text-muted-foreground">Risk Level</p>
+            <Badge className={cn("text-xs font-semibold", riskBadgeClass(report.risk_level))}>
+              {report.risk_level}
+            </Badge>
+          </div>
+        )}
+
+        {/* Clinical overview */}
+        {report.clinical_overview && (
           <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
             <p className="text-xs font-semibold uppercase tracking-wide text-primary mb-1">
-              Overview
+              Clinical Overview
             </p>
             <p className="text-sm text-foreground leading-relaxed">
-              {report.summary}
+              {report.clinical_overview}
             </p>
           </div>
         )}
 
-        {report.subjective && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-1.5">
-              <ClipboardList className="size-3.5 text-primary" />
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Subjective
-              </p>
-            </div>
-            {report.subjective.chief_complaint && (
-              <div>
-                <p className="text-xs text-muted-foreground mb-0.5">
-                  Chief Complaint
-                </p>
-                <p className="text-sm text-foreground">
-                  {report.subjective.chief_complaint}
-                </p>
-              </div>
-            )}
-            {report.subjective.history_of_present_illness && (
-              <div>
-                <p className="text-xs text-muted-foreground mb-0.5">
-                  History of Present Illness
-                </p>
-                <p className="text-sm text-foreground leading-relaxed">
-                  {report.subjective.history_of_present_illness}
-                </p>
-              </div>
-            )}
-            {report.subjective.associated_symptoms &&
-              report.subjective.associated_symptoms.length > 0 && (
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">
-                    Associated Symptoms
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {report.subjective.associated_symptoms.map((s, i) => (
-                      <Badge
-                        key={i}
-                        variant="secondary"
-                        className="text-xs font-normal"
-                      >
-                        {s}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-          </div>
-        )}
-
-        {report.objective?.observations &&
-          report.objective.observations.length > 0 && (
-            <>
-              <Separator />
-              <div className="space-y-2">
-                <div className="flex items-center gap-1.5">
-                  <Stethoscope className="size-3.5 text-primary" />
-                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    Objective
-                  </p>
-                </div>
-                <ul className="space-y-1">
-                  {report.objective.observations.map((obs, i) => (
-                    <li key={i} className="text-sm text-foreground flex gap-2">
-                      <span className="text-muted-foreground mt-0.5">•</span>
-                      {obs}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </>
-          )}
-
-        {report.assessment && (
+        {/* Differential diagnosis */}
+        {report.differential_diagnosis && report.differential_diagnosis.length > 0 && (
           <>
             <Separator />
             <div className="space-y-2">
               <div className="flex items-center gap-1.5">
                 <AlertCircle className="size-3.5 text-primary" />
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Assessment
+                  Differential Diagnosis
                 </p>
               </div>
-              {report.assessment.possible_conditions &&
-                report.assessment.possible_conditions.length > 0 && (
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">
-                      Possible Conditions
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {report.assessment.possible_conditions.map((c, i) => (
-                        <Badge
-                          key={i}
-                          className="text-xs font-normal bg-amber-100 text-amber-800 border-amber-200 hover:bg-amber-100"
-                        >
-                          {c}
+              <div className="space-y-2">
+                {report.differential_diagnosis.map((d, i) => (
+                  <div key={i} className="rounded-md border bg-muted/30 px-3 py-2 space-y-0.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-medium text-foreground">{d.condition}</p>
+                      {d.likelihood && (
+                        <Badge variant="outline" className="text-xs font-normal shrink-0">
+                          {d.likelihood}
                         </Badge>
-                      ))}
+                      )}
                     </div>
+                    {d.rationale && (
+                      <p className="text-xs text-muted-foreground leading-relaxed">{d.rationale}</p>
+                    )}
                   </div>
-                )}
-              {report.assessment.clinical_reasoning && (
-                <div>
-                  <p className="text-xs text-muted-foreground mb-0.5">
-                    Clinical Reasoning
-                  </p>
-                  <p className="text-sm text-foreground leading-relaxed">
-                    {report.assessment.clinical_reasoning}
-                  </p>
-                </div>
-              )}
+                ))}
+              </div>
             </div>
           </>
         )}
 
-        {report.plan && (
+        {/* Diagnostic plan */}
+        {diagItems.length > 0 && (
+          <>
+            <Separator />
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5">
+                <ClipboardList className="size-3.5 text-primary" />
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Diagnostic Plan
+                </p>
+              </div>
+              <ul className="space-y-1.5">
+                {diagItems.map((item, i) => (
+                  <li key={i} className="text-sm text-foreground space-y-0.5">
+                    <p className="font-medium">{item.test ?? item.study}</p>
+                    {item.purpose && (
+                      <p className="text-xs text-muted-foreground">{item.purpose}</p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </>
+        )}
+
+        {/* Treatment plan */}
+        {report.treatment_plan && report.treatment_plan.length > 0 && (
           <>
             <Separator />
             <div className="space-y-2">
               <div className="flex items-center gap-1.5">
                 <ListChecks className="size-3.5 text-primary" />
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Plan
+                  Treatment Plan
                 </p>
               </div>
-              {report.plan.next_steps && report.plan.next_steps.length > 0 && (
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">
-                    Next Steps
-                  </p>
-                  <ol className="space-y-1 list-decimal list-inside">
-                    {report.plan.next_steps.map((step, i) => (
-                      <li
-                        key={i}
-                        className="text-sm text-foreground leading-relaxed"
-                      >
-                        {step}
-                      </li>
-                    ))}
-                  </ol>
-                </div>
-              )}
-              {report.plan.when_to_seek_care && (
-                <div className="rounded-md border border-amber-200 bg-amber-50 p-3 flex gap-2">
-                  <TriangleAlert className="size-4 text-amber-600 shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-xs font-medium text-amber-800 mb-0.5">
-                      When to Seek Care
-                    </p>
-                    <p className="text-xs text-amber-700 leading-relaxed">
-                      {report.plan.when_to_seek_care}
-                    </p>
+              <div className="space-y-2">
+                {report.treatment_plan.map((t, i) => (
+                  <div key={i} className="rounded-md border bg-muted/30 px-3 py-2 space-y-1">
+                    {t.condition && <p className="text-xs text-muted-foreground">{t.condition}</p>}
+                    {t.recommendation && <p className="text-sm text-foreground">{t.recommendation}</p>}
+                    <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                      {t.route && <span>Route: {t.route}</span>}
+                      {t.duration && <span>· {t.duration}</span>}
+                    </div>
                   </div>
-                </div>
-              )}
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Procedures */}
+        {report.procedures && report.procedures !== "Not reported" && (
+          <>
+            <Separator />
+            <div>
+              <div className="flex items-center gap-1.5 mb-1">
+                <Stethoscope className="size-3.5 text-primary" />
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Procedures
+                </p>
+              </div>
+              <p className="text-sm text-foreground">{report.procedures}</p>
+            </div>
+          </>
+        )}
+
+        {/* Red flags */}
+        {redFlags.length > 0 && (
+          <>
+            <Separator />
+            <div className="rounded-md border border-red-200 bg-red-50 p-3 space-y-1.5">
+              <div className="flex items-center gap-1.5">
+                <TriangleAlert className="size-3.5 text-red-600" />
+                <p className="text-xs font-semibold uppercase tracking-wide text-red-700">
+                  Red Flags
+                </p>
+              </div>
+              <ul className="space-y-1">
+                {redFlags.map((f, i) => (
+                  <li key={i} className="text-xs text-red-700 flex gap-2">
+                    <span className="mt-0.5">•</span>{f}
+                  </li>
+                ))}
+              </ul>
             </div>
           </>
         )}
@@ -323,7 +330,10 @@ export const IntakeInsights = ({ appointment }: IntakeInsightsProps) => {
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="summary" className="flex-1 overflow-hidden mt-4">
+            <TabsContent
+              value="summary"
+              className="flex-1 overflow-hidden mt-4"
+            >
               {report ? (
                 <ReportView report={report} />
               ) : (
@@ -333,7 +343,10 @@ export const IntakeInsights = ({ appointment }: IntakeInsightsProps) => {
               )}
             </TabsContent>
 
-            <TabsContent value="conversation" className="flex-1 overflow-hidden mt-4">
+            <TabsContent
+              value="conversation"
+              className="flex-1 overflow-hidden mt-4"
+            >
               <ScrollArea className="h-full pr-3">
                 <div className="flex flex-col gap-3">
                   {messages.map((msg) => {

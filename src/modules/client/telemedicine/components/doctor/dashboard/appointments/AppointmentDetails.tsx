@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/card";
 import { TAppointment } from "@/modules/shared/entities/models/telemedicine/appointment";
 import { IntakeInsights } from "./IntakeInsights";
+import { ConsultationInsights } from "./ConsultationInsights";
 import { TreatmentEngine } from "./TreatmentEngine";
 import { ClinicalSummary } from "./ClinicalSummary";
 import { LifestyleCharts } from "../charts/LifestyleCharts";
@@ -30,7 +31,11 @@ export const AppointmentDetails = ({
 
       <CardContent className="flex-1 px-0">
         <div className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-3 grid-flow-dense auto-rows-[660px]">
-          <IntakeInsights appointment={appointment} />
+          {appointment.type === "AI Consultation" ? (
+            <ConsultationInsights appointment={appointment} />
+          ) : (
+            <IntakeInsights appointment={appointment} />
+          )}
           <ClinicalSummary patientName={patientName} />
           <TreatmentEngine />
           <LifestyleCharts />

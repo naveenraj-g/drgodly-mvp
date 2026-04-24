@@ -48,6 +48,8 @@ const AppointmentActual = z.object({
   intakeConversation: z.any().nullable(),
   intakeReport: z.any().nullable(),
   virtualConversation: z.any().nullable(),
+  doctorReport: z.any().nullable(),
+  fullReport: z.any().nullable(),
 });
 
 const LinkedAppointmentSnapshotSchema = z.object({
@@ -61,6 +63,8 @@ const LinkedAppointmentSnapshotSchema = z.object({
     intakeConversation: z.any().nullable(),
     intakeReport: z.any().nullable(),
     virtualConversation: z.any().nullable(),
+    doctorReport: z.any().nullable().optional(),
+    fullReport: z.any().nullable().optional(),
   }).nullable().optional(),
   doctor: z.object({
     userId: z.string().nullable(),
@@ -183,6 +187,7 @@ export const BookConsultationAppointmentSchema = BookAppointmentSchema.omit({
 }).extend(
   z.object({
     virtualConversation: z.any().nullable(),
+    fullReport: z.any().nullable().optional(),
   }).shape
 );
 export type TBookConsultationAppointment = z.infer<
@@ -193,7 +198,7 @@ export const BookConsultationAppointmentUseCase = z.object({
   orgId: z.string(),
   patientUserId: z.string(),
   virtualConversation: z.any().nullable(),
-  intakeReport: z.any().nullable().optional(),
+  fullReport: z.any().nullable().optional(),
 });
 export type TBookConsultationAppointmentUseCase = z.infer<
   typeof BookConsultationAppointmentUseCase

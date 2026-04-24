@@ -1,0 +1,57 @@
+{
+    "data": {
+        "red_flags": [
+            "Not reported"
+        ],
+        "procedures": "Not reported",
+        "risk_level": "LOW",
+        "treatment_plan": [
+            {
+                "route": "Oral",
+                "duration": "Short-term, reassess if symptoms persist or worsen",
+                "condition": "Acute headache (unspecified)",
+                "rationale": "Symptomatic relief while further evaluation is ongoing.",
+                "recommendation": "Trial of acetaminophen or NSAIDs as needed for pain"
+            }
+        ],
+        "diagnostic_plan": {
+            "other": [
+                {
+                    "test": "Detailed headache history and neurological examination",
+                    "purpose": "To further characterize headache and assess for red flags."
+                }
+            ],
+            "imaging": [
+                {
+                    "study": "Head CT or MRI",
+                    "purpose": "To rule out intracranial pathology if red flag symptoms are present."
+                }
+            ],
+            "laboratory_tests": [
+                {
+                    "test": "CBC",
+                    "purpose": "To evaluate for infection or systemic causes if clinically indicated."
+                }
+            ]
+        },
+        "clinical_overview": "Patient reports onset of headache since last night. No further details regarding location, severity, associated symptoms, or past medical history provided.",
+        "differential_diagnosis": [
+            {
+                "condition": "Tension-type headache",
+                "rationale": "Acute onset of headache; no further details to suggest alternative etiologies.",
+                "likelihood": "Possible"
+            },
+            {
+                "condition": "Migraine",
+                "rationale": "Headache reported, but insufficient information regarding characteristics or associated symptoms.",
+                "likelihood": "Possible"
+            },
+            {
+                "condition": "Secondary headache (e.g., infection, sinusitis, other causes)",
+                "rationale": "Acute onset; no information to rule out secondary causes.",
+                "likelihood": "Possible"
+            }
+        ]
+    },
+    "status": "success"
+}

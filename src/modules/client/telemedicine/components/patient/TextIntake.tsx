@@ -236,7 +236,7 @@ function TextIntake({ user }: TProps) {
         return `${speaker}: ${text}`;
       });
 
-      const res = await fetch("/api/report-agent", {
+      const res = await fetch("/api/assessment-plan-agent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ conversation: formatted }),

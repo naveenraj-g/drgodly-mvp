@@ -28,7 +28,9 @@ import {
   ListChecks,
   TriangleAlert,
   FileText,
+  Activity,
 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
 import { useSession } from "@/modules/client/auth/betterauth/auth-client";
 import { useAppointmentModalStore } from "../../stores/appointment-modal-store";
@@ -119,88 +121,314 @@ function safeParseMessages(raw: unknown): MessageItem[] {
   }
 }
 
+interface DiagnosticItem {
+  test?: string;
+  study?: string;
+  purpose?: string;
+}
+
+interface TreatmentItem {
+  condition?: string;
+  recommendation?: string;
+  rationale?: string;
+  route?: string;
+  duration?: string;
+}
+
+interface DifferentialItem {
+  condition?: string;
+  rationale?: string;
+  likelihood?: string;
+}
+
 interface IntakeReport {
-  summary?: string;
-  subjective?: {
-    chief_complaint?: string;
-    history_of_present_illness?: string;
-    associated_symptoms?: string[];
+  clinical_overview?: string;
+  risk_level?: string;
+  differential_diagnosis?: DifferentialItem[];
+  diagnostic_plan?: {
+    laboratory_tests?: DiagnosticItem[];
+    imaging?: DiagnosticItem[];
+    other?: DiagnosticItem[];
   };
-  objective?: {
-    observations?: string[];
-  };
-  assessment?: {
-    possible_conditions?: string[];
-    clinical_reasoning?: string;
-  };
-  plan?: {
-    next_steps?: string[];
-    when_to_seek_care?: string;
-  };
+  treatment_plan?: TreatmentItem[];
+  procedures?: string;
+  red_flags?: string[];
 }
 
 function safeParseReport(raw: unknown): IntakeReport | null {
   if (raw == null) return null;
-  if (typeof raw === "object" && !Array.isArray(raw)) return raw as IntakeReport;
-  if (typeof raw === "string") {
-    try { return JSON.parse(raw) as IntakeReport; } catch { return null; }
+  try {
+    const obj: unknown = typeof raw === "string" ? JSON.parse(raw) : raw;
+    if (typeof obj !== "object" || Array.isArray(obj) || obj === null) return null;
+    const envelope = obj as Record<string, unknown>;
+    if (envelope.data && typeof envelope.data === "object" && !Array.isArray(envelope.data)) {
+      return envelope.data as IntakeReport;
+    }
+    return obj as IntakeReport;
+  } catch { return null; }
+}
+
+// ── Full report (AI Consultation) ─────────────────────────────────────────────
+
+interface SoapReport {
+  summary?: string;
+  subjective?: Record<string, unknown>;
+  objective?: Record<string, unknown>;
+  assessment?: Record<string, unknown>;
+  plan?: Record<string, unknown>;
+}
+
+interface AssessmentPlan {
+  clinical_overview?: string;
+  differential_diagnosis?: unknown[];
+  diagnostic_plan?: Record<string, unknown>;
+  treatment_plan?: unknown[];
+  procedures?: string;
+  risk_level?: string;
+  red_flags?: unknown[];
+}
+
+interface FullReportData {
+  soap_report?: SoapReport;
+  assessment_plan?: AssessmentPlan;
+  generated_at?: string;
+}
+
+function safeParseFullReport(raw: unknown): FullReportData | null {
+  if (raw == null) return null;
+  try {
+    const obj = typeof raw === "string" ? JSON.parse(raw) : raw;
+    if (typeof obj !== "object" || Array.isArray(obj)) return null;
+    const envelope = obj as { status?: string; data?: FullReportData };
+    if (envelope.data) return envelope.data;
+    const direct = obj as FullReportData;
+    if (direct.soap_report || direct.assessment_plan) return direct;
+    return null;
+  } catch { return null; }
+}
+
+function toStrArr(val: unknown): string[] {
+  if (!Array.isArray(val)) return [];
+  return val.map((v) => (typeof v === "string" ? v : JSON.stringify(v)));
+}
+
+function riskClass(level?: string) {
+  switch (level?.toUpperCase()) {
+    case "HIGH": return "bg-red-100 text-red-800 border-red-200 hover:bg-red-100";
+    case "MODERATE": return "bg-amber-100 text-amber-800 border-amber-200 hover:bg-amber-100";
+    case "LOW": return "bg-green-100 text-green-800 border-green-200 hover:bg-green-100";
+    default: return "";
   }
-  return null;
+}
+
+function SoapSection({ soap }: { soap: SoapReport }) {
+  return (
+    <div className="space-y-4">
+      {soap.summary && (
+        <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-primary mb-1">Summary</p>
+          <p className="text-sm leading-relaxed">{soap.summary}</p>
+        </div>
+      )}
+      {(["subjective", "objective", "assessment", "plan"] as const).map((key) => {
+        const section = soap[key];
+        if (!section || Object.keys(section).length === 0) return null;
+        return (
+          <div key={key} className="space-y-2">
+            <div className="flex items-center gap-1.5">
+              {key === "subjective" && <ClipboardList className="size-3.5 text-primary" />}
+              {key === "objective" && <Stethoscope className="size-3.5 text-primary" />}
+              {key === "assessment" && <AlertCircle className="size-3.5 text-primary" />}
+              {key === "plan" && <ListChecks className="size-3.5 text-primary" />}
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground capitalize">{key}</p>
+            </div>
+            {Object.entries(section).map(([k, v]) => {
+              if (v == null) return null;
+              const label = k.replaceAll("_", " ");
+              if (Array.isArray(v)) {
+                const items = toStrArr(v);
+                if (!items.length) return null;
+                return (
+                  <div key={k}>
+                    <p className="text-xs text-muted-foreground mb-1 capitalize">{label}</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {items.map((s, i) => (
+                        <Badge key={i} variant="secondary" className="text-xs font-normal">{s}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                );
+              }
+              if (typeof v === "object") return null;
+              return (
+                <div key={k}>
+                  <p className="text-xs text-muted-foreground mb-0.5 capitalize">{label}</p>
+                  <p className="text-sm leading-relaxed">{String(v)}</p>
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function AssessmentPlanSection({ plan }: { plan: AssessmentPlan }) {
+  const diffDx = toStrArr(plan.differential_diagnosis);
+  const redFlags = toStrArr(plan.red_flags);
+  const treatment = toStrArr(plan.treatment_plan);
+
+  return (
+    <div className="space-y-4">
+      {plan.risk_level && (
+        <div className="flex items-center gap-2">
+          <p className="text-xs text-muted-foreground">Risk Level</p>
+          <Badge className={cn("text-xs font-semibold", riskClass(plan.risk_level))}>{plan.risk_level}</Badge>
+        </div>
+      )}
+      {plan.clinical_overview && (
+        <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-primary mb-1">Clinical Overview</p>
+          <p className="text-sm leading-relaxed">{plan.clinical_overview}</p>
+        </div>
+      )}
+      {diffDx.length > 0 && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-1.5">
+            <Activity className="size-3.5 text-primary" />
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Differential Diagnosis</p>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {diffDx.map((d, i) => <Badge key={i} variant="outline" className="text-xs font-normal">{d}</Badge>)}
+          </div>
+        </div>
+      )}
+      {plan.diagnostic_plan && Object.entries(plan.diagnostic_plan).map(([k, v]) => {
+        if (v == null) return null;
+        const items = Array.isArray(v) ? toStrArr(v) : null;
+        if (items && items.length > 0) {
+          return (
+            <div key={k}>
+              <p className="text-xs text-muted-foreground mb-1 capitalize">{k.replaceAll("_", " ")}</p>
+              <ul className="space-y-1">
+                {items.map((s, i) => (
+                  <li key={i} className="text-sm flex gap-2"><span className="text-muted-foreground mt-0.5">•</span>{s}</li>
+                ))}
+              </ul>
+            </div>
+          );
+        }
+        if (typeof v !== "object") {
+          return (
+            <div key={k}>
+              <p className="text-xs text-muted-foreground mb-0.5 capitalize">{k.replaceAll("_", " ")}</p>
+              <p className="text-sm">{String(v)}</p>
+            </div>
+          );
+        }
+        return null;
+      })}
+      {treatment.length > 0 && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-1.5">
+            <ListChecks className="size-3.5 text-primary" />
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Treatment Plan</p>
+          </div>
+          <ol className="space-y-1 list-decimal list-inside">
+            {treatment.map((t, i) => <li key={i} className="text-sm leading-relaxed">{t}</li>)}
+          </ol>
+        </div>
+      )}
+      {plan.procedures && (
+        <div>
+          <p className="text-xs text-muted-foreground mb-0.5">Procedures</p>
+          <p className="text-sm leading-relaxed">{plan.procedures}</p>
+        </div>
+      )}
+      {redFlags.length > 0 && (
+        <div className="rounded-md border border-red-200 bg-red-50 p-3 space-y-2">
+          <div className="flex items-center gap-1.5">
+            <TriangleAlert className="size-3.5 text-red-600" />
+            <p className="text-xs font-semibold uppercase tracking-wide text-red-700">Red Flags</p>
+          </div>
+          <ul className="space-y-1">
+            {redFlags.map((f, i) => (
+              <li key={i} className="text-xs text-red-700 flex gap-2"><span className="mt-0.5">•</span>{f}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function IntakeReportView({ report }: { report: IntakeReport }) {
+  const diagItems = [
+    ...(report.diagnostic_plan?.laboratory_tests ?? []),
+    ...(report.diagnostic_plan?.imaging ?? []),
+    ...(report.diagnostic_plan?.other ?? []),
+  ];
+  const redFlags = (report.red_flags ?? []).filter((f) => f && f !== "Not reported");
+
   return (
     <div className="space-y-4">
-      {report.summary && (
+      {report.risk_level && (
+        <div className="flex items-center gap-2">
+          <p className="text-xs text-muted-foreground">Risk Level</p>
+          <Badge className={cn("text-xs font-semibold", riskClass(report.risk_level))}>
+            {report.risk_level}
+          </Badge>
+        </div>
+      )}
+
+      {report.clinical_overview && (
         <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-primary mb-1">Overview</p>
-          <p className="text-sm text-foreground leading-relaxed">{report.summary}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-primary mb-1">Clinical Overview</p>
+          <p className="text-sm text-foreground leading-relaxed">{report.clinical_overview}</p>
         </div>
       )}
 
-      {report.subjective && (
-        <div className="space-y-2">
-          <div className="flex items-center gap-1.5">
-            <ClipboardList className="size-3.5 text-primary" />
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Subjective</p>
-          </div>
-          {report.subjective.chief_complaint && (
-            <div>
-              <p className="text-xs text-muted-foreground mb-0.5">Chief Complaint</p>
-              <p className="text-sm text-foreground">{report.subjective.chief_complaint}</p>
-            </div>
-          )}
-          {report.subjective.history_of_present_illness && (
-            <div>
-              <p className="text-xs text-muted-foreground mb-0.5">History of Present Illness</p>
-              <p className="text-sm text-foreground leading-relaxed">{report.subjective.history_of_present_illness}</p>
-            </div>
-          )}
-          {report.subjective.associated_symptoms && report.subjective.associated_symptoms.length > 0 && (
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">Associated Symptoms</p>
-              <div className="flex flex-wrap gap-1.5">
-                {report.subjective.associated_symptoms.map((s, i) => (
-                  <Badge key={i} variant="secondary" className="text-xs font-normal">{s}</Badge>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {report.objective?.observations && report.objective.observations.length > 0 && (
+      {report.differential_diagnosis && report.differential_diagnosis.length > 0 && (
         <>
           <Separator />
           <div className="space-y-2">
             <div className="flex items-center gap-1.5">
-              <Stethoscope className="size-3.5 text-primary" />
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Objective</p>
+              <AlertCircle className="size-3.5 text-primary" />
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Differential Diagnosis</p>
             </div>
-            <ul className="space-y-1">
-              {report.objective.observations.map((obs, i) => (
-                <li key={i} className="text-sm text-foreground flex gap-2">
-                  <span className="text-muted-foreground mt-0.5">•</span>{obs}
+            <div className="space-y-2">
+              {report.differential_diagnosis.map((d, i) => (
+                <div key={i} className="rounded-md border bg-muted/30 px-3 py-2 space-y-0.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-medium text-foreground">{d.condition}</p>
+                    {d.likelihood && (
+                      <Badge variant="outline" className="text-xs font-normal shrink-0">{d.likelihood}</Badge>
+                    )}
+                  </div>
+                  {d.rationale && (
+                    <p className="text-xs text-muted-foreground leading-relaxed">{d.rationale}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+
+      {diagItems.length > 0 && (
+        <>
+          <Separator />
+          <div className="space-y-2">
+            <div className="flex items-center gap-1.5">
+              <ClipboardList className="size-3.5 text-primary" />
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Diagnostic Plan</p>
+            </div>
+            <ul className="space-y-1.5">
+              {diagItems.map((item, i) => (
+                <li key={i} className="text-sm text-foreground space-y-0.5">
+                  <p className="font-medium">{item.test ?? item.study}</p>
+                  {item.purpose && <p className="text-xs text-muted-foreground">{item.purpose}</p>}
                 </li>
               ))}
             </ul>
@@ -208,61 +436,58 @@ function IntakeReportView({ report }: { report: IntakeReport }) {
         </>
       )}
 
-      {report.assessment && (
-        <>
-          <Separator />
-          <div className="space-y-2">
-            <div className="flex items-center gap-1.5">
-              <AlertCircle className="size-3.5 text-primary" />
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Assessment</p>
-            </div>
-            {report.assessment.possible_conditions && report.assessment.possible_conditions.length > 0 && (
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Possible Conditions</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {report.assessment.possible_conditions.map((c, i) => (
-                    <Badge key={i} className="text-xs font-normal bg-amber-100 text-amber-800 border-amber-200 hover:bg-amber-100">{c}</Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-            {report.assessment.clinical_reasoning && (
-              <div>
-                <p className="text-xs text-muted-foreground mb-0.5">Clinical Reasoning</p>
-                <p className="text-sm text-foreground leading-relaxed">{report.assessment.clinical_reasoning}</p>
-              </div>
-            )}
-          </div>
-        </>
-      )}
-
-      {report.plan && (
+      {report.treatment_plan && report.treatment_plan.length > 0 && (
         <>
           <Separator />
           <div className="space-y-2">
             <div className="flex items-center gap-1.5">
               <ListChecks className="size-3.5 text-primary" />
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Plan</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Treatment Plan</p>
             </div>
-            {report.plan.next_steps && report.plan.next_steps.length > 0 && (
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Next Steps</p>
-                <ol className="space-y-1 list-decimal list-inside">
-                  {report.plan.next_steps.map((step, i) => (
-                    <li key={i} className="text-sm text-foreground leading-relaxed">{step}</li>
-                  ))}
-                </ol>
-              </div>
-            )}
-            {report.plan.when_to_seek_care && (
-              <div className="rounded-md border border-amber-200 bg-amber-50 p-3 flex gap-2">
-                <TriangleAlert className="size-4 text-amber-600 shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-xs font-medium text-amber-800 mb-0.5">When to Seek Care</p>
-                  <p className="text-xs text-amber-700 leading-relaxed">{report.plan.when_to_seek_care}</p>
+            <div className="space-y-2">
+              {report.treatment_plan.map((t, i) => (
+                <div key={i} className="rounded-md border bg-muted/30 px-3 py-2 space-y-1">
+                  {t.condition && <p className="text-xs text-muted-foreground">{t.condition}</p>}
+                  {t.recommendation && <p className="text-sm text-foreground">{t.recommendation}</p>}
+                  <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                    {t.route && <span>Route: {t.route}</span>}
+                    {t.duration && <span>· {t.duration}</span>}
+                  </div>
                 </div>
-              </div>
-            )}
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+
+      {report.procedures && report.procedures !== "Not reported" && (
+        <>
+          <Separator />
+          <div>
+            <div className="flex items-center gap-1.5 mb-1">
+              <Stethoscope className="size-3.5 text-primary" />
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Procedures</p>
+            </div>
+            <p className="text-sm text-foreground">{report.procedures}</p>
+          </div>
+        </>
+      )}
+
+      {redFlags.length > 0 && (
+        <>
+          <Separator />
+          <div className="rounded-md border border-red-200 bg-red-50 p-3 space-y-1.5">
+            <div className="flex items-center gap-1.5">
+              <TriangleAlert className="size-3.5 text-red-600" />
+              <p className="text-xs font-semibold uppercase tracking-wide text-red-700">Red Flags</p>
+            </div>
+            <ul className="space-y-1">
+              {redFlags.map((f, i) => (
+                <li key={i} className="text-xs text-red-700 flex gap-2">
+                  <span className="mt-0.5">•</span>{f}
+                </li>
+              ))}
+            </ul>
           </div>
         </>
       )}
@@ -308,9 +533,10 @@ export function AppointmentViewModal() {
   const intakeMessages = safeParseMessages(actual?.intakeConversation);
   const consultationMessages = safeParseMessages(actual?.virtualConversation);
   const intakeReport = safeParseReport(actual?.intakeReport);
+  const fullReportData = safeParseFullReport(actual?.fullReport ?? actual?.doctorReport);
 
   const hasConversation = intakeMessages.length > 0 || consultationMessages.length > 0;
-  const hasAiData = hasConversation || intakeReport != null;
+  const hasAiData = hasConversation || intakeReport != null || fullReportData != null;
   const isFollowUp = !!appointment.followUpMapping;
   const hasFollowUp = !!appointment.intakeMapping;
 
@@ -462,25 +688,76 @@ export function AppointmentViewModal() {
           </div>
         )}
 
-        {/* AI Data: Intake Report + Conversations */}
+        {/* AI Data */}
         {hasAiData && (
           <>
             <Separator className="my-2" />
-            <div className="space-y-4">
-              {intakeReport && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <FileText className="size-4 text-primary" />
-                    <p className="text-sm font-semibold">Intake Report</p>
-                  </div>
-                  <div className="rounded-xl border bg-muted/30 p-4">
-                    <IntakeReportView report={intakeReport} />
-                  </div>
+
+            {/* AI Consultation — full report with tabs */}
+            {fullReportData ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Brain className="size-4 text-primary" />
+                  <p className="text-sm font-semibold">Consultation Report</p>
+                  {fullReportData.generated_at && (
+                    <span className="text-xs text-muted-foreground ml-auto">
+                      {new Date(fullReportData.generated_at).toLocaleDateString()}
+                    </span>
+                  )}
                 </div>
-              )}
-              <ConversationViewer messages={intakeMessages} title="Intake Conversation" />
-              <ConversationViewer messages={consultationMessages} title="Consultation Conversation" />
-            </div>
+                <Tabs
+                  defaultValue={fullReportData.soap_report ? "soap" : "assessment"}
+                  className="w-full"
+                >
+                  <TabsList className="grid w-full grid-cols-2">
+                    {fullReportData.soap_report && (
+                      <TabsTrigger value="soap" className="flex items-center gap-1">
+                        <FileText className="h-3 w-3" />
+                        SOAP Report
+                      </TabsTrigger>
+                    )}
+                    {fullReportData.assessment_plan && (
+                      <TabsTrigger value="assessment" className="flex items-center gap-1">
+                        <Activity className="h-3 w-3" />
+                        Assessment & Plan
+                      </TabsTrigger>
+                    )}
+                  </TabsList>
+                  {fullReportData.soap_report && (
+                    <TabsContent value="soap">
+                      <div className="rounded-xl border bg-muted/30 p-4 mt-2">
+                        <SoapSection soap={fullReportData.soap_report} />
+                      </div>
+                    </TabsContent>
+                  )}
+                  {fullReportData.assessment_plan && (
+                    <TabsContent value="assessment">
+                      <div className="rounded-xl border bg-muted/30 p-4 mt-2">
+                        <AssessmentPlanSection plan={fullReportData.assessment_plan} />
+                      </div>
+                    </TabsContent>
+                  )}
+                </Tabs>
+                <ConversationViewer messages={consultationMessages} title="Consultation Conversation" />
+              </div>
+            ) : (
+              /* Regular intake / doctor appointment data */
+              <div className="space-y-4">
+                {intakeReport && (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <FileText className="size-4 text-primary" />
+                      <p className="text-sm font-semibold">Intake Report</p>
+                    </div>
+                    <div className="rounded-xl border bg-muted/30 p-4">
+                      <IntakeReportView report={intakeReport} />
+                    </div>
+                  </div>
+                )}
+                <ConversationViewer messages={intakeMessages} title="Intake Conversation" />
+                <ConversationViewer messages={consultationMessages} title="Consultation Conversation" />
+              </div>
+            )}
           </>
         )}
 

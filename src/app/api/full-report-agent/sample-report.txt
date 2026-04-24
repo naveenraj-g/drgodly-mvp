@@ -1,0 +1,23 @@
+{
+  status: 'success',
+  data: {
+    soap_report: {
+      subjective: [Object],
+      objective: [Object],
+      assessment: [Object],
+      plan: [Object],
+      summary: '23-year-old male with acute sharp upper right abdominal pain, nausea, chills, and one episode of vomiting. Symptoms are currently stable but may indicate food poisoning or gallbladder/hepatobiliary pathology. Monitoring and timely medical evaluation are advised.'
+    },
+    assessment_plan: {
+      clinical_overview: '23-year-old male with acute onset sharp pain in the upper right abdomen since last night, associated with nausea, chills, and one episode of vomiting. No jaundice, severe or worsening pain, and able to tolerate oral intake. No information on underlying health conditions or current medications.',
+      differential_diagnosis: [Array],
+      diagnostic_plan: [Object],
+      treatment_plan: [Array],
+      procedures: 'None indicated at this time; consider abdominal ultrasound if symptoms persist or worsen.',
+      risk_level: 'MODERATE',
+      red_flags: [Array]
+    },
+    generated_at: '2026-04-24 13:42:32.896309',
+    conversation_length: 22
+  }
+}
