@@ -10,16 +10,16 @@ const generateRoomId = () =>
 export async function bookAppointmentUseCase(
   createData: TBookAppointmentUseCase,
   fhirEncounterId?: number,
-  fhirAppointmentId?: number
+  fhirAppointmentId?: number,
 ): Promise<TAppointment> {
   const appointmentRepository = getTelemedicineInjection(
-    "IAppointmentRepository"
+    "IAppointmentRepository",
   );
   const idResolverRepository = getTelemedicineInjection(
-    "IIdResolverRepository"
+    "IIdResolverRepository",
   );
   const doctorServiceRepository = getTelemedicineInjection(
-    "IDoctorServiceRepository"
+    "IDoctorServiceRepository",
   );
 
   const { patientUserId, doctorUserId, serviceId, ...rest } = createData;
@@ -33,11 +33,11 @@ export async function bookAppointmentUseCase(
   const [doctorId, patientId] = await Promise.all([
     idResolverRepository.resolveDoctorIdByUserIdAndOrgId(
       doctorUserId,
-      rest.orgId
+      rest.orgId,
     ),
     idResolverRepository.resolvePatientIdByUserIdAndOrgId(
       patientUserId,
-      rest.orgId
+      rest.orgId,
     ),
   ]);
 
@@ -47,7 +47,7 @@ export async function bookAppointmentUseCase(
   const service = await doctorServiceRepository.getDoctorServiceByIds(
     serviceId,
     doctorId,
-    rest.orgId
+    rest.orgId,
   );
   if (!service) throw new Error("Service not found");
 
@@ -78,7 +78,11 @@ export async function bookAppointmentUseCase(
     userId: patientUserId,
   };
 
-  const data = await appointmentRepository.bookAppointment(payload, fhirEncounterId, fhirAppointmentId);
+  const data = await appointmentRepository.bookAppointment(
+    payload,
+    fhirEncounterId,
+    fhirAppointmentId,
+  );
 
   return data;
 }

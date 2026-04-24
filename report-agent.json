@@ -1,0 +1,186 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AI Agent API",
+    "version": "1.0"
+  },
+  "paths": {
+    "/api/agent/assessment-plan": {
+      "post": {
+        "summary": "Generate Clinical Assessment & Plan",
+        "description": "Generate structured Assessment & Plan from patient conversation.\n\n- Returns clinical reasoning (differential diagnosis, plan, risk)\n- No definitive diagnosis\n- No strict prescriptions\n\nPermission Required:\n`consultagent:chat`",
+        "operationId": "generate_assessment_plan_api_api_agent_assessment_plan_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConversationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/doctor-report": {
+      "post": {
+        "summary": "Generate Professional Doctor Report",
+        "description": "Generate structured clinical notes (SOAP format) from full conversation.\n\n- Used at end of consultation\n- Returns professional medical documentation\n- No diagnosis or medication included\n\nAuthentication:\nRequires a valid authenticated user session.\n\nPermission Required:\n`consultagent:chat`",
+        "operationId": "generate_report_api_agent_doctor_report_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConversationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/full-report": {
+      "post": {
+        "summary": "Generate Full Clinical Report (SOAP + Assessment)",
+        "operationId": "generate_full_report_api_api_agent_full_report_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConversationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ConversationRequest": {
+        "properties": {
+          "conversation": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Conversation"
+          }
+        },
+        "type": "object",
+        "required": ["conversation"],
+        "title": "ConversationRequest"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": ["loc", "msg", "type"],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

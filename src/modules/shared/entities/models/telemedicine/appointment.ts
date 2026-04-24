@@ -37,6 +37,7 @@ const DoctorSchema = z.object({
 const PatientSchema = z.object({
   orgId: z.string(),
   userId: z.string(),
+  fhirPatientId: z.number().int().nullable(),
   personal: PatientPersonalSchema.nullable(),
 });
 

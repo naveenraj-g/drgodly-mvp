@@ -26,7 +26,7 @@ export class AppointmentRepository implements IAppointmentRepository {
 
   async getAppointmentsForDoctor(
     doctorId: string,
-    orgId: string
+    orgId: string,
   ): Promise<TAppointments> {
     const startTimeMs = Date.now();
     const operationId = randomUUID();
@@ -197,7 +197,7 @@ export class AppointmentRepository implements IAppointmentRepository {
 
   async getDashboardAppointmentsForDoctor(
     doctorId: string,
-    orgId: string
+    orgId: string,
   ): Promise<TAppointments> {
     const startTimeMs = Date.now();
     const operationId = randomUUID();
@@ -363,7 +363,7 @@ export class AppointmentRepository implements IAppointmentRepository {
 
   async getAppointmentsForPatient(
     patientId: string,
-    orgId: string
+    orgId: string,
   ): Promise<TAppointments> {
     const startTimeMs = Date.now();
     const operationId = randomUUID();
@@ -526,7 +526,7 @@ export class AppointmentRepository implements IAppointmentRepository {
   async bookAppointment(
     appointmentData: TBookAppointment,
     fhirEncounterId?: number,
-    fhirAppointmentId?: number
+    fhirAppointmentId?: number,
   ): Promise<TAppointment> {
     const startTimeMs = Date.now();
     const operationId = randomUUID();
@@ -655,7 +655,7 @@ export class AppointmentRepository implements IAppointmentRepository {
   }
 
   async bookIntakeAppointment(
-    appointmentData: TBookIntakeAppointment
+    appointmentData: TBookIntakeAppointment,
   ): Promise<TIntakeAppointment> {
     const startTimeMs = Date.now();
     const operationId = randomUUID();
@@ -727,7 +727,7 @@ export class AppointmentRepository implements IAppointmentRepository {
   }
 
   async bookConsultationAppointment(
-    appointmentData: TBookConsultationAppointment
+    appointmentData: TBookConsultationAppointment,
   ): Promise<TIntakeAppointment> {
     const startTimeMs = Date.now();
     const operationId = randomUUID();
@@ -738,7 +738,8 @@ export class AppointmentRepository implements IAppointmentRepository {
       context: { operationId },
     });
 
-    const { userId, orgId, virtualConversation, intakeReport, ...rest } = appointmentData;
+    const { userId, orgId, virtualConversation, intakeReport, ...rest } =
+      appointmentData;
 
     try {
       const appointment = await prismaTelemedicine.appointment.create({
@@ -788,7 +789,7 @@ export class AppointmentRepository implements IAppointmentRepository {
 
   async rescheduleAppointment(
     rescheduleData: TRescheduleAppointment,
-    status: "RESCHEDULED" | "PENDING"
+    status: "RESCHEDULED" | "PENDING",
   ): Promise<TAppointment> {
     const startTimeMs = Date.now();
     const operationId = randomUUID();
@@ -897,7 +898,7 @@ export class AppointmentRepository implements IAppointmentRepository {
           });
 
           return appointement;
-        }
+        },
       );
 
       const data = await AppointmentSchema.parseAsync(appointmentData);
@@ -936,7 +937,7 @@ export class AppointmentRepository implements IAppointmentRepository {
 
   async getAppointmentForOnlineConsultation(
     appointmentId: string,
-    orgId: string
+    orgId: string,
   ): Promise<TAppointment | null> {
     const startTimeMs = Date.now();
     const operationId = randomUUID();
@@ -1070,7 +1071,7 @@ export class AppointmentRepository implements IAppointmentRepository {
 
   async getAppointmentByIds(
     appointmentId: string,
-    orgId: string
+    orgId: string,
   ): Promise<TGetAppointmentByIds | null> {
     const startTimeMs = Date.now();
     const operationId = randomUUID();
@@ -1146,7 +1147,7 @@ export class AppointmentRepository implements IAppointmentRepository {
   }
 
   async cancelAppointment(
-    cancelData: TCancelAppointment
+    cancelData: TCancelAppointment,
   ): Promise<TAppointment> {
     const startTimeMs = Date.now();
     const operationId = randomUUID();
@@ -1248,7 +1249,7 @@ export class AppointmentRepository implements IAppointmentRepository {
           });
 
           return appointement;
-        }
+        },
       );
 
       const data = await AppointmentSchema.parseAsync(appointmentData);
@@ -1288,7 +1289,7 @@ export class AppointmentRepository implements IAppointmentRepository {
   async confirmAppointment(
     appointmentId: string,
     userId: string,
-    orgId: string
+    orgId: string,
   ): Promise<TAppointment> {
     const startTimeMs = Date.now();
     const operationId = randomUUID();
@@ -1384,7 +1385,7 @@ export class AppointmentRepository implements IAppointmentRepository {
           });
 
           return appointement;
-        }
+        },
       );
 
       const data = await AppointmentSchema.parseAsync(appointmentData);
@@ -1425,7 +1426,7 @@ export class AppointmentRepository implements IAppointmentRepository {
     appointmentId: string,
     orgId: string,
     userId: string,
-    actorType: "PATIENT" | "DOCTOR"
+    actorType: "PATIENT" | "DOCTOR",
   ): Promise<string> {
     const startTimeMs = Date.now();
     const operationId = randomUUID();
@@ -1454,8 +1455,8 @@ export class AppointmentRepository implements IAppointmentRepository {
               ...(actorType === "PATIENT"
                 ? { isPatientDeleted: true }
                 : actorType === "DOCTOR"
-                ? { isDoctorDeleted: true }
-                : {}),
+                  ? { isDoctorDeleted: true }
+                  : {}),
             },
           });
 
@@ -1471,7 +1472,7 @@ export class AppointmentRepository implements IAppointmentRepository {
           });
 
           return appointement.id;
-        }
+        },
       );
 
       // Success log

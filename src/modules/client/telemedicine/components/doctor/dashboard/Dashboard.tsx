@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Calendar } from "lucide-react";
 import { AppointmentList } from "./appointments/AppointmentList";
 import { AppointmentDetails } from "./appointments/AppointmentDetails";
+import { DoctorAssistant } from "./DoctorAssistant";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { TAppointments } from "@/modules/shared/entities/models/telemedicine/appointment";
@@ -84,6 +85,8 @@ function DoctorDashboard({ appointments }: DoctorDashboardProps) {
           </div>
         </div>
       </main>
+
+      <DoctorAssistant selectedAppointment={selectedAppointment} />
     </div>
   );
 }
