@@ -85,3 +85,11 @@ export const DeleteAppointmentValidationSchema = z.object({
 export type TDeleteAppointmentValidation = z.infer<
   typeof DeleteAppointmentValidationSchema
 >;
+
+export const CompleteConsultationValidationSchema =
+  DeleteAppointmentValidationSchema.extend({
+    doctorReport: z.any().nullable().optional(),
+  });
+export type TCompleteConsultationValidation = z.infer<
+  typeof CompleteConsultationValidationSchema
+>;

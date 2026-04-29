@@ -7,7 +7,7 @@ async function AIHubPage() {
   const locale = await getLocale();
 
   if (!session || !session.session.activeOrganizationId) {
-    redirect({ href: "/signin", locale });
+    redirect({ href: "/login", locale });
     return;
   }
 

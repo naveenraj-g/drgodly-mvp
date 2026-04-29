@@ -9,6 +9,7 @@ export async function getServerSession(): Promise<AuthResponse | null> {
     {
       headers: hdrs,
       cache: "no-store",
+      credentials: "include",
     },
   );
 

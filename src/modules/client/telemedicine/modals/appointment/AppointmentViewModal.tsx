@@ -198,11 +198,22 @@ function safeParseFullReport(raw: unknown): FullReportData | null {
   if (raw == null) return null;
   try {
     const obj = typeof raw === "string" ? JSON.parse(raw) : raw;
-    if (typeof obj !== "object" || Array.isArray(obj)) return null;
-    const envelope = obj as { status?: string; data?: FullReportData };
-    if (envelope.data) return envelope.data;
-    const direct = obj as FullReportData;
-    if (direct.soap_report || direct.assessment_plan) return direct;
+    if (typeof obj !== "object" || Array.isArray(obj) || obj === null) return null;
+
+    // Unwrap { status, data } envelope if present
+    const envelope = obj as Record<string, unknown>;
+    const inner = (envelope.data != null ? envelope.data : obj) as Record<string, unknown>;
+
+    if (typeof inner !== "object" || Array.isArray(inner) || inner === null) return null;
+
+    // Already in FullReportData shape
+    if (inner.soap_report || inner.assessment_plan) return inner as FullReportData;
+
+    // Direct SOAP structure (doctor-report-agent format)
+    if (inner.subjective || inner.objective || inner.assessment || inner.plan || inner.summary) {
+      return { soap_report: inner as SoapReport };
+    }
+
     return null;
   } catch { return null; }
 }
@@ -275,9 +286,15 @@ function SoapSection({ soap }: { soap: SoapReport }) {
 }
 
 function AssessmentPlanSection({ plan }: { plan: AssessmentPlan }) {
-  const diffDx = toStrArr(plan.differential_diagnosis);
   const redFlags = toStrArr(plan.red_flags);
-  const treatment = toStrArr(plan.treatment_plan);
+
+  const diffDxItems = Array.isArray(plan.differential_diagnosis)
+    ? (plan.differential_diagnosis as DifferentialItem[])
+    : [];
+
+  const treatmentItems = Array.isArray(plan.treatment_plan)
+    ? (plan.treatment_plan as TreatmentItem[])
+    : [];
 
   return (
     <div className="space-y-4">
@@ -287,23 +304,38 @@ function AssessmentPlanSection({ plan }: { plan: AssessmentPlan }) {
           <Badge className={cn("text-xs font-semibold", riskClass(plan.risk_level))}>{plan.risk_level}</Badge>
         </div>
       )}
+
       {plan.clinical_overview && (
         <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
           <p className="text-xs font-semibold uppercase tracking-wide text-primary mb-1">Clinical Overview</p>
           <p className="text-sm leading-relaxed">{plan.clinical_overview}</p>
         </div>
       )}
-      {diffDx.length > 0 && (
+
+      {diffDxItems.length > 0 && (
         <div className="space-y-2">
           <div className="flex items-center gap-1.5">
             <Activity className="size-3.5 text-primary" />
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Differential Diagnosis</p>
           </div>
-          <div className="flex flex-wrap gap-1.5">
-            {diffDx.map((d, i) => <Badge key={i} variant="outline" className="text-xs font-normal">{d}</Badge>)}
+          <div className="space-y-2">
+            {diffDxItems.map((d, i) => (
+              <div key={i} className="rounded-md border bg-muted/30 px-3 py-2 space-y-0.5">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-medium">{d.condition}</p>
+                  {d.likelihood && (
+                    <Badge variant="outline" className="text-xs font-normal shrink-0">{d.likelihood}</Badge>
+                  )}
+                </div>
+                {d.rationale && (
+                  <p className="text-xs text-muted-foreground leading-relaxed">{d.rationale}</p>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       )}
+
       {plan.diagnostic_plan && Object.entries(plan.diagnostic_plan).map(([k, v]) => {
         if (v == null) return null;
         const items = Array.isArray(v) ? toStrArr(v) : null;
@@ -329,23 +361,39 @@ function AssessmentPlanSection({ plan }: { plan: AssessmentPlan }) {
         }
         return null;
       })}
-      {treatment.length > 0 && (
+
+      {treatmentItems.length > 0 && (
         <div className="space-y-2">
           <div className="flex items-center gap-1.5">
             <ListChecks className="size-3.5 text-primary" />
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Treatment Plan</p>
           </div>
-          <ol className="space-y-1 list-decimal list-inside">
-            {treatment.map((t, i) => <li key={i} className="text-sm leading-relaxed">{t}</li>)}
-          </ol>
+          <div className="space-y-2">
+            {treatmentItems.map((t, i) => (
+              <div key={i} className="rounded-md border bg-muted/30 px-3 py-2 space-y-1">
+                {t.condition && <p className="text-xs text-muted-foreground">{t.condition}</p>}
+                {t.recommendation && <p className="text-sm">{t.recommendation}</p>}
+                {t.rationale && !t.recommendation && <p className="text-sm">{t.rationale}</p>}
+                <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                  {t.route && <span>Route: {t.route}</span>}
+                  {t.duration && <span>· {t.duration}</span>}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
-      {plan.procedures && (
+
+      {plan.procedures && plan.procedures !== "Not reported" && (
         <div>
-          <p className="text-xs text-muted-foreground mb-0.5">Procedures</p>
+          <div className="flex items-center gap-1.5 mb-1">
+            <Stethoscope className="size-3.5 text-primary" />
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Procedures</p>
+          </div>
           <p className="text-sm leading-relaxed">{plan.procedures}</p>
         </div>
       )}
+
       {redFlags.length > 0 && (
         <div className="rounded-md border border-red-200 bg-red-50 p-3 space-y-2">
           <div className="flex items-center gap-1.5">
@@ -533,7 +581,11 @@ export function AppointmentViewModal() {
   const intakeMessages = safeParseMessages(actual?.intakeConversation);
   const consultationMessages = safeParseMessages(actual?.virtualConversation);
   const intakeReport = safeParseReport(actual?.intakeReport);
-  const fullReportData = safeParseFullReport(actual?.fullReport ?? actual?.doctorReport);
+  // AI consultation uses fullReport (soap_report + assessment_plan structure)
+  // Doctor virtual consultation uses doctorReport (direct SOAP structure from doctor-report-agent)
+  const fullReportData = safeParseFullReport(
+    kind === "doctor" ? actual?.doctorReport : actual?.fullReport,
+  );
 
   const hasConversation = intakeMessages.length > 0 || consultationMessages.length > 0;
   const hasAiData = hasConversation || intakeReport != null || fullReportData != null;
@@ -697,8 +749,14 @@ export function AppointmentViewModal() {
             {fullReportData ? (
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <Brain className="size-4 text-primary" />
-                  <p className="text-sm font-semibold">Consultation Report</p>
+                  {kind === "doctor" ? (
+                    <Stethoscope className="size-4 text-primary" />
+                  ) : (
+                    <Brain className="size-4 text-primary" />
+                  )}
+                  <p className="text-sm font-semibold">
+                    {kind === "doctor" ? "Doctor's Report" : "Consultation Report"}
+                  </p>
                   {fullReportData.generated_at && (
                     <span className="text-xs text-muted-foreground ml-auto">
                       {new Date(fullReportData.generated_at).toLocaleDateString()}
@@ -709,7 +767,7 @@ export function AppointmentViewModal() {
                   defaultValue={fullReportData.soap_report ? "soap" : "assessment"}
                   className="w-full"
                 >
-                  <TabsList className="grid w-full grid-cols-2">
+                  <TabsList className={fullReportData.soap_report && fullReportData.assessment_plan ? "grid w-full grid-cols-2" : "grid w-full grid-cols-1"}>
                     {fullReportData.soap_report && (
                       <TabsTrigger value="soap" className="flex items-center gap-1">
                         <FileText className="h-3 w-3" />

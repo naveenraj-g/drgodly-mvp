@@ -1,0 +1,56 @@
+services:
+
+  # ─── PostgreSQL ───────────────────────────────────────────────────────────────
+  # Not exposed outside — only reachable within bezs-net
+  postgres:
+    image: postgres:16-alpine
+    container_name: bezs-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-bezs}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: bezs_main
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - bezs-net
+    configs:
+      - source: init_db
+        target: /docker-entrypoint-initdb.d/01_init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-bezs} -d bezs_main"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── App ─────────────────────────────────────────────────────────────────────
+  app:
+    image: ghcr.io/naveenraj-g/bezs:latest
+    container_name: bezs
+    restart: unless-stopped
+    env_file:
+      - .env.vps
+    volumes:
+      - /root/bezs/logs:/app/logs
+      - /root/bezs/uploads:/app/uploads
+    ports:
+      - "3003:3000"
+    networks:
+      - bezs-net
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+# ─── Creates bezs_telemedicine and bezs_filenest on first postgres start ───────
+configs:
+  init_db:
+    content: |
+      CREATE DATABASE bezs_telemedicine;
+      CREATE DATABASE bezs_filenest;
+
+volumes:
+  postgres_data:
+
+networks:
+  bezs-net:
+    external: true

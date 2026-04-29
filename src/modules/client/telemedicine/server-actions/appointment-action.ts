@@ -1,27 +1,32 @@
 "use server";
 
+import z from "zod";
 import {
   bookAppointmentController,
   bookConsultationAppointmentController,
   bookIntakeAppointmentController,
   cancelAppointmentController,
+  completeConsultationController,
   confirmAppointmentController,
   deleteAppointmentController,
   getAppointmentForOnlineConsultationController,
   getAppointmentsForDoctorController,
   getAppointmentsForPatientController,
   getDoctorDashboardAppointmentsController,
+  getPreviousCompletedReportController,
   rescheduleAppointmentController,
   TBookAppointmentControllerOutput,
   TBookConsultationAppointmentControllerOutput,
   TBookIntakeAppointmentControllerOutput,
   TCancelAppointmentControllerOutput,
+  TCompleteConsultationControllerOutput,
   TConfirmAppointmentControllerOutput,
   TDeleteAppointmentControllerOutput,
   TGetAppointmentForOnlineConsultationControllerOutput,
   TGetAppointmentsForDoctorControllerOutput,
   TGetAppointmentsForPatientControllerOutput,
   TGetDoctorDashboardAppointmentsControllerOutput,
+  TGetPreviousCompletedReportControllerOutput,
   TRescheduleAppointmentControllerOutput,
 } from "@/modules/server/telemedicine/interface-adapters/controllers/appointment";
 import {
@@ -29,6 +34,7 @@ import {
   BookConsultationAppointmentValidationSchema,
   BookIntakeAppointmentValidationSchema,
   CancelAppointmentValidationSchema,
+  CompleteConsultationValidationSchema,
   DeleteAppointmentValidationSchema,
   GetAppointmentValidationSchema,
   RescheduleAppointmentValidationSchema,
@@ -387,6 +393,37 @@ export const confirmAppointment = createServerAction()
         revalidatePath: true,
         url: "/bezs/telemedicine/patient/appointments",
         operationErrorMessage: "Failed to confirm appointment.",
+      }
+    );
+  });
+
+export const getPreviousConsultationReport = createServerAction()
+  .input(
+    z.object({
+      patientUserId: z.string().min(1),
+      orgId: z.string().min(1),
+      excludeAppointmentId: z.string().min(1),
+    }),
+    { skipInputParsing: true },
+  )
+  .handler(async ({ input }) => {
+    return await withMonitoring<TGetPreviousCompletedReportControllerOutput>(
+      "getPreviousConsultationReport",
+      () => getPreviousCompletedReportController(input),
+      {
+        operationErrorMessage: "Failed to fetch previous consultation report.",
+      }
+    );
+  });
+
+export const completeConsultation = createServerAction()
+  .input(CompleteConsultationValidationSchema, { skipInputParsing: true })
+  .handler(async ({ input }) => {
+    return await withMonitoring<TCompleteConsultationControllerOutput>(
+      "completeConsultation",
+      () => completeConsultationController(input),
+      {
+        operationErrorMessage: "Failed to complete consultation.",
       }
     );
   });

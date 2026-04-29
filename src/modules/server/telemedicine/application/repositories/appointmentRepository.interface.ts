@@ -47,6 +47,17 @@ export interface IAppointmentRepository {
     userId: string,
     orgId: string
   ): Promise<TAppointment>;
+  completeConsultation(
+    appointmentId: string,
+    userId: string,
+    orgId: string,
+    doctorReport?: any
+  ): Promise<TAppointment>;
+  getPreviousCompletedReport(
+    patientId: string,
+    orgId: string,
+    excludeAppointmentId: string
+  ): Promise<any>;
   cancelAppointment(cancelData: TCancelAppointment): Promise<TAppointment>;
   deleteAppointment(
     appointmentId: string,

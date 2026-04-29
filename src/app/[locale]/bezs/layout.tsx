@@ -17,7 +17,7 @@ const AppListingLayout = async ({
   const locale = await getLocale();
 
   if (!session) {
-    redirect({ href: "/signin", locale });
+    redirect({ href: "/login", locale });
     return;
   }
 

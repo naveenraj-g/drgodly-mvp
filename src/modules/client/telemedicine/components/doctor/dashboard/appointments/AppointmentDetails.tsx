@@ -36,7 +36,7 @@ export const AppointmentDetails = ({
           ) : (
             <IntakeInsights appointment={appointment} />
           )}
-          <ClinicalSummary patientName={patientName} />
+          <ClinicalSummary patientName={patientName} appointment={appointment} />
           <TreatmentEngine />
           <LifestyleCharts />
           <HealthRecords />

@@ -54,6 +54,9 @@ const PatientOnlineConsultationPage = async (
           participant={participant}
           roomId={data.virtualRoomId!}
           details={details}
+          appointmentId={appointmentId}
+          orgId={session.session.activeOrganizationId}
+          userId={session.user.id}
         />
       </div>
     </>

@@ -1,6 +1,6 @@
 {
   "auth": "betterauth",
-  "authUrl": "http://localhost:5000",
+  "authUrl": "https://iam.drgodly.com",
   "isFHIRSync": true,
   "fhirSyncUrl": "https://fhir.drgodly.com",
   "fhirMCPUrl": "https://fhirmcp.drgodly.com/mcp",

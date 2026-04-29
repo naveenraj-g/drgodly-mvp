@@ -18,6 +18,7 @@ const RootNavBarPage = ({
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const router = useRouter();
+  console.log(session);
 
   useEffect(() => {
     const handleScroll = () => {

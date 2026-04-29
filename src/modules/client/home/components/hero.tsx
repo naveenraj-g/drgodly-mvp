@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight, Activity, ShieldCheck, Users } from "lucide-react";
+import { OAuthPkceButton } from "@/modules/client/auth/components/auth/oauth-pkce-button";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -87,28 +88,24 @@ function LandingPageHero({ session }: { session: any | null }) {
             >
               {!session ? (
                 <>
-                  <Link href="/signin">
-                    <Button
-                      size="lg"
-                      className="rounded-full px-8 h-12 text-base shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all"
-                    >
-                      Sign In
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
+                  <OAuthPkceButton
+                    size="lg"
+                    className="rounded-full px-8 h-12 text-base shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all"
+                  >
+                    Sign In
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </OAuthPkceButton>
 
-                  <Link href="/signup">
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      className="rounded-full px-8 h-12 text-base border-primary/20 hover:bg-primary/5"
-                    >
-                      Get Started Free
-                    </Button>
-                  </Link>
+                  <OAuthPkceButton
+                    variant="outline"
+                    size="lg"
+                    className="rounded-full px-8 h-12 text-base border-primary/20 hover:bg-primary/5"
+                  >
+                    Get Started Free
+                  </OAuthPkceButton>
                 </>
               ) : (
-                <Link href="/app">
+                <Link href="/bezs">
                   <Button
                     size="lg"
                     className="rounded-full px-8 h-12 text-base shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all"

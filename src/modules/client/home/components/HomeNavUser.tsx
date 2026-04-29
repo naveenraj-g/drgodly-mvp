@@ -10,11 +10,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Link, useRouter } from "@/i18n/navigation";
-import { signOut } from "@/modules/client/auth/server-actions/auth-actions";
 import { ThemeSwitcher } from "@/theme/theme-switcher";
 import { Check, ChevronRight, Globe, LogOut, Settings2 } from "lucide-react";
 import { toast } from "sonner";
-import { useServerAction } from "zsa-react";
+import { authClient } from "../../auth/betterauth/auth-client";
 
 type TUser = {
   name?: string;
@@ -27,18 +26,10 @@ export function HomeNavUser({ user }: { user: TUser }) {
   const router = useRouter();
   const { name, email, image, username } = user;
 
-  const { execute } = useServerAction(signOut, {
-    onError(ctx) {
-      toast("Error!", {
-        description: ctx.err.message,
-      });
-    },
-  });
-
   async function handleLogout() {
-    const [data] = await execute();
+    const a = await authClient.signOut();
 
-    if (!data) {
+    if (a.error) {
       toast.error("Something went wrong!", {
         description: "Failed to logout",
         richColors: true,
@@ -46,7 +37,7 @@ export function HomeNavUser({ user }: { user: TUser }) {
       return;
     }
 
-    if (data.success) {
+    if (a.data.success) {
       router.push("/");
     }
   }

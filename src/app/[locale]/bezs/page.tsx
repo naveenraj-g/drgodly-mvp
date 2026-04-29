@@ -7,17 +7,13 @@ const BezsPage = async () => {
   const session = await getServerSession();
   const locale = await getLocale();
 
-  console.log(session);
-
   if (!session) {
     redirect({ href: "/", locale });
   }
 
-  // if (session?.user.roleBasedRedirectUrls) {
-  //   if (session.user.roleBasedRedirectUrls !== "/bezs") {
-  //     redirect({ href: session.user.roleBasedRedirectUrls, locale });
-  //   }
-  // }
+  const url = session?.session?.activeRoleRedirectUrl ?? "/bezs";
+
+  redirect({ href: url, locale });
 
   return (
     <div className="h-full p-4">

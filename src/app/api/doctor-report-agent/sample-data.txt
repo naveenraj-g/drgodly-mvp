@@ -1,0 +1,36 @@
+{
+    "status": "success",
+    "data": {
+        "subjective": {
+            "chief_complaint": "Stomach pain since this morning",
+            "history_of_present_illness": "Patient reports dull abdominal pain that started this morning. The pain is intermittent, sometimes coming and going. Pain is rated 4 to 5 out of 10. Pain is slightly increased with movement. No prior similar episodes reported.",
+            "associated_symptoms": [
+                "No nausea",
+                "No vomiting",
+                "No fever",
+                "No chills",
+                "No change in bowel movements",
+                "No urinary symptoms",
+                "No radiation of pain to the back"
+            ]
+        },
+        "objective": {
+            "observations": [
+                "No objective findings provided"
+            ]
+        },
+        "assessment": {
+            "possible_conditions": [
+                "Non-specific abdominal pain"
+            ],
+            "clinical_reasoning": "Patient presents with mild, intermittent, dull abdominal pain without associated gastrointestinal, urinary, or systemic symptoms. No red flag symptoms reported."
+        },
+        "plan": {
+            "next_steps": [
+                "Monitor symptoms for 1-2 days"
+            ],
+            "when_to_seek_care": "Seek care if pain worsens, persists beyond 1-2 days, or if new symptoms such as fever, vomiting, changes in bowel movements, urinary symptoms, or severe pain develop."
+        },
+        "summary": "Patient presents with mild, intermittent, dull abdominal pain without associated symptoms. Advised to monitor symptoms and seek further evaluation if condition does not improve or worsens."
+    }
+}

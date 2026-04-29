@@ -42,7 +42,7 @@ export function TranscriptPanel({
   // SSE Subscription
   useEffect(() => {
     setError(null);
-    const pyUrl = "https://agent.drgodly.com";
+    const pyUrl = "https://livekit.agent.drgodly.com";
 
     if (!pyUrl) {
       setError("Failed to get transcripts");
@@ -51,7 +51,7 @@ export function TranscriptPanel({
     // disconnect this when meeting finished
     // eventSource.close();
     const eventSource = new EventSource(
-      `${pyUrl}/transcript-stream?roomId=${roomId}`
+      `${pyUrl}/transcript-stream?roomId=${roomId}`,
     );
 
     eventSource.onmessage = (event) => {

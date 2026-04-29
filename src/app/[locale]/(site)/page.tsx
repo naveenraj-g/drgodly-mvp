@@ -7,6 +7,8 @@ import LandingPageIntegrations from "@/modules/client/home/components/integratio
 import LandingPageTestimonials from "@/modules/client/home/components/testimonials";
 import { getServerSession } from "@/modules/server/auth/get-session";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const session = await getServerSession();
 

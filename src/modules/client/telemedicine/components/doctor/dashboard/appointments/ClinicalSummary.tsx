@@ -1,42 +1,107 @@
-import { useState } from "react";
+"use client";
+
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { FileCheck, Edit2, CheckCircle } from "lucide-react";
-import { toast } from "sonner";
+import { FileCheck } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import ActionTooltipProvider from "@/modules/shared/providers/action-tooltip-provider";
 import { CgCompress } from "react-icons/cg";
 import { RiExpandHorizontalLine } from "@remixicon/react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { TAppointment } from "@/modules/shared/entities/models/telemedicine/appointment";
+import { getPreviousConsultationReport } from "@/modules/client/telemedicine/server-actions/appointment-action";
 
 interface ClinicalSummaryProps {
   patientName: string;
+  appointment: TAppointment;
 }
 
-export const ClinicalSummary = ({ patientName }: ClinicalSummaryProps) => {
+// ── SOAP parsing ──────────────────────────────────────────────────────────────
+
+interface SoapData {
+  summary?: string;
+  subjective?: Record<string, unknown>;
+  objective?: Record<string, unknown>;
+  assessment?: Record<string, unknown>;
+  plan?: Record<string, unknown>;
+}
+
+function parseDoctorReport(raw: unknown): SoapData | null {
+  if (raw == null) return null;
+  try {
+    const obj = typeof raw === "string" ? JSON.parse(raw) : raw;
+    if (typeof obj !== "object" || Array.isArray(obj) || obj === null) return null;
+    const envelope = obj as Record<string, unknown>;
+    const inner = (envelope.data != null ? envelope.data : obj) as Record<string, unknown>;
+    if (inner.subjective || inner.objective || inner.assessment || inner.plan || inner.summary) {
+      return inner as SoapData;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function arrToLines(val: unknown): string {
+  if (!Array.isArray(val)) return String(val ?? "");
+  return val
+    .map((v) => `  • ${typeof v === "string" ? v : JSON.stringify(v)}`)
+    .join("\n");
+}
+
+function sectionToText(section: Record<string, unknown>): string {
+  return Object.entries(section)
+    .filter(([, v]) => v != null)
+    .map(([k, v]) => {
+      const label = k.replaceAll("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
+      if (Array.isArray(v)) return `${label}:\n${arrToLines(v)}`;
+      if (typeof v === "object") return null;
+      return `${label}: ${v}`;
+    })
+    .filter(Boolean)
+    .join("\n");
+}
+
+function soapToText(soap: SoapData, patientName: string): string {
+  const sections: string[] = [`SOAP Note — ${patientName}`, ""];
+
+  if (soap.summary) {
+    sections.push("Summary:", soap.summary, "");
+  }
+
+  const keys = ["subjective", "objective", "assessment", "plan"] as const;
+  for (const key of keys) {
+    const section = soap[key];
+    if (!section || Object.keys(section).length === 0) continue;
+    sections.push(`${key.charAt(0).toUpperCase() + key.slice(1)}:`);
+    sections.push(sectionToText(section));
+    sections.push("");
+  }
+
+  return sections.join("\n").trim();
+}
+
+// ── component ─────────────────────────────────────────────────────────────────
+
+export const ClinicalSummary = ({ patientName, appointment }: ClinicalSummaryProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [summary, setSummary] = useState(
-    `SOAP Note for ${patientName}
+  const [summary, setSummary] = useState<string | null>(null);
 
-Subjective:
-Patient presents with chief complaint as documented in intake form. Reports symptoms have been ongoing with varying severity. Patient appears comfortable and cooperative during examination.
-
-Objective:
-Vital signs within normal limits. Physical examination findings consistent with reported symptoms. Laboratory results pending/reviewed as documented.
-
-Assessment:
-Based on clinical presentation, history, and examination findings, working diagnosis includes conditions noted in AI recommendations. Differential diagnoses considered and documented.
-
-Plan:
-Treatment plan initiated as outlined in treatment pathway. Patient educated on diagnosis, treatment options, and follow-up care. Prescriptions provided as indicated. Follow-up appointment scheduled. Patient verbalized understanding and agreement with plan.`
-  );
-
-  const handleApprove = () => {
-    toast.success("Clinical summary approved and saved to patient record");
-    setIsEditing(false);
-  };
+  useEffect(() => {
+    setSummary(null);
+    getPreviousConsultationReport({
+      patientUserId: appointment.patient.userId,
+      orgId: appointment.orgId,
+      excludeAppointmentId: appointment.id,
+    })
+      .then(([data]) => {
+        const soap = parseDoctorReport(data);
+        setSummary(soap ? soapToText(soap, patientName) : "");
+      })
+      .catch(() => setSummary(""));
+  }, [appointment.id, appointment.orgId, appointment.patient.userId, patientName]);
 
   return (
     <Card className={cn("h-full flex flex-col", isExpanded ? "col-span-2" : "col-auto")}>
@@ -47,55 +112,47 @@ Treatment plan initiated as outlined in treatment pathway. Patient educated on d
             Previous Appointment Clinical Summary
           </div>
         </CardTitle>
-        <div className="flex items-center gap-2">
+        <ActionTooltipProvider label={isExpanded ? "Shrink" : "Expand"}>
           <Button
-            variant="outline"
             size="sm"
-            onClick={() => setIsEditing(!isEditing)}
+            variant="outline"
+            onClick={() => setIsExpanded((prev) => !prev)}
           >
-            <Edit2 className="h-4 w-4 mr-2" />
-            {isEditing ? "Cancel" : "Edit"}
+            {isExpanded ? (
+              <CgCompress className="size-6 text-muted-foreground" />
+            ) : (
+              <RiExpandHorizontalLine className="size-6 text-muted-foreground" />
+            )}
           </Button>
-          <ActionTooltipProvider label={isExpanded ? "Shrink" : "Expand"}>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsExpanded((prevState) => !prevState)}
-            >
-              {isExpanded ? (
-                <CgCompress className="size-6 text-muted-foreground" />
-              ) : (
-                <RiExpandHorizontalLine className="size-6 text-muted-foreground" />
-              )}
-            </Button>
-          </ActionTooltipProvider>
-        </div>
+        </ActionTooltipProvider>
       </CardHeader>
-      <CardContent className="flex flex-col gap-3 flex-1 overflow-hidden">
-        <div className="flex-1 overflow-hidden">
-          {isEditing ? (
-            <Textarea
-              value={summary}
-              onChange={(e) => setSummary(e.target.value)}
-              className="h-full resize-none font-mono text-sm"
-            />
-          ) : (
-            <ScrollArea className="h-full">
-              <div className="whitespace-pre-wrap text-sm text-foreground bg-muted p-4 rounded-md font-mono">
-                {summary}
-              </div>
-            </ScrollArea>
-          )}
-        </div>
 
-        <Button
-          onClick={handleApprove}
-          className="w-full shrink-0"
-          disabled={!isEditing}
-        >
-          <CheckCircle className="h-4 w-4 mr-2" />
-          Approve & Save Summary
-        </Button>
+      <CardContent className="flex-1 overflow-hidden">
+        <ScrollArea className="h-full">
+          {summary === null ? (
+            <div className="p-4 space-y-3">
+              <Skeleton className="h-4 w-2/5" />
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-3 w-4/5" />
+              <Skeleton className="h-4 w-1/4 mt-4" />
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-3 w-3/4" />
+              <Skeleton className="h-4 w-1/3 mt-4" />
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-3 w-2/3" />
+            </div>
+          ) : summary === "" ? (
+            <p className="text-sm text-muted-foreground p-4">
+              No previous consultation report available.
+            </p>
+          ) : (
+            <div className="whitespace-pre-wrap text-sm text-foreground bg-muted p-4 rounded-md font-mono">
+              {summary}
+            </div>
+          )}
+        </ScrollArea>
       </CardContent>
     </Card>
   );

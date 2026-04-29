@@ -1442,6 +1442,137 @@ export class AppointmentRepository implements IAppointmentRepository {
     }
   }
 
+  async completeConsultation(
+    appointmentId: string,
+    userId: string,
+    orgId: string,
+    doctorReport?: any,
+  ): Promise<TAppointment> {
+    const startTimeMs = Date.now();
+    const operationId = randomUUID();
+
+    logOperation("start", {
+      name: "completeConsultationRepository",
+      startTimeMs,
+      context: { operationId },
+    });
+
+    try {
+      const appointmentData = await prismaTelemedicine.$transaction(
+        async (tx) => {
+          const appointment = await tx.appointment.update({
+            where: { appointment_id_orgId_unique: { id: appointmentId, orgId } },
+            data: { status: "COMPLETED", updatedBy: userId },
+            include: {
+              appointmentActual: {
+                omit: {
+                  createdAt: true,
+                  createdBy: true,
+                  updatedAt: true,
+                  updatedBy: true,
+                },
+              },
+              patient: {
+                omit: {
+                  id: true,
+                  patientId: true,
+                  isABHAPatientProfile: true,
+                  isCompleted: true,
+                  createdAt: true,
+                  updatedAt: true,
+                  updatedBy: true,
+                  createdBy: true,
+                },
+                include: {
+                  personal: {
+                    select: { name: true, orgId: true, id: true, gender: true },
+                  },
+                },
+              },
+              doctor: {
+                omit: {
+                  doctorId: true,
+                  id: true,
+                  isABDMDoctorProfile: true,
+                  registrationNumber: true,
+                  registrationProvider: true,
+                  isCompleted: true,
+                  createdAt: true,
+                  updatedAt: true,
+                  updatedBy: true,
+                  createdBy: true,
+                },
+                include: {
+                  personal: {
+                    select: {
+                      fullName: true,
+                      orgId: true,
+                      id: true,
+                      gender: true,
+                    },
+                  },
+                },
+              },
+            },
+          });
+
+          await tx.appointmentActual.upsert({
+            where: { appointmentId },
+            create: { appointmentId, orgId, doctorReport: doctorReport ?? null },
+            update: { doctorReport: doctorReport ?? null, updatedBy: userId },
+          });
+
+          return appointment;
+        },
+      );
+
+      const data = await AppointmentSchema.parseAsync(appointmentData);
+
+      logOperation("success", {
+        name: "completeConsultationRepository",
+        startTimeMs,
+        context: { operationId },
+      });
+
+      return data;
+    } catch (error) {
+      logOperation("error", {
+        name: "completeConsultationRepository",
+        startTimeMs,
+        err: error,
+        errName: "UnknownRepositoryError",
+        context: { operationId },
+      });
+
+      if (error instanceof Error) {
+        throw new OperationError(error.message, { cause: error });
+      }
+
+      throw new OperationError("An unexpected error occurred", {
+        cause: error,
+      });
+    }
+  }
+
+  async getPreviousCompletedReport(
+    patientId: string,
+    orgId: string,
+    excludeAppointmentId: string,
+  ): Promise<any> {
+    const appointment = await prismaTelemedicine.appointment.findFirst({
+      where: {
+        patientId,
+        orgId,
+        status: "COMPLETED",
+        id: { not: excludeAppointmentId },
+        appointmentActual: { is: { doctorReport: { not: null } } },
+      },
+      orderBy: { appointmentDate: "desc" },
+      select: { appointmentActual: { select: { doctorReport: true } } },
+    });
+    return appointment?.appointmentActual?.doctorReport ?? null;
+  }
+
   async deleteAppointment(
     appointmentId: string,
     orgId: string,

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+import { OAuthPkceButton } from "@/modules/client/auth/components/auth/oauth-pkce-button";
 
 function LangingPageCTA({ session }: { session: any | null }) {
   return (
@@ -38,16 +39,14 @@ function LangingPageCTA({ session }: { session: any | null }) {
             <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
               {!session ? (
                 <>
-                  <Link href="/signup">
-                    <Button
-                      size="lg"
-                      variant="secondary"
-                      className="w-full sm:w-auto rounded-full px-8 h-14 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
-                    >
-                      Start Free Trial
-                      <ArrowRight className="ml-2 h-5 w-5" />
-                    </Button>
-                  </Link>
+                  <OAuthPkceButton
+                    size="lg"
+                    variant="secondary"
+                    className="w-full sm:w-auto rounded-full px-8 h-14 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+                  >
+                    Start Free Trial
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </OAuthPkceButton>
                   <Link href="/contact">
                     <Button
                       size="lg"
@@ -59,7 +58,7 @@ function LangingPageCTA({ session }: { session: any | null }) {
                   </Link>
                 </>
               ) : (
-                <Link href="/app">
+                <Link href="/bezs">
                   <Button
                     size="lg"
                     variant="secondary"

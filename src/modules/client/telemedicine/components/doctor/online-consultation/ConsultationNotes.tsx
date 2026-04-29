@@ -1,19 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Save } from "lucide-react";
 
 interface ConsultationNotesProps {
   roomId: string;
+  notes: string;
+  onNotesChange: (value: string) => void;
 }
 
-export default function ConsultationNotes({ roomId }: ConsultationNotesProps) {
-  const storageKey = `consultation_notes_${roomId}`;
-  const [notes, setNotes] = useState("");
-  const [saved, setSaved] = useState(false);
+export default function ConsultationNotes({ roomId, notes, onNotesChange }: ConsultationNotesProps) {
 
   // Load saved notes when doctor reopens
   //   useEffect(() => {
@@ -49,7 +45,7 @@ export default function ConsultationNotes({ roomId }: ConsultationNotesProps) {
         placeholder="Write important points, observations, prescriptions..."
         className="flex-1 resize-none text-sm"
         value={notes}
-        onChange={(e) => setNotes(e.target.value)}
+        onChange={(e) => onNotesChange(e.target.value)}
       />
 
       {/* <div className="flex justify-end">

@@ -1,0 +1,12 @@
+Now rebuild, push, and redeploy:    
+                                                     
+  # Local — rebuild and push
+  ./docker-build.sh .env ghcr.io/naveenraj-g/bezs:latest                                                                                                                                                                                                           
+  docker push ghcr.io/naveenraj-g/bezs:latest
+                                                                                                                                                                                                                                                                   
+  # VPS                                                                                                                                                                                                                                                          
+  cd /root/bezs                                                                                                                                                                                                                                                  
+  docker compose -f compose.vps.yml --env-file .env.vps down
+  docker compose -f compose.vps.yml --env-file .env.vps pull
+  docker compose -f compose.vps.yml --env-file .env.vps up -d
+  docker logs -f bezs

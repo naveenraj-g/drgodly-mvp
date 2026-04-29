@@ -261,6 +261,16 @@ export type TConfirmAppointmentUseCase = z.infer<
   typeof confirmAppointmentUseCaseSchema
 >;
 
+export const CompleteConsultationUseCaseSchema = z.object({
+  appointmentId: z.string(),
+  userId: z.string(),
+  orgId: z.string(),
+  doctorReport: z.any().nullable().optional(),
+});
+export type TCompleteConsultationUseCase = z.infer<
+  typeof CompleteConsultationUseCaseSchema
+>;
+
 export const GetAppointmentByIdsSchema = z.object({
   patientId: z.string(),
   doctorId: z.string(),

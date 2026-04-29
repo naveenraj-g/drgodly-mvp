@@ -10,6 +10,11 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  // Ensure Prisma native query engine binaries are included in the standalone output.
+  // Next.js file tracing misses .so.node files loaded via dynamic require.
+  outputFileTracingIncludes: {
+    "/**": ["./src/modules/server/prisma/generated/**/*.node"],
+  },
   experimental: {
     serverActions: {
       bodySizeLimit: "100mb",

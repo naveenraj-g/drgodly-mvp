@@ -2,8 +2,8 @@ import { NextRequest } from "next/server";
 
 export function getOrigin(req: NextRequest) {
   // 1️⃣ Prefer env (most stable)
-  if (process.env.NEXT_PUBLIC_APP_URL) {
-    return process.env.NEXT_PUBLIC_APP_URL;
+  if (process.env.NEXT_PUBLIC_BETTER_AUTH_URL) {
+    return process.env.NEXT_PUBLIC_BETTER_AUTH_URL;
   }
 
   // 2️⃣ Fallback to forwarded headers
