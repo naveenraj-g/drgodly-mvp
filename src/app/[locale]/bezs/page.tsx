@@ -3,6 +3,8 @@ import { redirect } from "@/i18n/navigation";
 import { getServerSession } from "@/modules/server/auth/get-session";
 import { getLocale } from "next-intl/server";
 
+export const dynamic = "force-dynamic";
+
 const BezsPage = async () => {
   const session = await getServerSession();
   const locale = await getLocale();

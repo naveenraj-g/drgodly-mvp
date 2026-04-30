@@ -8,6 +8,8 @@ import { redirect } from "@/i18n/navigation";
 import { getLocale } from "next-intl/server";
 import { MenuBar } from "@/modules/shared/components/menubar/MenuBar";
 
+export const dynamic = "force-dynamic";
+
 const AppListingLayout = async ({
   children,
 }: {

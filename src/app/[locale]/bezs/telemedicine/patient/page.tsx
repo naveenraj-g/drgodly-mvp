@@ -5,6 +5,8 @@ import { getServerSession } from "@/modules/server/auth/get-session";
 import { prismaTelemedicine } from "@/modules/server/prisma/prisma";
 import { getLocale } from "next-intl/server";
 
+export const dynamic = "force-dynamic";
+
 async function PatientDashboardPage() {
   const session = await getServerSession();
   const locale = await getLocale();
