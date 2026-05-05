@@ -15,7 +15,7 @@ async function PatientDashboardPage() {
     redirect({ href: "/login", locale });
     return;
   }
-  console.log(session);
+
   const user = {
     id: session.user.id,
     name: session.user.name,

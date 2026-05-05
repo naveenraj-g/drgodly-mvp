@@ -1,13 +1,17 @@
+import { redirect } from "@/i18n/navigation";
 import { DoctorServiceManagement } from "@/modules/client/telemedicine/components/doctor/services/DoctorServiceManager";
 import { getDoctorServices } from "@/modules/client/telemedicine/server-actions/doctorService-action";
 import { getServerSession } from "@/modules/server/auth/get-session";
+import { getLocale } from "next-intl/server";
 import React from "react";
 
 async function ServicesPage() {
   const session = await getServerSession();
+  const locale = await getLocale();
 
   if (!session || !session.session.activeOrganizationId) {
-    throw new Error("UNAUTHORIZED");
+    redirect({ href: "/login", locale });
+    return;
   }
 
   const user = {

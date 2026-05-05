@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { CommandSearch } from "./command-search";
+import { AppLauncher } from "./app-launcher";
 
 type TUser = {
   name: string;
@@ -20,7 +21,7 @@ type TUser = {
   role?: string | null;
 };
 
-const AppNavbar = ({ user }: { user: TUser }) => {
+const AppNavbar = ({ user, apps }: { user: TUser; apps: unknown[] }) => {
   // const t = useTranslations("bezs");
 
   // bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60
@@ -58,7 +59,7 @@ const AppNavbar = ({ user }: { user: TUser }) => {
             variant="outline"
           />
           <Separator orientation="vertical" className="!h-6" />
-          <CommandSearch user={user} />
+          <CommandSearch user={user} apps={apps} />
         </div>
 
         <div className="flex items-center gap-6">
@@ -66,6 +67,7 @@ const AppNavbar = ({ user }: { user: TUser }) => {
             <LocaleSwitcher />
           </div>
           <Bell className="h-5 w-5 block text-zinc-500 dark:text-zinc-300 cursor-pointer" />
+          <AppLauncher apps={apps} />
           <NavUser user={user} />
         </div>
       </nav>

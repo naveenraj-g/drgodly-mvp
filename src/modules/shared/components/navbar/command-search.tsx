@@ -8,41 +8,74 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  CommandSeparator,
 } from "@/components/ui/command";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Link } from "@/i18n/navigation";
-import { SearchIcon } from "lucide-react";
-import Image from "next/image";
-import { useEffect, useState } from "react";
+import DynamicIcon from "../DynamicLucideIcon";
+import { LayoutGrid, SearchIcon } from "lucide-react";
+import dynamicIconImports from "lucide-react/dynamicIconImports";
+import { useEffect, useMemo, useState } from "react";
 
-const appsList = [
-  {
-    name: "Admin",
-    logo: "/app-icons/admin.svg",
-    admin: "/bezs/admin",
-  },
-  {
-    name: "File Nest",
-    logo: "/app-icons/file-nest.svg",
-    patient: "/bezs/filenest",
-    doctor: "/bezs/filenest",
-    ["application-admin"]: "/bezs/filenest/admin",
-  },
-  {
-    name: "Tele Medicine",
-    logo: "/app-icons/tele-medicine.svg",
-    patient: "/bezs/telemedicine/patient/appointments/intake",
-    doctor: "/bezs/telemedicine/doctor",
-    ["application-admin"]: "/bezs/telemedicine/admin",
-  },
-  {
-    name: "AI Hub",
-    logo: "/app-icons/aihub.svg",
-    patient: "/bezs/aihub/chat",
-    doctor: "/bezs/aihub/chat",
-    ["application-admin"]: "/bezs/aihub/admin",
-  },
-];
+// ── types ─────────────────────────────────────────────────────────────────────
+
+interface NavNode {
+  id: string;
+  label: string;
+  slug: string;
+  icon: string | null;
+  href: string | null;
+  type: "GROUP" | "ITEM";
+  children: NavNode[];
+}
+
+interface AppEntry {
+  id: string;
+  name: string;
+  slug: string;
+  menus: NavNode[];
+}
+
+// ── helpers ───────────────────────────────────────────────────────────────────
+
+interface FlatItem {
+  label: string;
+  href: string;
+  icon: string | null;
+  group: string;
+}
+
+function collectItems(nodes: NavNode[], groupLabel: string, out: FlatItem[]) {
+  for (const node of nodes) {
+    if (node.type === "ITEM" && node.href) {
+      out.push({ label: node.label, href: node.href, icon: node.icon, group: groupLabel });
+    }
+    if (node.children?.length) {
+      const nextGroup = node.type === "GROUP" && node.label ? node.label : groupLabel;
+      collectItems(node.children, nextGroup, out);
+    }
+  }
+}
+
+function buildData(apps: AppEntry[]) {
+  const menuGroups = new Map<string, FlatItem[]>();
+
+  for (const app of apps) {
+    const items: FlatItem[] = [];
+    collectItems(app.menus, app.name, items);
+    for (const item of items) {
+      const bucket = menuGroups.get(item.group) ?? [];
+      bucket.push(item);
+      menuGroups.set(item.group, bucket);
+    }
+  }
+
+  return { apps, menuGroups };
+}
+
+const validIconName = (name: string | null): name is keyof typeof dynamicIconImports =>
+  !!name && name in dynamicIconImports;
+
+// ── component ─────────────────────────────────────────────────────────────────
 
 type TUser = {
   name: string;
@@ -55,31 +88,35 @@ type TUser = {
 
 interface ICommandSearchProps {
   user: TUser;
+  apps: unknown[];
 }
 
-export function CommandSearch({ user }: ICommandSearchProps) {
+export function CommandSearch({ apps }: ICommandSearchProps) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setOpen((open) => !open);
+        setOpen((v) => !v);
       }
     };
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
   }, []);
 
-  const role = user.role;
+  const { apps: appList, menuGroups } = useMemo(
+    () => buildData((apps ?? []) as AppEntry[]),
+    [apps],
+  );
+
+  const close = () => setOpen(false);
 
   return (
     <>
       <Button
         variant="outline"
-        className={
-          "bg-muted/25 group text-muted-foreground hover:bg-accent relative h-8 w-full flex-1 justify-start rounded-md text-sm font-normal shadow-none sm:w-40 sm:pe-12 md:flex-none lg:w-52 xl:w-64 flex items-center"
-        }
+        className="bg-muted/25 group text-muted-foreground hover:bg-accent relative h-8 w-full flex-1 justify-start rounded-md text-sm font-normal shadow-none sm:w-40 sm:pe-12 md:flex-none lg:w-52 xl:w-64 flex items-center"
         onClick={() => setOpen(true)}
       >
         <SearchIcon
@@ -92,45 +129,51 @@ export function CommandSearch({ user }: ICommandSearchProps) {
           <span className="text-xs">⌘</span>K
         </kbd>
       </Button>
+
       <CommandDialog modal open={open} onOpenChange={setOpen}>
-        <CommandInput placeholder="Type a command or search..." />
-        <CommandList>
-          <ScrollArea type="hover" className="h-72 pe-1">
-            <CommandEmpty>No results found.</CommandEmpty>
-            {role ? (
-              <CommandGroup heading="Apps">
-                <div>
-                  {appsList.map((app) => {
-                    const h = app[role as keyof typeof app];
+        <CommandInput placeholder="Search apps and pages..." />
+        <CommandList className="max-h-80 overflow-y-auto">
+          <CommandEmpty>No results found.</CommandEmpty>
 
-                    if (!h) return null;
-
-                    return (
-                      <CommandItem asChild key={app.name}>
-                        <Link href={h} onClick={() => setOpen(false)}>
-                          <Image
-                            src={app.logo}
-                            alt={app.name}
-                            width={20}
-                            height={20}
-                          />
-                          <p>{app.name}</p>
-                        </Link>
-                      </CommandItem>
-                    );
-                  })}
-                </div>
-              </CommandGroup>
-            ) : (
-              <CommandGroup heading="Apps">
-                <CommandItem disabled>
-                  <span className="text-muted-foreground text-sm">
-                    No apps available for your role
-                  </span>
+          {/* ── Apps ── */}
+          {appList.length > 0 && (
+            <CommandGroup heading="Apps">
+              {appList.map((app) => (
+                <CommandItem asChild key={app.id}>
+                  <Link href={`/bezs/${app.slug}`} onClick={close}>
+                    <LayoutGrid className="size-4 shrink-0 text-muted-foreground" />
+                    <span>{app.name}</span>
+                  </Link>
                 </CommandItem>
-              </CommandGroup>
-            )}
-          </ScrollArea>
+              ))}
+            </CommandGroup>
+          )}
+
+          {/* ── Menu items grouped ── */}
+          {menuGroups.size > 0 && (
+            <>
+              {appList.length > 0 && <CommandSeparator />}
+              {Array.from(menuGroups.entries()).map(([groupLabel, items]) => (
+                <CommandGroup key={groupLabel} heading={groupLabel}>
+                  {items.map((item) => (
+                    <CommandItem asChild key={item.href}>
+                      <Link href={item.href} onClick={close}>
+                        {validIconName(item.icon) ? (
+                          <DynamicIcon
+                            name={item.icon}
+                            className="size-4 shrink-0 text-muted-foreground"
+                          />
+                        ) : (
+                          <SearchIcon className="size-4 shrink-0 text-muted-foreground" />
+                        )}
+                        <span>{item.label}</span>
+                      </Link>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              ))}
+            </>
+          )}
         </CommandList>
       </CommandDialog>
     </>

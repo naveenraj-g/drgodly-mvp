@@ -1,12 +1,16 @@
+import { redirect } from "@/i18n/navigation";
 import { DoctorsProfileListTable } from "@/modules/client/telemedicine/components/tables/application-admin/doctors-profile-list-table";
 import { getAllDoctorsData } from "@/modules/client/telemedicine/server-actions/doctorProfile-actions";
 import { getServerSession } from "@/modules/server/auth/get-session";
+import { getLocale } from "next-intl/server";
 
 async function TelemedicineAdminManageDoctorsPage() {
   const session = await getServerSession();
+  const locale = await getLocale();
 
   if (!session) {
-    throw new Error("UNAUTHORIZED");
+    redirect({ href: "/login", locale });
+    return;
   }
 
   const [data, error] = await getAllDoctorsData({

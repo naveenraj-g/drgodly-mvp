@@ -10,7 +10,8 @@ async function PatintAskAIPage() {
   const locale = await getLocale();
 
   if (!session || !session.session.activeOrganizationId) {
-    throw new Error("UNAUTHORIZED");
+    redirect({ href: "/login", locale });
+    return;
   }
 
   const user = {

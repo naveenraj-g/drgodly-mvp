@@ -16,7 +16,7 @@ const PatientOnlineConsultationPage = async (
   const appointmentId = params.appointmentId as string;
 
   if (!session || !session.session.activeOrganizationId) {
-    redirect({ href: "/", locale });
+    redirect({ href: "/login", locale });
     return;
   }
 

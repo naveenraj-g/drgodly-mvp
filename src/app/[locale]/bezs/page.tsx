@@ -10,7 +10,7 @@ const BezsPage = async () => {
   const locale = await getLocale();
 
   if (!session) {
-    redirect({ href: "/", locale });
+    redirect({ href: "/login", locale });
   }
 
   const url = session?.session?.activeRoleRedirectUrl ?? "/bezs";

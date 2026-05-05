@@ -1,12 +1,16 @@
+import { redirect } from "@/i18n/navigation";
 import DefaultWeeklyAvailability from "@/modules/client/telemedicine/components/doctor/availability/doctorWeeklyAvailability";
 import { getDoctorWeeklyAvailability } from "@/modules/client/telemedicine/server-actions/doctorWeeklyAvailability-action";
 import { getServerSession } from "@/modules/server/auth/get-session";
+import { getLocale } from "next-intl/server";
 
 async function DoctorAvailabilitySettings() {
   const session = await getServerSession();
+  const locale = await getLocale();
 
   if (!session || !session.session.activeOrganizationId) {
-    throw new Error("UNAUTHORIZED");
+    redirect({ href: "/login", locale });
+    return;
   }
 
   const user = {

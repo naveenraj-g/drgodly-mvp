@@ -1,18 +1,22 @@
+import { redirect } from "@/i18n/navigation";
 import DoctorProfileAndRegister from "@/modules/client/telemedicine/components/step-form/doctor/step-form";
 import { getDoctorDataById } from "@/modules/client/telemedicine/server-actions/doctorProfile-actions";
 import { getServerSession } from "@/modules/server/auth/get-session";
+import { getLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 async function TelemedicineAdminCreateDoctorPage(
   props: PageProps<"/[locale]/bezs/telemedicine/admin/manage-doctors/[type]">,
 ) {
   const session = await getServerSession();
+  const locale = await getLocale();
 
   const { type } = await props.params;
   const searchParams = await props.searchParams;
 
   if (!session) {
-    throw new Error("UNAUTHORIZED");
+    redirect({ href: "/login", locale });
+    return;
   }
 
   const id = searchParams?.id as string;
