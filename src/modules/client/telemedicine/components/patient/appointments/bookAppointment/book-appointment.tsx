@@ -257,7 +257,7 @@ export function BookAppointment({ doctorsData, error, user }: TProps) {
   return (
     <div>
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-4">
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
           Book an Appointment
         </h1>
@@ -273,7 +273,7 @@ export function BookAppointment({ doctorsData, error, user }: TProps) {
       {step === 1 && (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
           {/* Filters */}
-          <div className="mb-8 flex flex-col md:flex-row gap-4 items-center">
+          <div className="mb-4 flex flex-col md:flex-row gap-4 items-center">
             <InputGroup>
               <InputGroupInput
                 placeholder="Search name, specialty, condition..."
@@ -301,7 +301,7 @@ export function BookAppointment({ doctorsData, error, user }: TProps) {
                         <SelectItem key={s} value={s}>
                           {s}
                         </SelectItem>
-                      )
+                      ),
                   )}
                 </SelectContent>
               </Select>
@@ -521,7 +521,7 @@ export function BookAppointment({ doctorsData, error, user }: TProps) {
                         {formatCurrency(
                           selectedService.priceAmount,
                           "en-US",
-                          selectedService.priceCurrency
+                          selectedService.priceCurrency,
                         )}
                       </p>
                     </div>

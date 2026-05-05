@@ -47,7 +47,7 @@ export function AppLauncher({ apps }: { apps: unknown[] }) {
           className="rounded-full text-muted-foreground hover:text-foreground"
           aria-label="Open apps"
         >
-          <Grip className="size-5" />
+          <Grip className="size-5 text-zinc-500 dark:text-zinc-300" />
         </Button>
       </PopoverTrigger>
 

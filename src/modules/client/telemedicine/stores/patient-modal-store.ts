@@ -3,6 +3,7 @@ import { create } from "zustand";
 
 export type ModalType =
   | "doctorReview"
+  | "doctorProfile"
   | "confirmedAppointmentMessage"
   | "bookAppointment"
   | "rescheduleAppointment"

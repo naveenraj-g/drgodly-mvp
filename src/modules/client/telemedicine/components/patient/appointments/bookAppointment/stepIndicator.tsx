@@ -8,7 +8,7 @@ export const StepIndicator = ({ currentStep }: { currentStep: number }) => {
   ];
 
   return (
-    <div className="flex items-center gap-2 md:gap-4 mb-8 overflow-x-auto pb-2">
+    <div className="flex items-center gap-2 md:gap-4 mb-4 overflow-x-auto pb-2">
       {steps.map((step, idx) => (
         <div key={step.num} className="flex items-center whitespace-nowrap">
           <div

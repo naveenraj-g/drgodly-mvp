@@ -173,7 +173,7 @@ export function PatientProfilePersonalDetails({
         onSubmit={form.handleSubmit(handleSubmit)}
         className="flex flex-col gap-8"
       >
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="flex flex-wrap justify-between gap-6">
           <div className="lg:col-span-2">
             <h2 className="text-2xl font-bold text-foreground mb-2">
               Personal Details
@@ -183,7 +183,14 @@ export function PatientProfilePersonalDetails({
             </p>
           </div>
 
-          {/* side preview removed — full review is on step 5 */}
+          <Button
+            size="sm"
+            className="w-fit self-end"
+            disabled={isPending || createInitialProfileIsPending}
+          >
+            {isPending && <Loader2 className="animate-spin" />}
+            {data?.personal ? "Update" : "Create"} Profile
+          </Button>
         </div>
 
         <FieldGroup className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -263,6 +270,64 @@ export function PatientProfilePersonalDetails({
         </FieldGroup>
 
         <FieldGroup className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Marital Status */}
+          <FormField
+            control={form.control}
+            name="maritalStatus"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Marital Status *</FormLabel>
+                <FormControl>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value ?? ""}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select marital status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {maritalStatusOptions.map((item) => (
+                        <SelectItem key={item.value} value={item.value}>
+                          {item.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Blood Group */}
+          <FormField
+            control={form.control}
+            name="bloodGroup"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Blood Group *</FormLabel>
+                <FormControl>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value ?? ""}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select blood group" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {bloodGroupOptions.map((item) => (
+                        <SelectItem key={item.value} value={item.value}>
+                          {item.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <FormTextarea
             control={form.control}
             name="address"
@@ -392,64 +457,6 @@ export function PatientProfilePersonalDetails({
                     {...field}
                     value={field.value ?? ""}
                   />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Marital Status */}
-          <FormField
-            control={form.control}
-            name="maritalStatus"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Marital Status *</FormLabel>
-                <FormControl>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value ?? ""}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select marital status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {maritalStatusOptions.map((item) => (
-                        <SelectItem key={item.value} value={item.value}>
-                          {item.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Blood Group */}
-          <FormField
-            control={form.control}
-            name="bloodGroup"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Blood Group *</FormLabel>
-                <FormControl>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value ?? ""}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select blood group" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {bloodGroupOptions.map((item) => (
-                        <SelectItem key={item.value} value={item.value}>
-                          {item.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                 </FormControl>
                 <FormMessage />
               </FormItem>
