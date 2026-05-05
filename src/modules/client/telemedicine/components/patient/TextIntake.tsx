@@ -260,7 +260,6 @@ function TextIntake({ user }: TProps) {
     try {
       setEndingPhase("report");
       const intakeReport = await generateReport(messages);
-      console.log({ intakeReport });
       setEndingPhase("saving");
       await execute({
         orgId: user.orgId,

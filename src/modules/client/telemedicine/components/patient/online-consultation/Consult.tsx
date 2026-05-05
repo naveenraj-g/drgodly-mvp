@@ -105,7 +105,7 @@ export default function Consult({
     setIsEnded(true);
     setTranscripts([]);
     toast.success("Consultation ended");
-    router.push("/bezs/telemedicine/patient/appointments/intake");
+    router.push("/bezs/telemedicine/patient/appointments");
   };
 
   function captureTranscript(transcript: Transcript) {

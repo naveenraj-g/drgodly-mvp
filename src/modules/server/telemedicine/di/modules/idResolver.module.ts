@@ -1,6 +1,6 @@
 import { Bind, ContainerModule } from "inversify";
 import { DI_SYMBOLS } from "../types";
-import { IIdResolverRepository } from "../../application/repositories/iDResolverRepository.interface";
+import { IIdResolverRepository } from "../../application/repositories/idResolverRepository.interface";
 import { IdResolverRepository } from "../../infrastructure/repositories/idResolverRepository";
 
 const initializeModules = ({ bind }: { bind: Bind }) => {
@@ -10,5 +10,5 @@ const initializeModules = ({ bind }: { bind: Bind }) => {
 };
 
 export const IdResolverRepositoryModule = new ContainerModule(
-  initializeModules
+  initializeModules,
 );

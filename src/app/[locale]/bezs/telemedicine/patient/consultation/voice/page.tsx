@@ -1,4 +1,4 @@
-import { ConsultationSelector } from "@/modules/client/telemedicine/components/patient/ConsultationSelector";
+import VoiceConsultation from "@/modules/client/telemedicine/components/patient/VoiceConsultation";
 import { getServerSession } from "@/modules/server/auth/get-session";
 import { prismaTelemedicine } from "@/modules/server/prisma/prisma";
 import { redirect } from "@/i18n/navigation";
@@ -34,7 +34,7 @@ async function ConsultationPage() {
     return;
   }
 
-  return <ConsultationSelector />;
+  return <VoiceConsultation />;
 }
 
 export default ConsultationPage;

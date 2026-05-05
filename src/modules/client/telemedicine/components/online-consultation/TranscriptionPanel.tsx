@@ -42,7 +42,8 @@ export function TranscriptPanel({
   // SSE Subscription
   useEffect(() => {
     setError(null);
-    const pyUrl = "https://livekit.agent.drgodly.com";
+    // const pyUrl = "https://livekit.agent.drgodly.com";
+    const pyUrl = "http://localhost:8000";
 
     if (!pyUrl) {
       setError("Failed to get transcripts");

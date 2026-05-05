@@ -17,8 +17,8 @@ interface AppointmentListProps {
 
 const STATUS_MAP: Record<string, { label: string; indicatorKey: string }> = {
   SCHEDULED:   { label: "Scheduled",   indicatorKey: "SCHEDULED" },
-  PENDING:     { label: "Scheduled",   indicatorKey: "SCHEDULED" },
-  RESCHEDULED: { label: "Scheduled",   indicatorKey: "SCHEDULED" },
+  PENDING:     { label: "Pending",     indicatorKey: "PENDING" },
+  RESCHEDULED: { label: "Rescheduled", indicatorKey: "RESCHEDULED" },
   COMPLETED:   { label: "Completed",   indicatorKey: "COMPLETED" },
   CANCELLED:   { label: "Cancelled",   indicatorKey: "CANCELLED" },
 };

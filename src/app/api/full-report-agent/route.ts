@@ -5,34 +5,60 @@ export async function POST(req: NextRequest) {
   try {
     const token = await getAgentToken();
     const body = await req.json();
-    const agentUrl = process.env.FULL_REPORT_AGENT_URL;
 
-    if (!agentUrl) {
+    const assessmentPlanUrl = process.env.ASSESSMENT_PLAN_AGENT_URL;
+    const doctorReportUrl = process.env.DOCTOR_REPORT_AGENT_URL;
+
+    if (!assessmentPlanUrl || !doctorReportUrl) {
       return NextResponse.json(
-        { error: "FULL_REPORT_AGENT_URL is not configured" },
+        {
+          error:
+            "ASSESSMENT_PLAN_AGENT_URL or DOCTOR_REPORT_AGENT_URL is not configured",
+        },
         { status: 500 },
       );
     }
 
-    const upstream = await fetch(agentUrl, {
+    const fetchOptions = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(body),
-    });
+    };
 
-    if (!upstream.ok) {
+    const [assessmentRes, doctorRes] = await Promise.all([
+      fetch(assessmentPlanUrl, fetchOptions),
+      fetch(doctorReportUrl, fetchOptions),
+    ]);
+
+    if (!assessmentRes.ok || !doctorRes.ok) {
+      const failedUrl = !assessmentRes.ok ? "assessment-plan" : "doctor-report";
+      const status = !assessmentRes.ok
+        ? assessmentRes.status
+        : doctorRes.status;
       return NextResponse.json(
-        { error: "Full report agent request failed" },
-        { status: upstream.status },
+        { error: `${failedUrl} agent request failed` },
+        { status },
       );
     }
 
-    const data = await upstream.json();
-    console.log(data);
-    return NextResponse.json(data);
+    const [assessmentData, doctorData] = await Promise.all([
+      assessmentRes.json(),
+      doctorRes.json(),
+    ]);
+
+    const assessmentPlan = assessmentData?.data ?? assessmentData;
+    const soapReport = doctorData?.data ?? doctorData;
+
+    const merged = {
+      soap_report: soapReport,
+      assessment_plan: assessmentPlan,
+      generated_at: new Date().toISOString(),
+    };
+
+    return NextResponse.json(merged);
   } catch (err: any) {
     if (err.message?.includes("Failed to fetch agent token")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
