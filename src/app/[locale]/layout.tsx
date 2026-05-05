@@ -9,7 +9,6 @@ import { routing } from "@/i18n/routing";
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import QueryProvider from "@/lib/QueryProvider";
-import FilenestUserFileModalProvider from "@/modules/client/shared/provider/FilenestUserFileModalProvider";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -53,10 +52,7 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <QueryProvider>
-              {children}
-              <FilenestUserFileModalProvider />
-            </QueryProvider>
+            <QueryProvider>{children}</QueryProvider>
             <Toaster />
             <NextTopLoader showSpinner={false} color="var(--progress-bar)" />
           </ThemeProvider>

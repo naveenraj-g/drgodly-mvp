@@ -1,32 +1,27 @@
-import * as Sentry from "@sentry/nextjs";
-
 import { IMonitoringService } from "../../application/services/monitoringService.interface";
 
 export class MonitoringService implements IMonitoringService {
   startSpan<T>(
-    options: { name: string; op?: string; attributes?: Record<string, any> },
+    _options: { name: string; op?: string; attributes?: Record<string, any> },
     callback: () => T
   ): T {
-    return Sentry.startSpan(options, callback);
+    return callback();
   }
 
   instrumentServerAction<T>(
-    name: string,
-    options: Record<string, any>,
+    _name: string,
+    _options: Record<string, any>,
     callback: () => T
   ): Promise<T> {
-    return Sentry.withServerActionInstrumentation(name, options, callback);
+    return Promise.resolve(callback());
   }
 
   report(error: any): string {
-    return Sentry.captureException(error);
+    console.error(error);
+    return "";
   }
 
-  setUser(user: { id?: string; email?: string; username?: string }): void {
-    Sentry.setUser(user);
-  }
+  setUser(_user: { id?: string; email?: string; username?: string }): void {}
 
-  clearUser(): void {
-    Sentry.setUser(null);
-  }
+  clearUser(): void {}
 }

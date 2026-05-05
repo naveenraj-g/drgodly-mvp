@@ -94,13 +94,12 @@ export const createorUpdatePatientPersonalDetails = createServerAction()
           where: { id: input.patientId },
           select: { fhirPatientId: true },
         });
-        console.log({ existing });
         existingFhirPatientId = existing?.fhirPatientId ?? null;
       } catch (err) {
         console.error("[FHIR] Failed to fetch existing fhirPatientId:", err);
       }
     }
-    console.log({ existingFhirPatientId, patientId: input.patientId });
+
     // Push demographics to FHIR first
     let fhirPatientId: number | undefined;
     try {

@@ -127,10 +127,10 @@ export const CancelAppointmentModal = () => {
               <Button disabled={isSubmitting} size="sm">
                 {isSubmitting ? (
                   <>
-                    Cancel <Loader2 className="animate-spin" />
+                    Confirm <Loader2 className="animate-spin" />
                   </>
                 ) : (
-                  "Cancel"
+                  "Confirm"
                 )}
               </Button>
             </DialogFooter>

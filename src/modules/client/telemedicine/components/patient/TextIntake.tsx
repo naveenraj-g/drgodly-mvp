@@ -37,7 +37,9 @@ function TextIntake({ user }: TProps) {
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [liveTranscript, setLiveTranscript] = useState("");
-  const [endingPhase, setEndingPhase] = useState<"idle" | "report" | "saving">("idle");
+  const [endingPhase, setEndingPhase] = useState<"idle" | "report" | "saving">(
+    "idle",
+  );
 
   const abortRef = useRef<AbortController | null>(null);
   const liveTextRef = useRef("");
@@ -226,7 +228,7 @@ function TextIntake({ user }: TProps) {
   const cancelStream = () => abortRef.current?.abort();
 
   const generateReport = async (
-    conversation: TMessageItem[]
+    conversation: TMessageItem[],
   ): Promise<unknown> => {
     try {
       const formatted = conversation.map((m) => {
@@ -258,6 +260,7 @@ function TextIntake({ user }: TProps) {
     try {
       setEndingPhase("report");
       const intakeReport = await generateReport(messages);
+      console.log({ intakeReport });
       setEndingPhase("saving");
       await execute({
         orgId: user.orgId,
@@ -345,7 +348,9 @@ function TextIntake({ user }: TProps) {
           size="sm"
           variant="destructive"
           onClick={endChat}
-          disabled={endingPhase !== "idle" || (messages.length === 0 && !isStreaming)}
+          disabled={
+            endingPhase !== "idle" || (messages.length === 0 && !isStreaming)
+          }
           className="px-4 rounded-2xl h-7"
         >
           {endingPhase === "report" ? (

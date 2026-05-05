@@ -1,6 +1,4 @@
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { FilenestUserModalProvider } from "@/modules/client/filenest/providers/FilenestUserModalProvider";
-import { FileUploadModalProvider } from "@/modules/client/shared/provider/FileUploadModalProvider";
 import { getServerSession } from "@/modules/server/auth/get-session";
 import BreadCrumb from "@/modules/shared/components/breadcrumb";
 import AppNavbar from "@/modules/shared/components/navbar/app-navbar";
@@ -38,11 +36,7 @@ const AppListingLayout = async ({
         <AppNavbar user={user} />
         <main className="mx-auto px-4 py-4 pb-6 max-w-[110rem] space-y-6 w-full">
           <BreadCrumb />
-          <div className="w-full">
-            <FileUploadModalProvider />
-            <FilenestUserModalProvider />
-            {children}
-          </div>
+          <div className="w-full">{children}</div>
         </main>
       </SidebarInset>
     </SidebarProvider>

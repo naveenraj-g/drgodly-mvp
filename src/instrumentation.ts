@@ -1,24 +1,14 @@
-import * as Sentry from "@sentry/nextjs";
+export async function register() {}
 
-export async function register() {
-  if (
-    process.env.NEXT_RUNTIME === "nodejs" &&
-    process.env.NODE_ENV === "production"
-  ) {
-    await import("../sentry.server.config");
-  }
-
-  if (
-    process.env.NEXT_RUNTIME === "edge" &&
-    process.env.NODE_ENV === "production"
-  ) {
-    await import("../sentry.edge.config");
-  }
+export function onRequestError(
+  error: unknown,
+  _request: unknown,
+  _context: unknown
+) {
+  console.error(error);
 }
 
-export const onRequestError = Sentry.captureRequestError;
-
-/* 
+/*
 Data we can collect:
 
 1. logs: text records of events happening
