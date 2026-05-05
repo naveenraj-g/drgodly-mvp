@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { DoctorReviewModal, BookAppointmentModal } from "../modals/patient";
+import { DoctorReviewModal, DoctorProfileModal, BookAppointmentModal } from "../modals/patient";
 import IntakeCompleteModal from "../modals/patient/IntakeCompleteModal";
 
 export const PatientModalProvider = () => {
@@ -16,6 +16,7 @@ export const PatientModalProvider = () => {
   return (
     <>
       <DoctorReviewModal />
+      <DoctorProfileModal />
       <BookAppointmentModal />
       <IntakeCompleteModal />
     </>

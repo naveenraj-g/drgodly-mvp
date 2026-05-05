@@ -39,6 +39,8 @@ export const DoctorListItemSchema = z.object({
   ratingAverage: z.number().nullable(),
   ratingCount: z.number().nullable(),
   speciality: z.string(),
+  location: z.string().optional().nullable(),
+  about: z.string().optional().nullable(),
   services: z.array(DoctorServiceLiteSchema),
   weeklyAvailabilities: z.array(WeeklyAvailabilityLiteSchema),
 });

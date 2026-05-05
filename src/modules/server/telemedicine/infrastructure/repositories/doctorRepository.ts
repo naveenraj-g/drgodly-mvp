@@ -61,6 +61,22 @@ export class DoctorRepository /* implements IDoctorRepository */ {
               supportedModes: true, // JSON
             },
           },
+          workDetail: {
+            select: {
+              about: true,
+              workingFacilityDetails: {
+                select: {
+                  facilityName: true,
+                  address: true,
+                  district: true,
+                  state: true,
+                  facilityStatus: true,
+                },
+                where: { facilityStatus: true },
+                take: 1,
+              },
+            },
+          },
           weeklyAvailabilities: {
             select: {
               id: true,
@@ -68,7 +84,6 @@ export class DoctorRepository /* implements IDoctorRepository */ {
               isEnabled: true,
               slots: {
                 select: { id: true, start: true, end: true },
-                // you can limit here if list payload is large, e.g. `take: 6`
               },
             },
           },
@@ -76,7 +91,15 @@ export class DoctorRepository /* implements IDoctorRepository */ {
       });
 
       // map to a slim booking item
-      const list = doctors.map((d) => ({
+      const list = doctors.map((d) => {
+        const facility = d.workDetail?.workingFacilityDetails?.[0];
+        const location = facility
+          ? [facility.facilityName, facility.district, facility.state]
+              .filter(Boolean)
+              .join(", ")
+          : null;
+
+        return {
         id: d.userId!,
         orgId: d.orgId,
         fullName: d.personal?.fullName ?? "Doctor",
@@ -85,6 +108,8 @@ export class DoctorRepository /* implements IDoctorRepository */ {
         ratingCount: d.ratingCount ?? 0,
         mobileNumber: d.personal?.mobileNumber,
         speciality: d.personal?.speciality ?? "unknown",
+        location,
+        about: d.workDetail?.about ?? null,
         services:
           d.services?.map((s) => ({
             id: s.id,
@@ -105,7 +130,8 @@ export class DoctorRepository /* implements IDoctorRepository */ {
               end: s.end,
             })),
           })) ?? [],
-      }));
+        };
+      });
 
       const data = await DoctorsListSchema.parseAsync(list);
 
