@@ -1657,4 +1657,34 @@ export class AppointmentRepository implements IAppointmentRepository {
       });
     }
   }
+
+  async assertSlotAvailable(
+    orgId: string,
+    doctorId: string,
+    date: Date,
+    time: string,
+  ): Promise<void> {
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const conflict = await prismaTelemedicine.appointment.findFirst({
+      where: {
+        orgId,
+        doctorId,
+        time,
+        appointmentDate: { gte: startOfDay, lte: endOfDay },
+        status: { in: ["PENDING", "SCHEDULED", "RESCHEDULED"] },
+        isDoctorDeleted: false,
+      },
+      select: { id: true },
+    });
+
+    if (conflict) {
+      throw new OperationError(
+        "This time slot is already booked. Please choose a different time.",
+      );
+    }
+  }
 }

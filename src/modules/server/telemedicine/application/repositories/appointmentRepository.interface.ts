@@ -65,4 +65,11 @@ export interface IAppointmentRepository {
     userId: string,
     actorType: "PATIENT" | "DOCTOR"
   ): Promise<string>;
+  /** Throws if the slot is already taken by an active appointment */
+  assertSlotAvailable(
+    orgId: string,
+    doctorId: string,
+    date: Date,
+    time: string,
+  ): Promise<void>;
 }
