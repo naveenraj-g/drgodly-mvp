@@ -1,49 +1,48 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+
+const DAY_NAMES = [
+  "SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY",
+  "THURSDAY", "FRIDAY", "SATURDAY",
+] as const;
 
 type DateScrollerProps = {
   dates: Date[];
   selectedDate: Date | null;
   onSelect: (d: Date) => void;
+  enabledDays?: Set<string>; // e.g. Set(["MONDAY", "WEDNESDAY"])
 };
 
 export function DateScroller({
   dates,
   selectedDate,
   onSelect,
+  enabledDays,
 }: DateScrollerProps) {
   const trackRef = useRef<HTMLDivElement | null>(null);
 
-  // scroll the selected date into view on change
   useEffect(() => {
     if (!trackRef.current || !selectedDate) return;
     const idx = dates.findIndex(
-      (d) => d.toDateString() === selectedDate.toDateString()
+      (d) => d.toDateString() === selectedDate.toDateString(),
     );
     if (idx === -1) return;
     const el = trackRef.current.querySelector<HTMLButtonElement>(
-      `[data-date-index="${idx}"]`
+      `[data-date-index="${idx}"]`,
     );
     if (el)
-      el.scrollIntoView({
-        inline: "center",
-        block: "nearest",
-        behavior: "smooth",
-      });
+      el.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
   }, [selectedDate, dates]);
 
   const scrollBy = (dir: "left" | "right") => {
     const el = trackRef.current;
     if (!el) return;
-    const delta = dir === "left" ? -1 : 1;
-    const itemWidth = 112; // matches min-w-[112px] below
-    el.scrollBy({ left: delta * itemWidth * 3, behavior: "smooth" });
+    el.scrollBy({ left: (dir === "left" ? -1 : 1) * 112 * 3, behavior: "smooth" });
   };
 
   return (
     <div className="relative">
-      {/* Controls (hidden on very small screens to avoid overlap) */}
       <div className="pointer-events-none absolute inset-y-0 -left-5 -right-5 bottom-4 z-10 hidden sm:flex items-center justify-between">
         <Button
           type="button"
@@ -67,23 +66,18 @@ export function DateScroller({
         </Button>
       </div>
 
-      {/* Track */}
       <div
         ref={trackRef}
-        className="
-          no-scrollbar
-          overflow-x-auto
-          scroll-smooth
-          snap-x snap-mandatory
-          pb-2 -mx-2 px-2
-        "
+        className="no-scrollbar overflow-x-auto scroll-smooth snap-x snap-mandatory pb-2 -mx-2 px-2"
         role="listbox"
         aria-label="Available dates"
       >
         <div className="flex gap-2">
           {dates.map((date, idx) => {
+            const dayName = DAY_NAMES[date.getDay()];
+            const isDisabled = enabledDays ? !enabledDays.has(dayName) : false;
             const isSelected =
-              selectedDate?.toDateString() === date.toDateString();
+              !isDisabled && selectedDate?.toDateString() === date.toDateString();
             const isToday = new Date().toDateString() === date.toDateString();
 
             return (
@@ -91,42 +85,33 @@ export function DateScroller({
                 key={idx}
                 role="option"
                 aria-selected={isSelected}
+                aria-disabled={isDisabled}
                 data-date-index={idx}
                 type="button"
+                disabled={isDisabled}
                 variant={isSelected ? "default" : "outline"}
-                onClick={() => onSelect(date)}
-                // Stable width across breakpoints, prevents squish
-                className="
+                onClick={() => !isDisabled && onSelect(date)}
+                className={`
                   flex-none snap-start
-                  min-w-[112px]  // 7rem
-                  sm:min-w-[120px]
-                  md:min-w-[128px]
-                  h-auto
-                  rounded-xl border
-                  px-3 py-2
+                  min-w-[112px] sm:min-w-[120px] md:min-w-[128px]
+                  h-auto rounded-xl border px-3 py-2
                   flex flex-col items-center justify-center gap-1
-                "
+                  ${isDisabled ? "opacity-40 cursor-not-allowed line-through" : ""}
+                `}
               >
                 <span
-                  className={`
-                    text-[10px] font-semibold uppercase tracking-wide
-                    ${
-                      isSelected
-                        ? "text-primary-foreground"
-                        : "text-muted-foreground"
-                    }
-                  `}
+                  className={`text-[10px] font-semibold uppercase tracking-wide ${
+                    isSelected ? "text-primary-foreground" : "text-muted-foreground"
+                  }`}
                 >
-                  {isToday
-                    ? "Today"
-                    : date.toLocaleDateString("en-US", { weekday: "short" })}
+                  {isToday ? "Today" : date.toLocaleDateString("en-US", { weekday: "short" })}
                 </span>
                 <span className="text-base sm:text-lg font-medium">
-                  {date.toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                  })}
+                  {date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                 </span>
+                {isDisabled && (
+                  <span className="text-[9px] text-muted-foreground">Unavail.</span>
+                )}
               </Button>
             );
           })}

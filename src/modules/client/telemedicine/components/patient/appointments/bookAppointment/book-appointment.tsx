@@ -11,9 +11,10 @@ import {
   Filter,
   Loader2,
 } from "lucide-react";
-import { TIME_SLOTS, SPECIALTIES } from "./data";
+import { SPECIALTIES } from "./data";
 import { Doctor, SelectedService } from "./types";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { StepIndicator } from "./stepIndicator";
 import { DoctorCard } from "./doctorCard";
 import {
@@ -38,7 +39,10 @@ import type { ZSAError } from "zsa";
 import { toast } from "sonner";
 import { ServiceSelector } from "./ServiceSelector";
 import { useServerAction } from "zsa-react";
-import { bookAppointment } from "@/modules/client/telemedicine/server-actions/appointment-action";
+import {
+  bookAppointment,
+  getBookedSlotsForDoctor,
+} from "@/modules/client/telemedicine/server-actions/appointment-action";
 import { TBookAppointmentValidation } from "@/modules/shared/schemas/telemedicine/appointment/appointmentValidationSchema";
 import { DateScroller } from "../../../DateScroll";
 import { useSearchParams } from "next/navigation";
@@ -49,6 +53,25 @@ type TProps = {
   error: ZSAError | null;
   user: TSharedUser;
 };
+
+const DAY_NAMES = [
+  "SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY",
+  "THURSDAY", "FRIDAY", "SATURDAY",
+] as const;
+
+function generateTimeSlots(start: string, end: string, interval = 30): string[] {
+  const toMins = (t: string) => {
+    const [h, m] = t.split(":").map(Number);
+    return h * 60 + m;
+  };
+  const slots: string[] = [];
+  for (let t = toMins(start); t < toMins(end); t += interval) {
+    slots.push(
+      `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`,
+    );
+  }
+  return slots;
+}
 
 export function BookAppointment({ doctorsData, error, user }: TProps) {
   const openModal = usePatientModalStore((state) => state.onOpen);
@@ -66,9 +89,52 @@ export function BookAppointment({ doctorsData, error, user }: TProps) {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
+  // Availability state
+  const [bookedSlots, setBookedSlots] = useState<Set<string>>(new Set());
+  const [isFetchingSlots, setIsFetchingSlots] = useState(false);
+
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSpecialty, setSelectedSpecialty] = useState("All");
+
+  // Derived: enabled days for selected doctor
+  const enabledDays = useMemo<Set<string>>(() => {
+    if (!selectedDoctor) return new Set(DAY_NAMES);
+    return new Set(
+      selectedDoctor.weeklyAvailabilities
+        .filter((w) => w.isEnabled)
+        .map((w) => w.dayOfWeek),
+    );
+  }, [selectedDoctor]);
+
+  // Derived: available time slots for the selected date
+  const availableTimeSlots = useMemo<string[]>(() => {
+    if (!selectedDoctor || !selectedDate) return [];
+    const dayName = DAY_NAMES[selectedDate.getDay()];
+    const avail = selectedDoctor.weeklyAvailabilities.find(
+      (w) => w.dayOfWeek === dayName && w.isEnabled,
+    );
+    if (!avail || avail.slots.length === 0) return [];
+    // use the first slot's start/end window
+    const { start, end } = avail.slots[0];
+    return generateTimeSlots(start, end);
+  }, [selectedDoctor, selectedDate]);
+
+  // Fetch booked slots whenever doctor + date change
+  useEffect(() => {
+    if (!selectedDoctor || !selectedDate) {
+      setBookedSlots(new Set());
+      return;
+    }
+    setIsFetchingSlots(true);
+    getBookedSlotsForDoctor({
+      doctorUserId: selectedDoctor.id,
+      orgId: user.orgId,
+      date: selectedDate.toISOString(),
+    }).then(([data]) => {
+      setBookedSlots(new Set(data ?? []));
+    }).finally(() => setIsFetchingSlots(false));
+  }, [selectedDoctor, selectedDate, user.orgId]);
 
   useEffect(() => {
     if (error) {
@@ -400,8 +466,9 @@ export function BookAppointment({ doctorsData, error, user }: TProps) {
                 </h3>
                 <DateScroller
                   dates={calendarDates}
-                  onSelect={setSelectedDate}
+                  onSelect={(d) => { setSelectedDate(d); setSelectedTime(null); }}
                   selectedDate={selectedDate}
+                  enabledDays={enabledDays}
                 />
               </div>
 
@@ -416,27 +483,38 @@ export function BookAppointment({ doctorsData, error, user }: TProps) {
                 <h3 className="font-semibold mb-4 text-muted-foreground text-sm">
                   Available Times
                 </h3>
-                <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                  {TIME_SLOTS.map((time, idx) => {
-                    const isBooked = idx % 5 === 3; // Mock booked slots
-                    const isSelected = selectedTime === time;
-
-                    return (
-                      <Button
-                        variant={isSelected ? "default" : "outline"}
-                        key={time}
-                        disabled={isBooked}
-                        onClick={() => setSelectedTime(time)}
-                        className={`transition-all flex items-center justify-center gap-2 ${
-                          isBooked && "cursor-not-allowed line-through"
-                        }`}
-                      >
-                        <Clock className={`w-3.5 h-3.5`} />
-                        {time}
-                      </Button>
-                    );
-                  })}
-                </div>
+                {isFetchingSlots ? (
+                  <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                    {Array.from({ length: 10 }).map((_, i) => (
+                      <Skeleton key={i} className="h-9 w-full rounded-md" />
+                    ))}
+                  </div>
+                ) : availableTimeSlots.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-4">
+                    No available slots for this day.
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                    {availableTimeSlots.map((time) => {
+                      const isBooked = bookedSlots.has(time);
+                      const isSelected = selectedTime === time;
+                      return (
+                        <Button
+                          variant={isSelected ? "default" : "outline"}
+                          key={time}
+                          disabled={isBooked}
+                          onClick={() => setSelectedTime(time)}
+                          className={`transition-all flex items-center justify-center gap-2 ${
+                            isBooked ? "cursor-not-allowed line-through opacity-50" : ""
+                          }`}
+                        >
+                          <Clock className="w-3.5 h-3.5" />
+                          {time}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </Card>
           </div>

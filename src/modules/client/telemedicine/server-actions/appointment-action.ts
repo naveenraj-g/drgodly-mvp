@@ -427,3 +427,40 @@ export const completeConsultation = createServerAction()
       }
     );
   });
+
+export const getBookedSlotsForDoctor = createServerAction()
+  .input(
+    z.object({
+      doctorUserId: z.string().min(1),
+      orgId: z.string().min(1),
+      date: z.string().min(1), // ISO date string
+    }),
+    { skipInputParsing: true },
+  )
+  .handler(async ({ input }) => {
+    const day = new Date(input.date);
+    const startOfDay = new Date(day);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(day);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const doctor = await prismaTelemedicine.doctor.findUnique({
+      where: { orgId_userId: { orgId: input.orgId, userId: input.doctorUserId } },
+      select: { id: true },
+    });
+
+    if (!doctor) return [] as string[];
+
+    const appointments = await prismaTelemedicine.appointment.findMany({
+      where: {
+        orgId: input.orgId,
+        doctorId: doctor.id,
+        appointmentDate: { gte: startOfDay, lte: endOfDay },
+        status: { in: ["PENDING", "SCHEDULED", "RESCHEDULED"] },
+        isDoctorDeleted: false,
+      },
+      select: { time: true },
+    });
+
+    return appointments.map((a) => a.time);
+  });
