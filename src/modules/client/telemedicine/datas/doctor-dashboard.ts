@@ -38,7 +38,7 @@ export interface LifestyleData {
   heartRate: { date: string; value: number }[];
   steps: { date: string; value: number }[];
   sleep: { date: string; value: number }[];
-  activity: { date: string; value: number }[];
+  activity: { date: string; value: number; activityName?: string }[];
 }
 
 export interface HealthRecord {

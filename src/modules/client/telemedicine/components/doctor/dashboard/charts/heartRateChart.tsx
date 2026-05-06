@@ -44,6 +44,8 @@ export function HeartRateChart({ heartRate }: THeartRateChartProps) {
               borderRadius: "var(--radius)",
               color: "var(--foreground)",
             }}
+            formatter={(v: number) => [`${v} bpm`, "Heart Rate"]}
+            labelFormatter={(label) => `Day: ${label}`}
           />
           <Line
             type="monotone"

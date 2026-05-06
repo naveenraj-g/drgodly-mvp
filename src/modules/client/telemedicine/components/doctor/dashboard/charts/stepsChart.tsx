@@ -44,6 +44,8 @@ export function StepsChart({ steps }: IStepsChartProps) {
               borderRadius: "var(--radius)",
               color: "var(--foreground)",
             }}
+            formatter={(v: number) => [v.toLocaleString(), "Steps"]}
+            labelFormatter={(label) => `Day: ${label}`}
           />
           <Bar dataKey="value" fill="var(--chart-2)" radius={[8, 8, 0, 0]} />
         </BarChart>

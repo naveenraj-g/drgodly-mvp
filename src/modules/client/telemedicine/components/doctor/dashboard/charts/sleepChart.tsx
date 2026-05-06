@@ -49,6 +49,8 @@ export function SleepChart({ sleep }: ISleepChartProps) {
               borderRadius: "var(--radius)",
               color: "var(--foreground)",
             }}
+            formatter={(v: number) => [`${v} hrs`, "Sleep"]}
+            labelFormatter={(label) => `Day: ${label}`}
           />
 
           <Area

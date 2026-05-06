@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Activity, Heart, Footprints, Moon } from "lucide-react";
 import { LifestyleData } from "@/modules/client/telemedicine/datas/doctor-dashboard";
 import { useState } from "react";
@@ -15,9 +16,10 @@ import { ActivityChart } from "./activityChart";
 
 interface LifestyleChartsProps {
   lifestyle?: LifestyleData;
+  isLoading?: boolean;
 }
 
-export const LifestyleCharts = ({ lifestyle }: LifestyleChartsProps) => {
+export const LifestyleCharts = ({ lifestyle, isLoading }: LifestyleChartsProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
@@ -42,7 +44,22 @@ export const LifestyleCharts = ({ lifestyle }: LifestyleChartsProps) => {
         </ActionTooltipProvider>
       </CardHeader>
       <CardContent className="flex-1 overflow-hidden">
-        {!lifestyle ? (
+        {isLoading ? (
+          <div className="space-y-3 pt-1">
+            <div className="flex gap-2">
+              <Skeleton className="h-8 flex-1 rounded-md" />
+              <Skeleton className="h-8 flex-1 rounded-md" />
+              <Skeleton className="h-8 flex-1 rounded-md" />
+              <Skeleton className="h-8 flex-1 rounded-md" />
+            </div>
+            <Skeleton className="h-4 w-48 rounded" />
+            <div className="flex items-end gap-2 pt-2">
+              {[60, 85, 45, 90, 55, 75, 65].map((h, i) => (
+                <Skeleton key={i} className="flex-1 rounded-t-md" style={{ height: h * 2 }} />
+              ))}
+            </div>
+          </div>
+        ) : !lifestyle ? (
           <p className="text-sm text-muted-foreground py-6 text-center">
             No lifestyle data available.
           </p>
