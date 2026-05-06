@@ -2,7 +2,14 @@ import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { ProfileAvatar } from "@/modules/shared/components/ProfileAvatar";
 import { AppointmentStatusIndicator } from "../../../AppointmentStatusIndicator";
-import { CalendarClock, EllipsisVertical, Trash2, X, Brain, ArrowRight } from "lucide-react";
+import {
+  CalendarClock,
+  EllipsisVertical,
+  Trash2,
+  X,
+  Brain,
+  ArrowRight,
+} from "lucide-react";
 import { TanstackTableColumnSorting } from "@/modules/shared/components/table/tanstack-table-column-sorting";
 import {
   DropdownMenu,
@@ -23,7 +30,12 @@ function getKind(mode: string, doctorUserId: string | null | undefined) {
   return "doctor";
 }
 
-function KindBadge({ mode, doctorUserId, isFollowUp, hasFollowUp }: {
+function KindBadge({
+  mode,
+  doctorUserId,
+  isFollowUp,
+  hasFollowUp,
+}: {
   mode: string;
   doctorUserId?: string | null;
   isFollowUp: boolean;
@@ -48,12 +60,18 @@ function KindBadge({ mode, doctorUserId, isFollowUp, hasFollowUp }: {
         </Badge>
       )}
       {isFollowUp && (
-        <Badge variant="outline" className="w-fit gap-1 text-xs text-blue-600 border-blue-300">
+        <Badge
+          variant="outline"
+          className="w-fit gap-1 text-xs text-blue-600 border-blue-300"
+        >
           <ArrowRight className="size-3 rotate-180" /> Follow-up
         </Badge>
       )}
       {hasFollowUp && (
-        <Badge variant="outline" className="w-fit gap-1 text-xs text-green-600 border-green-300">
+        <Badge
+          variant="outline"
+          className="w-fit gap-1 text-xs text-green-600 border-green-300"
+        >
           <ArrowRight className="size-3" /> Has Follow-up
         </Badge>
       )}
@@ -63,7 +81,7 @@ function KindBadge({ mode, doctorUserId, isFollowUp, hasFollowUp }: {
 
 export const appointmentColumn: ColumnDef<TAppointment>[] = [
   {
-    header: "INFO",
+    header: "Patient",
     accessorKey: "patient",
     cell: ({ row }) => {
       const patientData = row.original.patient;
@@ -81,10 +99,11 @@ export const appointmentColumn: ColumnDef<TAppointment>[] = [
     },
   },
   {
-    header: "TYPE",
+    header: "Type",
     id: "type",
     cell: ({ row }) => {
-      const { appointmentMode, doctor, followUpMapping, intakeMapping } = row.original;
+      const { appointmentMode, doctor, followUpMapping, intakeMapping } =
+        row.original;
       return (
         <KindBadge
           mode={appointmentMode}
@@ -97,7 +116,11 @@ export const appointmentColumn: ColumnDef<TAppointment>[] = [
   },
   {
     header: ({ column }) => (
-      <TanstackTableColumnSorting label="DATE" column={column} isSorted={column.getIsSorted()} />
+      <TanstackTableColumnSorting
+        label="Date"
+        column={column}
+        isSorted={column.getIsSorted()}
+      />
     ),
     accessorKey: "appointmentDate",
     cell: ({ row }) => {
@@ -107,13 +130,21 @@ export const appointmentColumn: ColumnDef<TAppointment>[] = [
   },
   {
     header: ({ column }) => (
-      <TanstackTableColumnSorting label="TIME" column={column} isSorted={column.getIsSorted()} />
+      <TanstackTableColumnSorting
+        label="Time"
+        column={column}
+        isSorted={column.getIsSorted()}
+      />
     ),
     accessorKey: "time",
   },
   {
     header: ({ column }) => (
-      <TanstackTableColumnSorting label="DOCTOR" column={column} isSorted={column.getIsSorted()} />
+      <TanstackTableColumnSorting
+        label="Doctor"
+        column={column}
+        isSorted={column.getIsSorted()}
+      />
     ),
     accessorKey: "doctor",
     filterFn: (row, _columnId, filterValue) => {
@@ -152,13 +183,19 @@ export const appointmentColumn: ColumnDef<TAppointment>[] = [
   },
   {
     header: ({ column }) => (
-      <TanstackTableColumnSorting label="STATUS" column={column} isSorted={column.getIsSorted()} />
+      <TanstackTableColumnSorting
+        label="Status"
+        column={column}
+        isSorted={column.getIsSorted()}
+      />
     ),
     accessorKey: "status",
-    cell: ({ row }) => <AppointmentStatusIndicator status={row.original.status} />,
+    cell: ({ row }) => (
+      <AppointmentStatusIndicator status={row.original.status} />
+    ),
   },
   {
-    header: "ACTIONS",
+    header: "Actions",
     id: "actions",
     cell: ({ row }) => {
       const appointmentData = row.original;
@@ -174,7 +211,11 @@ export const appointmentColumn: ColumnDef<TAppointment>[] = [
             size="sm"
             className="rounded-full"
             onClick={() =>
-              openModal({ type: "viewAppointment", appointmentData, patientOrDoctor: "PATIENT" })
+              openModal({
+                type: "viewAppointment",
+                appointmentData,
+                patientOrDoctor: "PATIENT",
+              })
             }
           >
             View
@@ -183,15 +224,25 @@ export const appointmentColumn: ColumnDef<TAppointment>[] = [
           {!isAi && (
             <DropdownMenu>
               <DropdownMenuTrigger
-                className={cn(buttonVariants({ size: "icon", variant: "ghost" }), "rounded-full")}
+                className={cn(
+                  buttonVariants({ size: "icon", variant: "ghost" }),
+                  "rounded-full",
+                )}
               >
                 <EllipsisVertical />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" side="left">
-                {(status === "PENDING" || status === "RESCHEDULED" || status === "SCHEDULED") && (
+                {(status === "PENDING" ||
+                  status === "RESCHEDULED" ||
+                  status === "SCHEDULED") && (
                   <DropdownMenuItem
                     className="cursor-pointer"
-                    onClick={() => openModal({ type: "rescheduleAppointment", appointmentData })}
+                    onClick={() =>
+                      openModal({
+                        type: "rescheduleAppointment",
+                        appointmentData,
+                      })
+                    }
                   >
                     <CalendarClock />
                     Reschedule
@@ -200,7 +251,9 @@ export const appointmentColumn: ColumnDef<TAppointment>[] = [
                 {status === "COMPLETED" || status === "CANCELLED" ? (
                   <DropdownMenuItem
                     className="cursor-pointer space-x-2 text-rose-600 hover:!text-rose-600 dark:text-rose-500 dark:hover:!text-rose-500"
-                    onClick={() => openModal({ type: "deleteAppointment", appointmentData })}
+                    onClick={() =>
+                      openModal({ type: "deleteAppointment", appointmentData })
+                    }
                   >
                     <div className="flex items-center gap-2">
                       <Trash2 className="text-rose-600 dark:text-rose-500" />
@@ -210,7 +263,9 @@ export const appointmentColumn: ColumnDef<TAppointment>[] = [
                 ) : (
                   <DropdownMenuItem
                     className="cursor-pointer space-x-2 text-rose-600 hover:!text-rose-600 dark:text-rose-500 dark:hover:!text-rose-500"
-                    onClick={() => openModal({ type: "cancelAppointment", appointmentData })}
+                    onClick={() =>
+                      openModal({ type: "cancelAppointment", appointmentData })
+                    }
                   >
                     <div className="flex items-center gap-2">
                       <X className="text-rose-600 dark:text-rose-500" />

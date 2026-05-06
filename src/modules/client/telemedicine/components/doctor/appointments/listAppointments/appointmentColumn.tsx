@@ -82,7 +82,7 @@ function KindBadge({
 
 export const appointmentColumn: ColumnDef<TAppointment>[] = [
   {
-    header: "PATIENT",
+    header: "Patient",
     accessorKey: "patient",
     cell: ({ row }) => {
       const patientData = row.original.patient;
@@ -100,7 +100,7 @@ export const appointmentColumn: ColumnDef<TAppointment>[] = [
     },
   },
   {
-    header: "TYPE",
+    header: "Type",
     id: "type",
     cell: ({ row }) => {
       const { appointmentMode, doctor, followUpMapping, intakeMapping } =
@@ -118,7 +118,7 @@ export const appointmentColumn: ColumnDef<TAppointment>[] = [
   {
     header: ({ column }) => (
       <TanstackTableColumnSorting
-        label="DATE"
+        label="Date"
         column={column}
         isSorted={column.getIsSorted()}
       />
@@ -132,7 +132,7 @@ export const appointmentColumn: ColumnDef<TAppointment>[] = [
   {
     header: ({ column }) => (
       <TanstackTableColumnSorting
-        label="TIME"
+        label="Time"
         column={column}
         isSorted={column.getIsSorted()}
       />
@@ -142,7 +142,7 @@ export const appointmentColumn: ColumnDef<TAppointment>[] = [
   {
     header: ({ column }) => (
       <TanstackTableColumnSorting
-        label="STATUS"
+        label="Status"
         column={column}
         isSorted={column.getIsSorted()}
       />
@@ -153,7 +153,7 @@ export const appointmentColumn: ColumnDef<TAppointment>[] = [
     ),
   },
   {
-    header: "ACTIONS",
+    header: "Actions",
     id: "actions",
     cell: ({ row }) => {
       const appointmentData = row.original;
@@ -184,7 +184,7 @@ export const appointmentColumn: ColumnDef<TAppointment>[] = [
               <DropdownMenuTrigger
                 className={cn(
                   buttonVariants({ size: "icon", variant: "ghost" }),
-                  "rounded-full"
+                  "rounded-full",
                 )}
               >
                 <EllipsisVertical />
