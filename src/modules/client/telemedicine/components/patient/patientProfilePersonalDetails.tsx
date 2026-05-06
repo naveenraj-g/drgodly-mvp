@@ -182,15 +182,6 @@ export function PatientProfilePersonalDetails({
               Add the basic personal details of the patient.
             </p>
           </div>
-
-          <Button
-            size="sm"
-            className="w-fit self-end"
-            disabled={isPending || createInitialProfileIsPending}
-          >
-            {isPending && <Loader2 className="animate-spin" />}
-            {data?.personal ? "Update" : "Create"} Profile
-          </Button>
         </div>
 
         <FieldGroup className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

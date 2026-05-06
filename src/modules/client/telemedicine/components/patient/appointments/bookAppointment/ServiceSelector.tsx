@@ -27,7 +27,7 @@ export const ServiceSelector = ({
   );
 
   return (
-    <div className="lg:col-span-1 space-y-4">
+    <div className="lg:col-span-1 space-y-4 self-start">
       <h3 className="font-medium text-sm text-muted-foreground">
         Appointment Type
       </h3>
@@ -50,7 +50,7 @@ export const ServiceSelector = ({
           </TabsList>
         </Tabs>
       </div>
-      <div className="space-y-3">
+      <div className="space-y-3 max-h-[min(18rem,calc(100dvh-26rem))] overflow-y-auto pr-0.5">
         {filteredServices.length === 0 ? (
           <div className="p-8 text-center text-muted-foreground bg-muted rounded-lg border border-dashed border-border">
             <Info className="w-8 h-8 mx-auto mb-2 opacity-50" />
