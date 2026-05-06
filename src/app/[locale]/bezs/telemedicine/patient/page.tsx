@@ -4,6 +4,8 @@ import { getDashboardAppointmentsDataAction } from "@/modules/client/telemedicin
 import { getServerSession } from "@/modules/server/auth/get-session";
 import { prismaTelemedicine } from "@/modules/server/prisma/prisma";
 import { getLocale } from "next-intl/server";
+import { getMyVitals, transformVitalsToLifestyle } from "@/modules/server/fhir/vitals";
+import type { LifestyleData } from "@/modules/client/telemedicine/datas/doctor-dashboard";
 
 export const dynamic = "force-dynamic";
 
@@ -41,14 +43,31 @@ async function PatientDashboardPage() {
     return;
   }
 
-  const [data, error] = await getDashboardAppointmentsDataAction({
-    orgId: user.orgId,
-    userId: user.id,
-  });
+  const now = new Date();
+  const weekAgo = new Date();
+  weekAgo.setDate(weekAgo.getDate() - 6);
+  weekAgo.setHours(0, 0, 0, 0);
+
+  const [dashboardResult, vitalsResult] = await Promise.allSettled([
+    getDashboardAppointmentsDataAction({ orgId: user.orgId, userId: user.id }),
+    getMyVitals({
+      recorded_at_from: weekAgo.toISOString(),
+      recorded_at_to: now.toISOString(),
+      limit: 200,
+    }),
+  ]);
+
+  const [data, error] =
+    dashboardResult.status === "fulfilled" ? dashboardResult.value : [null, null];
+
+  const lifestyle: LifestyleData | null =
+    vitalsResult.status === "fulfilled"
+      ? transformVitalsToLifestyle(vitalsResult.value.data)
+      : null;
 
   return (
     <div>
-      <PatientDashboard dashboardData={data} error={error} user={user} />
+      <PatientDashboard dashboardData={data} error={error} user={user} lifestyle={lifestyle} />
     </div>
   );
 }

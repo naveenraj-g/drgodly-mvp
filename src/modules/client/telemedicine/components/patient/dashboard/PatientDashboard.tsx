@@ -11,17 +11,21 @@ import { StatCard } from "./StatCard";
 import { AppoinmentChart } from "./AppointmentCard";
 import { RecentAppointmentsTable } from "./RecentAppointmentsTable";
 import { StatSummaryChart } from "./StatSummaryChart";
+import { LifestyleCharts } from "../../doctor/dashboard/charts/LifestyleCharts";
+import type { LifestyleData } from "@/modules/client/telemedicine/datas/doctor-dashboard";
 
 interface IPatientDashboardProps {
   dashboardData: TGetDashboardAppointmentsDataControllerOutput | null;
   error: ZSAError | null;
   user: TSharedUser;
+  lifestyle: LifestyleData | null;
 }
 
 function PatientDashboard({
   dashboardData,
   error,
   user,
+  lifestyle,
 }: IPatientDashboardProps) {
   if (error || !dashboardData) {
     return <div>Error: {error?.message || "Failed to get data."}</div>;
@@ -110,6 +114,10 @@ function PatientDashboard({
             total={totalAppointments}
           />
         </Card>
+
+        <div className="h-[420px]">
+          <LifestyleCharts lifestyle={lifestyle ?? undefined} />
+        </div>
 
         {/* <AvailableDoctors data={avaliableDoctor} /> */}
         {/* <PatientRatingContainer /> */}

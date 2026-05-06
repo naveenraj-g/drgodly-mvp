@@ -65,7 +65,7 @@ export const LifestyleCharts = ({ lifestyle, isLoading }: LifestyleChartsProps) 
           </p>
         ) : (
         <Tabs defaultValue="heart-rate" className="w-full">
-          <TabsList className="grid w-full h-fit grid-cols-2 sm:grid-cols-4">
+          <TabsList className="flex flex-wrap h-fit w-full justify-center gap-y-1">
             <TabsTrigger value="heart-rate" className="flex items-center gap-1">
               <Heart className="h-3 w-3" />
               Heart Rate
