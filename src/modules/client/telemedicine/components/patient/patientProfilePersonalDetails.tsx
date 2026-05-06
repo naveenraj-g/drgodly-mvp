@@ -171,317 +171,324 @@ export function PatientProfilePersonalDetails({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
-        className="flex flex-col gap-8"
+        className="flex flex-col min-h-[calc(100dvh-10rem)] -mb-6"
       >
-        <div className="flex flex-wrap justify-between gap-6">
-          <div className="lg:col-span-2">
-            <h2 className="text-2xl font-bold text-foreground mb-2">
-              Personal Details
-            </h2>
-            <p className="text-muted-foreground">
-              Add the basic personal details of the patient.
-            </p>
+        <div className="flex flex-col gap-8 flex-1 mb-4">
+          <div className="flex flex-wrap justify-between gap-6">
+            <div className="lg:col-span-2">
+              <h2 className="text-2xl font-bold text-foreground mb-2">
+                Personal Details
+              </h2>
+              <p className="text-muted-foreground">
+                Add the basic personal details of the patient.
+              </p>
+            </div>
           </div>
-        </div>
 
-        <FieldGroup className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Name */}
-          <FormInput
-            control={form.control}
-            name="name"
-            label={
-              <p>
-                Name <span className="text-red-500">*</span>
-              </p>
-            }
-            placeholder="Enter full name"
-          />
+          <FieldGroup className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Name */}
+            <FormInput
+              control={form.control}
+              name="name"
+              label={
+                <p>
+                  Name <span className="text-red-500">*</span>
+                </p>
+              }
+              placeholder="Enter full name"
+            />
 
-          {/* DOB */}
-          <FormField
-            control={form.control}
-            name="dateOfBirth"
-            render={({ field }) => (
-              <FormItem className="flex flex-col gap-3">
-                <FormLabel>
-                  Date of Birth <span className="text-red-500">*</span>
-                </FormLabel>
-                <Popover open={open} onOpenChange={setOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "h-9 text-left font-medium",
-                        !field.value && "text-muted-foreground",
-                      )}
+            {/* DOB */}
+            <FormField
+              control={form.control}
+              name="dateOfBirth"
+              render={({ field }) => (
+                <FormItem className="flex flex-col gap-3">
+                  <FormLabel>
+                    Date of Birth <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <Popover open={open} onOpenChange={setOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "h-9 text-left font-medium",
+                          !field.value && "text-muted-foreground",
+                        )}
+                      >
+                        {field.value
+                          ? format(field.value, "PPP")
+                          : "Pick a date"}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={(date) => {
+                          setOpen(false);
+                          field.onChange(date);
+                        }}
+                        disabled={(date) =>
+                          date > new Date() || date < new Date("1900-01-01")
+                        }
+                        className="pointer-events-auto"
+                        captionLayout="dropdown"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Gender */}
+            <FormSelect
+              control={form.control}
+              name="gender"
+              placeholder="Select gender"
+              label={
+                <p>
+                  Gender <span className="text-red-500">*</span>
+                </p>
+              }
+            >
+              {genders.map((gender, i) => (
+                <SelectItem key={i} value={gender.value}>
+                  {gender.label}
+                </SelectItem>
+              ))}
+            </FormSelect>
+          </FieldGroup>
+
+          <FieldGroup className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Marital Status */}
+            <FormField
+              control={form.control}
+              name="maritalStatus"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Marital Status *</FormLabel>
+                  <FormControl>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value ?? ""}
                     >
-                      {field.value ? format(field.value, "PPP") : "Pick a date"}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select marital status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {maritalStatusOptions.map((item) => (
+                          <SelectItem key={item.value} value={item.value}>
+                            {item.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={(date) => {
-                        setOpen(false);
-                        field.onChange(date);
-                      }}
-                      disabled={(date) =>
-                        date > new Date() || date < new Date("1900-01-01")
-                      }
-                      className="pointer-events-auto"
-                      captionLayout="dropdown"
+            {/* Blood Group */}
+            <FormField
+              control={form.control}
+              name="bloodGroup"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Blood Group *</FormLabel>
+                  <FormControl>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value ?? ""}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select blood group" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {bloodGroupOptions.map((item) => (
+                          <SelectItem key={item.value} value={item.value}>
+                            {item.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormTextarea
+              control={form.control}
+              name="address"
+              label="Address *"
+              placeholder="Your Address"
+            />
+
+            <FormTextarea
+              control={form.control}
+              name="alternativeAddress"
+              label="Alternative Address"
+              placeholder="Enter the Alternative"
+            />
+
+            <FormField
+              control={form.control}
+              name="mobileNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Mobile *</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="+91 1234567890"
+                      {...field}
+                      value={field.value ?? ""}
                     />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          {/* Gender */}
-          <FormSelect
-            control={form.control}
-            name="gender"
-            placeholder="Select gender"
-            label={
-              <p>
-                Gender <span className="text-red-500">*</span>
-              </p>
-            }
+            <FormField
+              control={form.control}
+              name="alternativeMobileNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Alternative Mobile</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="+91 1234567890"
+                      {...field}
+                      value={field.value ?? ""}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email *</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder="example@email.com"
+                      {...field}
+                      value={field.value ?? ""}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="alternativeEmail"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Alternative Email</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder="example@email.com"
+                      {...field}
+                      value={field.value ?? ""}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="insuranceProvider"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Insurance Provider</FormLabel>
+                  <FormControl>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value ?? ""}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select insurance provider" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {insuranceProviders.map((item) => (
+                          <SelectItem key={item.value} value={item.value}>
+                            {item.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Insurance Number */}
+            <FormField
+              control={form.control}
+              name="insuranceNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Insurance Number</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter insurance number"
+                      {...field}
+                      value={field.value ?? ""}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* ID Card Numbers */}
+            <FormField
+              control={form.control}
+              name="idCardNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>ID Card Number</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter ID card number"
+                      {...field}
+                      value={field.value ?? ""}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </FieldGroup>
+        </div>
+        {/* end flex-1 */}
+
+        <div className="sticky bottom-0 z-10 -mx-4 px-4 py-3 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-t flex justify-end">
+          <Button
+            size="sm"
+            className="w-full md:w-fit"
+            disabled={isPending || createInitialProfileIsPending}
           >
-            {genders.map((gender, i) => (
-              <SelectItem key={i} value={gender.value}>
-                {gender.label}
-              </SelectItem>
-            ))}
-          </FormSelect>
-        </FieldGroup>
-
-        <FieldGroup className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Marital Status */}
-          <FormField
-            control={form.control}
-            name="maritalStatus"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Marital Status *</FormLabel>
-                <FormControl>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value ?? ""}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select marital status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {maritalStatusOptions.map((item) => (
-                        <SelectItem key={item.value} value={item.value}>
-                          {item.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Blood Group */}
-          <FormField
-            control={form.control}
-            name="bloodGroup"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Blood Group *</FormLabel>
-                <FormControl>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value ?? ""}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select blood group" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {bloodGroupOptions.map((item) => (
-                        <SelectItem key={item.value} value={item.value}>
-                          {item.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormTextarea
-            control={form.control}
-            name="address"
-            label="Address *"
-            placeholder="Your Address"
-          />
-
-          <FormTextarea
-            control={form.control}
-            name="alternativeAddress"
-            label="Alternative Address"
-            placeholder="Enter the Alternative"
-          />
-
-          <FormField
-            control={form.control}
-            name="mobileNumber"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Mobile *</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="+91 1234567890"
-                    {...field}
-                    value={field.value ?? ""}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="alternativeMobileNumber"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Alternative Mobile</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="+91 1234567890"
-                    {...field}
-                    value={field.value ?? ""}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email *</FormLabel>
-                <FormControl>
-                  <Input
-                    type="email"
-                    placeholder="example@email.com"
-                    {...field}
-                    value={field.value ?? ""}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="alternativeEmail"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Alternative Email</FormLabel>
-                <FormControl>
-                  <Input
-                    type="email"
-                    placeholder="example@email.com"
-                    {...field}
-                    value={field.value ?? ""}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="insuranceProvider"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Insurance Provider</FormLabel>
-                <FormControl>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value ?? ""}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select insurance provider" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {insuranceProviders.map((item) => (
-                        <SelectItem key={item.value} value={item.value}>
-                          {item.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Insurance Number */}
-          <FormField
-            control={form.control}
-            name="insuranceNumber"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Insurance Number</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Enter insurance number"
-                    {...field}
-                    value={field.value ?? ""}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* ID Card Numbers */}
-          <FormField
-            control={form.control}
-            name="idCardNumber"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>ID Card Number</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Enter ID card number"
-                    {...field}
-                    value={field.value ?? ""}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </FieldGroup>
-
-        <Button
-          size="sm"
-          className="w-fit self-end"
-          disabled={isPending || createInitialProfileIsPending}
-        >
-          {isPending && <Loader2 className="animate-spin" />}
-          {data?.personal ? "Update" : "Create"} Profile
-        </Button>
+            {isPending && <Loader2 className="animate-spin" />}
+            {data?.personal ? "Update" : "Create"} Profile
+          </Button>
+        </div>
       </form>
     </Form>
   );

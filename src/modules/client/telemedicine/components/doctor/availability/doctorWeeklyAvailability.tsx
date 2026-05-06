@@ -88,11 +88,11 @@ export default function DefaultWeeklyAvailability({
     .sort(
       (a, b) =>
         DAY_ORDER.indexOf(a.label.toUpperCase()) -
-        DAY_ORDER.indexOf(b.label.toUpperCase())
+        DAY_ORDER.indexOf(b.label.toUpperCase()),
     );
 
   const [schedule, setSchedule] = useState<DaySchedule[]>(
-    (!!availableData?.length && availableData) || INITIAL_SCHEDULE
+    (!!availableData?.length && availableData) || INITIAL_SCHEDULE,
   );
 
   useEffect(() => {
@@ -114,12 +114,12 @@ export default function DefaultWeeklyAvailability({
           description: err.message || "Failed to save data",
         });
       },
-    }
+    },
   );
 
   const handleUpdateDay = (updatedDay: DaySchedule) => {
     setSchedule((prev) =>
-      prev.map((day) => (day.id === updatedDay.id ? updatedDay : day))
+      prev.map((day) => (day.id === updatedDay.id ? updatedDay : day)),
     );
   };
 
@@ -129,7 +129,7 @@ export default function DefaultWeeklyAvailability({
 
     if (
       confirm(
-        `Are you sure you want to copy ${sourceDay.label}'s schedule to all other days?`
+        `Are you sure you want to copy ${sourceDay.label}'s schedule to all other days?`,
       )
     ) {
       setSchedule((prev) =>
@@ -145,7 +145,7 @@ export default function DefaultWeeklyAvailability({
             isEnabled: sourceDay.isEnabled,
             slots: newSlots,
           };
-        })
+        }),
       );
     }
   };
@@ -180,9 +180,9 @@ export default function DefaultWeeklyAvailability({
   }, 0);
 
   return (
-    <div>
+    <div className="flex flex-col min-h-[calc(100dvh-10rem)] -mb-6">
       {/* Main Container */}
-      <div className="space-y-8">
+      <div className="flex-1 space-y-8 mb-4">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
@@ -229,26 +229,26 @@ export default function DefaultWeeklyAvailability({
               />
             ))}
           </div>
-
-          {/* Footer Action */}
-          <div className="bg-muted px-6 py-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
-            <span className="text-sm text-muted-foreground text-center sm:text-left">
-              All times are in your local timezone.
-            </span>
-            <Button
-              onClick={handleSave}
-              disabled={isPending}
-              className="w-full sm:w-auto"
-            >
-              {isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Save className="h-4 w-4" />
-              )}
-              Save Schedule
-            </Button>
-          </div>
         </div>
+      </div>
+
+      {/* Sticky bottom action bar */}
+      <div className="sticky bottom-0 z-10 -mx-4 px-4 py-3 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-t flex flex-col sm:flex-row items-center justify-between gap-3">
+        <span className="text-sm text-muted-foreground text-center sm:text-left">
+          All times are in your local timezone.
+        </span>
+        <Button
+          onClick={handleSave}
+          disabled={isPending}
+          className="w-full sm:w-auto"
+        >
+          {isPending ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Save className="h-4 w-4" />
+          )}
+          Save Schedule
+        </Button>
       </div>
     </div>
   );

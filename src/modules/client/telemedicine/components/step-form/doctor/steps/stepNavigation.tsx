@@ -23,7 +23,7 @@ export function StepNavigation({
   isLoading = false,
 }: StepNavigationProps) {
   return (
-    <div className="flex items-center justify-between pt-6 border-t border-border">
+    <div className="sticky bottom-0 z-10 -mx-4 px-4 py-3 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-t flex items-center justify-between">
       <Button
         type="button"
         variant="outline"
