@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SidebarMenuButton, useSidebar } from "@/components/ui/sidebar";
-import { Link, useRouter } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { authClient } from "@/modules/client/auth/betterauth/auth-client";
 import { ThemeSwitcher } from "@/theme/theme-switcher";
@@ -39,7 +39,6 @@ export function NavUser({
   user: TUser;
   isSidebar?: boolean;
 }) {
-  const router = useRouter();
   const { name, email, image, username } = user;
   const { state } = useSidebar();
 
@@ -57,7 +56,9 @@ export function NavUser({
     if (data.success) {
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
-      router.push("/");
+      // Hard redirect clears the full Next.js router cache;
+      // router.push("/") can still serve a stale cached layout.
+      window.location.href = "/";
     }
   }
 
@@ -153,7 +154,7 @@ export function NavUser({
             // onClick={() => router.push("/bezs/settings")}
           >
             <Link
-              href="/bezs/dashboard/settings/account"
+              href="/bezs/dashboard/settings"
               className="flex items-center gap-2 cursor-pointer w-full"
             >
               <Settings2 className="!h-[1.2rem] !w-[1.2rem] dark:text-white block" />
@@ -166,7 +167,7 @@ export function NavUser({
           <DropdownMenuItem
             className="flex items-center gap-2 cursor-pointer"
             onClick={handleLogout}
-            onMouseEnter={() => router.prefetch("/")}
+
           >
             <LogOut className="!h-[1.2rem] !w-[1.2rem] dark:text-white" />
             <p>Logout</p>

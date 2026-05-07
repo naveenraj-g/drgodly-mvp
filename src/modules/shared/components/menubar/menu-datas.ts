@@ -30,27 +30,81 @@ export const homeSidebarData = {
       items: [
         {
           title: "Settings",
+          url: "/bezs/settings",
           icon: "settings",
-          items: [
-            {
-              title: "Profile",
-              url: "/bezs/settings",
-              icon: "user-cog",
-            },
-            {
-              title: "Account",
-              url: "/bezs/settings/account",
-              icon: "wrench",
-            },
-            {
-              title: "Preference",
-              url: "/bezs/settings/preference",
-              icon: "palette",
-            },
-          ],
         },
       ],
     },
+  ],
+};
+
+export const settingsSidebarData = {
+  navGroups: [
+    {
+      title: "Account",
+      items: [
+        {
+          title: "Profile",
+          url: "/bezs/settings/profile",
+          icon: "user-circle",
+        },
+        {
+          title: "Password & Auth",
+          url: "/bezs/settings/security",
+          icon: "key-round",
+        },
+        {
+          title: "Active Sessions",
+          url: "/bezs/settings/sessions",
+          icon: "monitor-smartphone",
+        },
+        // {
+        //   title: "Privacy",
+        //   url: "/bezs/settings/privacy",
+        //   icon: "shield",
+        // },
+      ],
+    },
+    {
+      title: "Preferences",
+      items: [
+        {
+          title: "Regional",
+          url: "/bezs/settings/preference",
+          icon: "globe",
+        },
+        {
+          title: "Appearance",
+          url: "/bezs/settings/appearance",
+          icon: "palette",
+        },
+      ],
+    },
+    // {
+    //   title: "Notifications",
+    //   items: [
+    //     {
+    //       title: "Notifications",
+    //       url: "/bezs/settings/notifications",
+    //       icon: "bell",
+    //     },
+    //   ],
+    // },
+    // {
+    //   title: "Workspace",
+    //   items: [
+    //     {
+    //       title: "Integrations",
+    //       url: "/bezs/settings/integrations",
+    //       icon: "layout-grid",
+    //     },
+    //     {
+    //       title: "Billing",
+    //       url: "/bezs/settings/billing",
+    //       icon: "credit-card",
+    //     },
+    //   ],
+    // },
   ],
 };
 

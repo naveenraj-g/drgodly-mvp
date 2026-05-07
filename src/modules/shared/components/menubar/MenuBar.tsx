@@ -13,7 +13,7 @@ import { NavGroup } from "./nav-group";
 import { NavUser } from "../nav-user";
 import { OrgSwitcher } from "./org-switcher";
 import { type NavGroup as NavGroupProps } from "./types";
-import { homeSidebarData } from "./menu-datas";
+import { homeSidebarData, settingsSidebarData } from "./menu-datas";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   SidebarGroup,
@@ -157,13 +157,16 @@ export function MenuBar(user: TUser) {
   const currentAppSlug = segments[1] ?? "";
 
   const isHome = segments.length <= 1 || currentAppSlug === "";
+  const isSettings = currentAppSlug === "settings";
 
   const currentApp = allApps?.find((a) => a.slug === currentAppSlug);
   const navGroups: NavGroupProps[] = isHome
     ? (homeSidebarData.navGroups as NavGroupProps[])
-    : currentApp
-      ? buildNavGroups([currentApp])
-      : [];
+    : isSettings
+      ? (settingsSidebarData.navGroups as NavGroupProps[])
+      : currentApp
+        ? buildNavGroups([currentApp])
+        : [];
 
   const fetchContext = useCallback((orgId?: string | null) => {
     const url = orgId
@@ -206,7 +209,7 @@ export function MenuBar(user: TUser) {
         ) : null}
       </SidebarHeader>
       <SidebarContent>
-        {!isHome && isLoading ? (
+        {!isHome && !isSettings && isLoading ? (
           <NavSkeleton />
         ) : (
           navGroups.map((props) => <NavGroup key={props.title} {...props} />)
