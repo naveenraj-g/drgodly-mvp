@@ -31,7 +31,6 @@ export async function POST(req: NextRequest) {
     }
 
     const data = await upstream.json();
-    console.log(data);
     return NextResponse.json(data);
   } catch (err: any) {
     if (err.message?.includes("Failed to fetch agent token")) {

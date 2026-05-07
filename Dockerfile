@@ -39,8 +39,6 @@ ENV DOCKER_BUILD=true
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN npx prisma generate --schema ./src/modules/server/prisma/main-database/schema.prisma
-RUN npx prisma generate --schema ./src/modules/server/prisma/filenest-database/schema.prisma
 RUN npx prisma generate --schema ./src/modules/server/prisma/telemedicine-database/schema.prisma
 
 RUN npm run build
@@ -66,16 +64,10 @@ RUN npm install -g prisma@6 --legacy-peer-deps
 
 # Prisma schema files (needed by db push at runtime)
 COPY --from=builder --chown=nextjs:nodejs \
-  /app/src/modules/server/prisma/main-database/schema.prisma \
-  ./src/modules/server/prisma/main-database/schema.prisma
-COPY --from=builder --chown=nextjs:nodejs \
   /app/src/modules/server/prisma/telemedicine-database/schema.prisma \
   ./src/modules/server/prisma/telemedicine-database/schema.prisma
-COPY --from=builder --chown=nextjs:nodejs \
-  /app/src/modules/server/prisma/filenest-database/schema.prisma \
-  ./src/modules/server/prisma/filenest-database/schema.prisma
 
-# Entrypoint: runs db push for all 3 schemas, then starts the server
+# Entrypoint: runs db push, then starts the server
 COPY --chown=nextjs:nodejs docker-entrypoint.sh ./docker-entrypoint.sh
 RUN chmod +x ./docker-entrypoint.sh
 

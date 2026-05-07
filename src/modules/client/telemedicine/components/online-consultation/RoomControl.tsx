@@ -21,7 +21,7 @@ export function RoomControlUI() {
   );
 
   return (
-    <div className="flex-1 relative rounded-xl overflow-hidden bg-zinc-950 border border-border">
+    <div className="h-full relative rounded-xl overflow-hidden bg-zinc-950 border border-border">
       <GridLayout tracks={tracks} style={{ height: "100%" }}>
         <ParticipantTile />
       </GridLayout>

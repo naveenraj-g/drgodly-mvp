@@ -232,91 +232,6 @@ function buildApiMessage(text: string, apt: TAppointment | null): string {
   return parts.length ? `[FHIR context: ${parts.join(", ")}]\n\n${text}` : text;
 }
 
-// ─── Initial mock messages ────────────────────────────────────────────────────
-
-const INITIAL_MESSAGES: TMessage[] = [
-  {
-    key: "init-1",
-    role: "user",
-    content: "What is the patient's recent blood pressure trend?",
-  },
-  {
-    key: "init-2",
-    role: "assistant",
-    content:
-      "Based on the last 7 days of vitals, the patient's blood pressure has been gradually improving. Systolic readings have dropped from 148 mmHg to 132 mmHg, and diastolic from 94 to 84 mmHg. This suggests the current treatment plan is effective. Consider reviewing the medication dosage at the next follow-up.",
-  },
-  {
-    key: "init-3",
-    role: "user",
-    content: "Show me the last 5 appointments for this patient.",
-  },
-  {
-    key: "init-4",
-    role: "tool_result",
-    toolName: "query_appointments",
-    success: true,
-    rows: [
-      {
-        date: "2025-04-28",
-        type: "Follow-up",
-        doctor: "Dr. Arjun Mehta",
-        specialty: "Cardiology",
-        mode: "In-Person",
-        status: "Completed",
-        duration: "20 min",
-        notes: "BP improving, adjust meds",
-      },
-      {
-        date: "2025-04-10",
-        type: "Consultation",
-        doctor: "Dr. Priya Nair",
-        specialty: "General",
-        mode: "Video",
-        status: "Completed",
-        duration: "30 min",
-        notes: "Routine checkup, labs ordered",
-      },
-      {
-        date: "2025-03-22",
-        type: "AI Consultation",
-        doctor: "AI Agent",
-        specialty: "General",
-        mode: "Chat",
-        status: "Completed",
-        duration: "15 min",
-        notes: "Symptom assessment done",
-      },
-      {
-        date: "2025-03-05",
-        type: "Follow-up",
-        doctor: "Dr. Arjun Mehta",
-        specialty: "Cardiology",
-        mode: "In-Person",
-        status: "Cancelled",
-        duration: "—",
-        notes: "Patient no-show",
-      },
-      {
-        date: "2025-02-18",
-        type: "Consultation",
-        doctor: "Dr. Priya Nair",
-        specialty: "General",
-        mode: "Video",
-        status: "Completed",
-        duration: "25 min",
-        notes: "Discussed diet & lifestyle",
-      },
-    ],
-  },
-  {
-    key: "init-5",
-    role: "assistant",
-    content:
-      "The patient has had 4 completed appointments and 1 cancellation over the last two months. Most visits are follow-ups with Dr. Arjun Mehta, indicating continuity of care.",
-  },
-];
-
 // ─── Main component ───────────────────────────────────────────────────────────
 
 interface Props {
@@ -325,7 +240,7 @@ interface Props {
 
 export function DoctorAssistant({ selectedAppointment }: Props) {
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<TMessage[]>(INITIAL_MESSAGES);
+  const [messages, setMessages] = useState<TMessage[]>([]);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
@@ -336,7 +251,7 @@ export function DoctorAssistant({ selectedAppointment }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setMessages(INITIAL_MESSAGES);
+    setMessages([]);
     setSessionId(null);
     setLiveText("");
     liveRef.current = "";

@@ -154,7 +154,7 @@ export function NavUser({
             // onClick={() => router.push("/bezs/settings")}
           >
             <Link
-              href="/bezs/dashboard/settings"
+              href="/bezs/settings"
               className="flex items-center gap-2 cursor-pointer w-full"
             >
               <Settings2 className="!h-[1.2rem] !w-[1.2rem] dark:text-white block" />
@@ -167,7 +167,6 @@ export function NavUser({
           <DropdownMenuItem
             className="flex items-center gap-2 cursor-pointer"
             onClick={handleLogout}
-
           >
             <LogOut className="!h-[1.2rem] !w-[1.2rem] dark:text-white" />
             <p>Logout</p>

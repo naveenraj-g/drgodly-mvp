@@ -21,6 +21,22 @@ export const ServiceSelector = ({
     "INPERSON"
   );
 
+  // When the tab changes, update the selected service's mode if it supports the new mode
+  React.useEffect(() => {
+    if (!selectedServiceId) return;
+    const selected = services.find((s) => s.id === selectedServiceId);
+    if (selected && selected.supportedModes.includes(bookingMode)) {
+      onSelect({
+        id: selected.id,
+        name: selected.name,
+        duration: selected.duration,
+        priceAmount: selected.priceAmount,
+        priceCurrency: selected.priceCurrency,
+        selectedMode: bookingMode,
+      });
+    }
+  }, [bookingMode]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Filter services based on the selected mode
   const filteredServices = services.filter((service) =>
     service.supportedModes.includes(bookingMode)

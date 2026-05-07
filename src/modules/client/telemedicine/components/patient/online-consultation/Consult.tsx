@@ -177,7 +177,7 @@ export default function Consult({
             {/* Transcript toggle */}
             <Button
               size="sm"
-              variant={showTranscript ? "secondary" : "outline"}
+              variant="secondary"
               onClick={() => setShowTranscript((v) => !v)}
               className="gap-1.5"
             >
@@ -197,7 +197,7 @@ export default function Consult({
 
         {/* Body */}
         <div className="flex flex-1 gap-2 min-h-0">
-          <div className="flex-1 min-h-0">
+          <div className="flex-1 min-h-0 h-full">
             <RoomControlUI />
           </div>
 

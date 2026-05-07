@@ -25,8 +25,6 @@ async function DoctorProfilePage() {
     orgId: session.session.activeOrganizationId,
   });
 
-  console.log(data, error);
-
   if (!data) {
     throw new Error("UNAUTHORIZED");
   }
