@@ -35,4 +35,4 @@ echo ""
 echo "Run with:"
 echo "  docker run --env-file $ENV_FILE -p 3000:3000 $IMAGE_TAG"
 
-# ./docker-build.sh .env ghcr.io/naveenraj-g/bezs:latest  
+# ./docker-build.sh .env ghcr.io/naveenraj-g/bezs:latest

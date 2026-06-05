@@ -2,7 +2,7 @@
   "auth": "betterauth",
   "authUrl": "http://localhost:5000",
   "isFHIRSync": true,
-  "fhirSyncUrl": "http://localhost:8001",
-  "fhirMCPUrl": "http://localhost:8002/mcp",
+  "fhirSyncUrl": "https://localhost:8001",
+  "fhirMCPUrl": "https://fhirmcp.drgodly.com",
   "storeToken": false
 }

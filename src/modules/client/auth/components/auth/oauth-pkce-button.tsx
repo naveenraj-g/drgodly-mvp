@@ -31,7 +31,7 @@ export function OAuthPkceButton({ children, ...props }: OAuthPkceButtonProps) {
 
     const digest = await window.crypto.subtle.digest(
       "SHA-256",
-      new TextEncoder().encode(codeVerifier)
+      new TextEncoder().encode(codeVerifier),
     );
     const codeChallenge = base64UrlEncode(digest);
 

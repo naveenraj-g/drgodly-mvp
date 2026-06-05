@@ -143,7 +143,6 @@ export default function Consult({
       if (res.ok) {
         doctorReport = await res.json();
       }
-      console.log(doctorReport);
     } catch {
       // report generation failed — still complete the appointment
     }
@@ -162,7 +161,7 @@ export default function Consult({
     setTranscripts([]);
     toast.success("Consultation ended");
     setIsCompleting(false);
-    router.push("/bezs/telemedicine/doctor");
+    router.push(`/bezs/telemedicine/doctor/appointments/${appointmentId}`);
   };
 
   function captureTranscript(transcript: Transcript) {

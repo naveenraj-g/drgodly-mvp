@@ -89,15 +89,19 @@ function parseLine(raw: string): StreamEvent {
       case "tool_result": {
         let rows: Record<string, unknown>[] | null = null;
         try {
-          const parsed =
-            typeof p.results === "string" ? JSON.parse(p.results) : p.results;
-          rows = Array.isArray(parsed) ? parsed : null;
+          const raw = p.output ?? p.results;
+          const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+          rows = Array.isArray(parsed)
+            ? parsed
+            : parsed != null
+              ? [parsed]
+              : null;
         } catch {
           /* ignore */
         }
         return {
           kind: "tool_result",
-          toolName: p.name ?? "query",
+          toolName: p.tool ?? p.name ?? "query",
           rows,
           success: p.success ?? true,
         };
@@ -249,6 +253,8 @@ export function DoctorAssistant({ selectedAppointment }: Props) {
   const abortRef = useRef<AbortController | null>(null);
   const liveRef = useRef("");
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  console.log(messages);
 
   useEffect(() => {
     setMessages([]);
@@ -432,77 +438,75 @@ export function DoctorAssistant({ selectedAppointment }: Props) {
           </SheetHeader>
 
           <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-4 py-3">
-              {messages.length === 0 && !isStreaming && (
-                <div className="flex h-full flex-col items-center justify-center gap-3 py-16 text-center">
-                  <div className="flex size-12 items-center justify-center rounded-full bg-muted">
-                    <Bot className="size-6 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">How can I help?</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {selectedAppointment
-                        ? "Ask anything about this appointment or patient data."
-                        : "Select an appointment or ask a general question."}
-                    </p>
+            {messages.length === 0 && !isStreaming && (
+              <div className="flex h-full flex-col items-center justify-center gap-3 py-16 text-center">
+                <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+                  <Bot className="size-6 text-muted-foreground" />
+                </div>
+                <div>
+                  <p className="font-medium text-sm">How can I help?</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {selectedAppointment
+                      ? "Ask anything about this appointment or patient data."
+                      : "Select an appointment or ask a general question."}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <div className="flex flex-col gap-3 min-w-0 w-full">
+              {messages.map((msg) => {
+                if (msg.role === "user")
+                  return (
+                    <div key={msg.key} className="flex justify-end">
+                      <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-primary px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap text-primary-foreground">
+                        {msg.content}
+                      </div>
+                    </div>
+                  );
+                if (msg.role === "assistant")
+                  return (
+                    <div key={msg.key} className="flex justify-start">
+                      <div className="max-w-[90%] rounded-2xl rounded-tl-sm bg-muted px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap text-foreground">
+                        {msg.content}
+                      </div>
+                    </div>
+                  );
+                if (msg.role === "tool_call") return null;
+                if (msg.role === "tool_result")
+                  return (
+                    <div
+                      key={msg.key}
+                      className="w-full min-w-0 overflow-hidden"
+                    >
+                      {msg.rows ? (
+                        <ResultTable rows={msg.rows} />
+                      ) : (
+                        <p className="text-xs text-muted-foreground px-2">
+                          {msg.success ? "No rows returned." : "Query failed."}
+                        </p>
+                      )}
+                    </div>
+                  );
+                return null;
+              })}
+
+              {isStreaming && (
+                <div className="flex justify-start">
+                  <div className="max-w-[90%] rounded-2xl rounded-tl-sm bg-muted px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap">
+                    {liveText || (
+                      <span className="inline-flex gap-0.5 items-center">
+                        <span className="animate-bounce size-1 rounded-full bg-muted-foreground [animation-delay:0ms]" />
+                        <span className="animate-bounce size-1 rounded-full bg-muted-foreground [animation-delay:150ms]" />
+                        <span className="animate-bounce size-1 rounded-full bg-muted-foreground [animation-delay:300ms]" />
+                      </span>
+                    )}
                   </div>
                 </div>
               )}
 
-              <div className="flex flex-col gap-3 min-w-0 w-full">
-                {messages.map((msg) => {
-                  if (msg.role === "user")
-                    return (
-                      <div key={msg.key} className="flex justify-end">
-                        <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-primary px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap text-primary-foreground">
-                          {msg.content}
-                        </div>
-                      </div>
-                    );
-                  if (msg.role === "assistant")
-                    return (
-                      <div key={msg.key} className="flex justify-start">
-                        <div className="max-w-[90%] rounded-2xl rounded-tl-sm bg-muted px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap text-foreground">
-                          {msg.content}
-                        </div>
-                      </div>
-                    );
-                  if (msg.role === "tool_call") return null;
-                  if (msg.role === "tool_result")
-                    return (
-                      <div
-                        key={msg.key}
-                        className="w-full min-w-0 overflow-hidden"
-                      >
-                        {msg.rows ? (
-                          <ResultTable rows={msg.rows} />
-                        ) : (
-                          <p className="text-xs text-muted-foreground px-2">
-                            {msg.success
-                              ? "No rows returned."
-                              : "Query failed."}
-                          </p>
-                        )}
-                      </div>
-                    );
-                  return null;
-                })}
-
-                {isStreaming && (
-                  <div className="flex justify-start">
-                    <div className="max-w-[90%] rounded-2xl rounded-tl-sm bg-muted px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap">
-                      {liveText || (
-                        <span className="inline-flex gap-0.5 items-center">
-                          <span className="animate-bounce size-1 rounded-full bg-muted-foreground [animation-delay:0ms]" />
-                          <span className="animate-bounce size-1 rounded-full bg-muted-foreground [animation-delay:150ms]" />
-                          <span className="animate-bounce size-1 rounded-full bg-muted-foreground [animation-delay:300ms]" />
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                <div ref={bottomRef} />
-              </div>
+              <div ref={bottomRef} />
+            </div>
           </div>
 
           <div className="border-t px-4 py-3">
