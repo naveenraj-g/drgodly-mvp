@@ -50,6 +50,15 @@ import {
 import { fhirRequest } from "@/modules/server/fhir/client";
 import type { EncounterClass, FhirAppointmentCreatePayload } from "@/modules/server/fhir";
 import { prismaTelemedicine } from "@/modules/server/prisma/prisma";
+import type {
+  Prisma,
+  ObservationStatus,
+  MedicationRequestStatus,
+  MedicationRequestIntent,
+  ServiceRequestStatus,
+  ServiceRequestIntent,
+  ServiceRequestPriority,
+} from "@/modules/server/prisma/generated/telemedicine-database";
 
 // ── FHIR helpers ──────────────────────────────────────────────────────────────
 
@@ -428,6 +437,91 @@ export const completeConsultation = createServerAction()
     );
   });
 
+export async function getPatientAppointmentView(appointmentId: string) {
+  return prismaTelemedicine.appointment.findUnique({
+    where: { id: appointmentId },
+    select: {
+      id: true,
+      appointmentDate: true,
+      patient: { select: { personal: { select: { name: true } } } },
+      doctor: { select: { personal: { select: { fullName: true } } } },
+      appointmentActual: { select: { doctorReport: true } },
+      conditions: {
+        where: { isDoctorAccepted: true },
+        select: {
+          id: true,
+          codeDisplay: true,
+          codeCode: true,
+          codeSystem: true,
+          clinicalStatusCode: true,
+          verificationStatusCode: true,
+        },
+      },
+      observations: {
+        where: { isDoctorAccepted: true },
+        select: {
+          id: true,
+          codeDisplay: true,
+          codeCode: true,
+          status: true,
+          valueString: true,
+          valueQuantityValue: true,
+          valueQuantityUnit: true,
+          valueBoolean: true,
+          valueInteger: true,
+        },
+      },
+      medicationRequests: {
+        where: { isDoctorAccepted: true },
+        select: {
+          id: true,
+          medicationCodeDisplay: true,
+          medicationCodeCode: true,
+          status: true,
+          intent: true,
+          dosageInstructions: {
+            select: { text: true, routeDisplay: true, routeText: true },
+          },
+        },
+      },
+      serviceRequests: {
+        where: { isDoctorAccepted: true },
+        select: {
+          id: true,
+          codeDisplay: true,
+          codeCode: true,
+          status: true,
+          intent: true,
+          priority: true,
+        },
+      },
+    },
+  });
+}
+
+export async function getAppointmentReview(appointmentId: string) {
+  return prismaTelemedicine.appointmentActual.findUnique({
+    where: { appointmentId },
+    select: {
+      doctorReport: true,
+      fullReport: true,
+      appointment: {
+        select: {
+          id: true,
+          orgId: true,
+          appointmentDate: true,
+          patient: {
+            select: { personal: { select: { name: true } } },
+          },
+          doctor: {
+            select: { personal: { select: { fullName: true } } },
+          },
+        },
+      },
+    },
+  });
+}
+
 export const getBookedSlotsForDoctor = createServerAction()
   .input(
     z.object({
@@ -464,3 +558,170 @@ export const getBookedSlotsForDoctor = createServerAction()
 
     return appointments.map((a) => a.time);
   });
+
+// ── Submit Clinical Review ────────────────────────────────────────────────────
+
+function toFhirEnum(code: string): string {
+  return code.toUpperCase().replace(/-/g, "_");
+}
+
+interface ClinicalReviewInput {
+  appointmentId: string;
+  userId: string;
+  soap: Record<string, unknown>;
+  conditions: Array<{
+    display: string;
+    resolved?: { system: string; code: string; display: string; text: string } | null;
+    clinicalStatus?: string | null;
+    verificationStatus?: string | null;
+  }>;
+  observations: Array<{
+    display: string;
+    value?: string | null;
+    unit?: string | null;
+    resolved?: { system: string; code: string; display: string; text: string } | null;
+    status?: string | null;
+    editedValue?: string | null;
+    editedUnit?: string | null;
+  }>;
+  medications: Array<{
+    display: string;
+    dose?: string | null;
+    frequency?: string | null;
+    duration?: string | null;
+    route?: string | null;
+    resolved?: { system: string; code: string; display: string; text: string } | null;
+    status?: string | null;
+    intent?: string | null;
+    editedDose?: string | null;
+    editedFrequency?: string | null;
+    editedDuration?: string | null;
+    editedRoute?: string | null;
+  }>;
+  serviceRequests: Array<{
+    display: string;
+    resolved?: { system: string; code: string; display: string; text: string } | null;
+    status?: string | null;
+    intent?: string | null;
+    priority?: string | null;
+  }>;
+}
+
+export async function submitClinicalReview(input: ClinicalReviewInput) {
+  const appt = await prismaTelemedicine.appointment.findUnique({
+    where: { id: input.appointmentId },
+    select: { orgId: true },
+  });
+  if (!appt) throw new Error("Appointment not found");
+  const { orgId } = appt;
+
+  await prismaTelemedicine.$transaction(async (tx) => {
+    // 1. Persist the edited SOAP as the canonical doctor report
+    await tx.appointmentActual.update({
+      where: { appointmentId: input.appointmentId },
+      data: {
+        doctorReport: input.soap as unknown as Prisma.InputJsonValue,
+        updatedBy: input.userId,
+      },
+    });
+
+    // 2. Replace prior FHIR records (idempotent re-save)
+    await tx.condition.deleteMany({ where: { appointmentId: input.appointmentId } });
+    await tx.observation.deleteMany({ where: { appointmentId: input.appointmentId } });
+    await tx.medicationRequest.deleteMany({ where: { appointmentId: input.appointmentId } });
+    await tx.serviceRequest.deleteMany({ where: { appointmentId: input.appointmentId } });
+
+    // 3. Conditions
+    for (const c of input.conditions) {
+      await tx.condition.create({
+        data: {
+          appointmentId: input.appointmentId,
+          orgId,
+          isDoctorAccepted: true,
+          codeSystem: c.resolved?.system ?? null,
+          codeCode: c.resolved?.code ?? null,
+          codeDisplay: c.resolved?.display ?? c.display,
+          codeText: c.resolved?.text ?? c.display,
+          clinicalStatusCode: c.clinicalStatus ?? null,
+          verificationStatusCode: c.verificationStatus ?? null,
+        },
+      });
+    }
+
+    // 4. Observations — store numeric values in valueQuantityValue, strings in valueString
+    for (const o of input.observations) {
+      const rawValue = o.editedValue ?? o.value ?? null;
+      const unit = o.editedUnit ?? o.unit ?? null;
+      const numVal = rawValue !== null ? parseFloat(rawValue) : NaN;
+      const isNumeric = rawValue !== null && !isNaN(numVal);
+
+      await tx.observation.create({
+        data: {
+          appointmentId: input.appointmentId,
+          orgId,
+          isDoctorAccepted: true,
+          status: toFhirEnum(o.status ?? "final") as ObservationStatus,
+          codeSystem: o.resolved?.system ?? null,
+          codeCode: o.resolved?.code ?? null,
+          codeDisplay: o.resolved?.display ?? o.display,
+          codeText: o.resolved?.text ?? o.display,
+          ...(isNumeric
+            ? { valueQuantityValue: numVal, valueQuantityUnit: unit }
+            : { valueString: rawValue }),
+        },
+      });
+    }
+
+    // 5. Medication requests with nested dosage instructions
+    for (const m of input.medications) {
+      const doseParts = [
+        m.editedDose ?? m.dose,
+        m.editedFrequency ?? m.frequency,
+        m.editedDuration ?? m.duration,
+      ].filter((x): x is string => Boolean(x));
+      const routeText = m.editedRoute ?? m.route ?? null;
+      const dosageText = doseParts.join(", ") || null;
+
+      await tx.medicationRequest.create({
+        data: {
+          appointmentId: input.appointmentId,
+          orgId,
+          isDoctorAccepted: true,
+          status: toFhirEnum(m.status ?? "active") as MedicationRequestStatus,
+          intent: toFhirEnum(m.intent ?? "order") as MedicationRequestIntent,
+          medicationCodeSystem: m.resolved?.system ?? null,
+          medicationCodeCode: m.resolved?.code ?? null,
+          medicationCodeDisplay: m.resolved?.display ?? m.display,
+          medicationCodeText: m.resolved?.text ?? m.display,
+          ...(dosageText ?? routeText
+            ? {
+                dosageInstructions: {
+                  create: [{ text: dosageText, routeDisplay: routeText, routeText }],
+                },
+              }
+            : {}),
+        },
+      });
+    }
+
+    // 6. Service requests
+    for (const s of input.serviceRequests) {
+      await tx.serviceRequest.create({
+        data: {
+          appointmentId: input.appointmentId,
+          orgId,
+          isDoctorAccepted: true,
+          status: toFhirEnum(s.status ?? "active") as ServiceRequestStatus,
+          intent: toFhirEnum(s.intent ?? "order") as ServiceRequestIntent,
+          priority: s.priority
+            ? (toFhirEnum(s.priority) as ServiceRequestPriority)
+            : null,
+          codeSystem: s.resolved?.system ?? null,
+          codeCode: s.resolved?.code ?? null,
+          codeDisplay: s.resolved?.display ?? s.display,
+          codeText: s.resolved?.text ?? s.display,
+        },
+      });
+    }
+  });
+}

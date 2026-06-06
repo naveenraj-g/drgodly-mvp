@@ -7,6 +7,7 @@ import {
   Brain,
   CalendarClock,
   Check,
+  ClipboardList,
   EllipsisVertical,
   Trash2,
   X,
@@ -252,6 +253,19 @@ export const appointmentColumn: ColumnDef<TAppointment>[] = [
                 Consult Online
               </Link>
             )}
+
+          {status === "COMPLETED" && (
+            <Link
+              className={cn(
+                buttonVariants({ size: "sm", variant: "outline" }),
+                "rounded-full gap-1.5",
+              )}
+              href={`/bezs/telemedicine/doctor/appointments/${appointmentData.id}`}
+            >
+              <ClipboardList className="h-3.5 w-3.5" />
+              Review
+            </Link>
+          )}
         </div>
       );
     },

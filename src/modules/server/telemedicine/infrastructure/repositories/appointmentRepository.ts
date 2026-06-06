@@ -1518,8 +1518,17 @@ export class AppointmentRepository implements IAppointmentRepository {
 
           await tx.appointmentActual.upsert({
             where: { appointmentId },
-            create: { appointmentId, orgId, doctorReport: doctorReport ?? null },
-            update: { doctorReport: doctorReport ?? null, updatedBy: userId },
+            create: {
+              appointmentId,
+              orgId,
+              doctorReport: doctorReport?.soap ?? null,
+              fullReport: doctorReport ?? null,
+            },
+            update: {
+              doctorReport: doctorReport?.soap ?? null,
+              fullReport: doctorReport ?? null,
+              updatedBy: userId,
+            },
           });
 
           return appointment;

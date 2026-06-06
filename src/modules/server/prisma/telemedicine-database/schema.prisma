@@ -1,12 +1,12 @@
 generator client {
-    provider      = "prisma-client-js"
-    output        = "../generated/telemedicine-database"
-    binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+  provider      = "prisma-client-js"
+  output        = "../generated/telemedicine-database"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL_TELEMEDICINE")
+  provider = "postgresql"
+  url      = env("DATABASE_URL_TELEMEDICINE")
 }
 
 // ───────────────────────────
@@ -14,69 +14,69 @@ datasource db {
 // ───────────────────────────
 
 enum RegistrationType {
-    permanent
-    renewal
+  permanent
+  renewal
 }
 
 enum WorkStatus {
-    government
-    private
-    both
+  government
+  private
+  both
 }
 
 enum GovernmentCategory {
-    central
-    state
+  central
+  state
 }
 
 enum Gender {
-    MALE
-    FEMALE
-    OTHER
+  MALE
+  FEMALE
+  OTHER
 }
 
 enum AbnormalFlag {
-    HIGH
-    LOW
-    NORMAL
+  HIGH
+  LOW
+  NORMAL
 }
 
 enum AppointmentStatus {
-    PENDING
-    SCHEDULED
-    RESCHEDULED
-    CANCELLED
-    COMPLETED
+  PENDING
+  SCHEDULED
+  RESCHEDULED
+  CANCELLED
+  COMPLETED
 }
 
 enum AppointmentMode {
-    VIRTUAL
-    INPERSON
-    INTAKE
+  VIRTUAL
+  INPERSON
+  INTAKE
 }
 
 enum DayOfWeek {
-    SUNDAY
-    MONDAY
-    TUESDAY
-    WEDNESDAY
-    THURSDAY
-    FRIDAY
-    SATURDAY
+  SUNDAY
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
 }
 
 enum ReviewStatus {
-    PENDING // awaiting moderation
-    PUBLISHED // visible publicly
-    HIDDEN // hidden by admin/mod
-    REPORTED // flagged by users
-    DELETED // soft-deleted (kept for audit)
+  PENDING // awaiting moderation
+  PUBLISHED // visible publicly
+  HIDDEN // hidden by admin/mod
+  REPORTED // flagged by users
+  DELETED // soft-deleted (kept for audit)
 }
 
 enum DoctorType {
-    HUMAN
-    INTAKE
-    AIDOCTOR
+  HUMAN
+  INTAKE
+  AIDOCTOR
 }
 
 // ───────────────────────────
@@ -84,69 +84,69 @@ enum DoctorType {
 // ───────────────────────────
 
 model Doctor {
-    id     String  @id @default(uuid())
-    orgId  String
-    userId String?
+  id     String  @id @default(uuid())
+  orgId  String
+  userId String?
 
-    doctorId Int @default(autoincrement())
+  doctorId Int @default(autoincrement())
 
-    registrationNumber   String?
-    registrationProvider String?
+  registrationNumber   String?
+  registrationProvider String?
 
-    doctorType          DoctorType @default(HUMAN)
-    isCompleted         Boolean    @default(false)
-    isABDMDoctorProfile Boolean    @default(false)
-    fhirPractitionerId  Int?
+  doctorType          DoctorType @default(HUMAN)
+  isCompleted         Boolean    @default(false)
+  isABDMDoctorProfile Boolean    @default(false)
+  fhirPractitionerId  Int?
 
-    personal             DoctorPersonalDetail?
-    qualification        DoctorQualification?
-    workDetail           DoctorWorkDetail?
-    concent              DoctorConcent?
-    appointments         Appointment[]
-    services             Service[]
-    weeklyAvailabilities WeeklyAvailability[]
-    reviews              Review[]
-    authoredReplies      ReviewReply[]
+  personal             DoctorPersonalDetail?
+  qualification        DoctorQualification?
+  workDetail           DoctorWorkDetail?
+  concent              DoctorConcent?
+  appointments         Appointment[]
+  services             Service[]
+  weeklyAvailabilities WeeklyAvailability[]
+  reviews              Review[]
+  authoredReplies      ReviewReply[]
 
-    ratingAverage Float? @default(0)
-    ratingCount   Int    @default(0)
+  ratingAverage Float? @default(0)
+  ratingCount   Int    @default(0)
 
-    createdBy String?
-    updatedBy String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-    @@unique([orgId, userId])
+  @@unique([orgId, userId])
 }
 
 // ───────────────────────────
 // Doctor Concent
 // ───────────────────────────
 model DoctorConcent {
-    id                               String   @id @default(uuid())
-    orgId                            String
-    isAgreeToShowDetailsPublic       Boolean
-    name                             Boolean
-    systemOfMedicine                 Boolean
-    qualification                    Boolean
-    experience                       Boolean
-    // showToPublic                     Boolean?
-    email                            Boolean?
-    contactNumber                    Boolean?
-    placeOfWork                      Boolean?
-    profilePicture                   Boolean?
-    languageSpoken                   Boolean?
-    workStatus                       Boolean?
-    teleConsultation                 Boolean?
-    isDeclearedToCreateDoctorAccount Boolean?
+  id                               String   @id @default(uuid())
+  orgId                            String
+  isAgreeToShowDetailsPublic       Boolean
+  name                             Boolean
+  systemOfMedicine                 Boolean
+  qualification                    Boolean
+  experience                       Boolean
+  // showToPublic                     Boolean?
+  email                            Boolean?
+  contactNumber                    Boolean?
+  placeOfWork                      Boolean?
+  profilePicture                   Boolean?
+  languageSpoken                   Boolean?
+  workStatus                       Boolean?
+  teleConsultation                 Boolean?
+  isDeclearedToCreateDoctorAccount Boolean?
 
-    doctorId String @unique
-    doctor   Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  doctorId String @unique
+  doctor   Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
 
-    createdBy String?
-    updatedBy String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ───────────────────────────
@@ -154,66 +154,66 @@ model DoctorConcent {
 // ───────────────────────────
 
 model DoctorPersonalDetail {
-    id                      String   @id @default(uuid())
-    orgId                   String
-    title                   String
-    fullName                String
-    nationality             String
-    dateOfBirth             DateTime
-    gender                  String
-    mobileNumber            String
-    alternativeMobileNumber String?
-    alternativeEmail        String?
-    email                   String
-    speciality              String   @default("unknown")
+  id                      String   @id @default(uuid())
+  orgId                   String
+  title                   String
+  fullName                String
+  nationality             String
+  dateOfBirth             DateTime
+  gender                  String
+  mobileNumber            String
+  alternativeMobileNumber String?
+  alternativeEmail        String?
+  email                   String
+  speciality              String   @default("unknown")
 
-    doctorId String @unique
-    doctor   Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  doctorId String @unique
+  doctor   Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
 
-    kycAddress           KYCAddress?
-    communicationAddress CommunicationAddress?
-    languagesSpoken      Language[]
-    socialAccounts       SocialAccount[]
+  kycAddress           KYCAddress?
+  communicationAddress CommunicationAddress?
+  languagesSpoken      Language[]
+  socialAccounts       SocialAccount[]
 
-    createdBy String?
-    updatedBy String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ──────────────────────────────────────────────────────────────
 // Social Platform
 // ──────────────────────────────────────────────────────────────
 model SocialAccount {
-    id       String @id @default(uuid())
-    orgId    String
-    platform String
-    url      String
+  id       String @id @default(uuid())
+  orgId    String
+  platform String
+  url      String
 
-    doctorPersonalDetailId String
-    doctorPersonalDetail   DoctorPersonalDetail @relation(fields: [doctorPersonalDetailId], references: [id], onDelete: Cascade)
+  doctorPersonalDetailId String
+  doctorPersonalDetail   DoctorPersonalDetail @relation(fields: [doctorPersonalDetailId], references: [id], onDelete: Cascade)
 
-    createdBy String?
-    updatedBy String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ──────────────────────────────────────────────────────────────
 // Languages Spoken (junction table)
 // ──────────────────────────────────────────────────────────────
 model Language {
-    id       String @id @default(uuid())
-    orgId    String
-    langCode String
+  id       String @id @default(uuid())
+  orgId    String
+  langCode String
 
-    doctorPersonalDetailId String
-    doctorPersonalDetail   DoctorPersonalDetail @relation(fields: [doctorPersonalDetailId], references: [id], onDelete: Cascade)
+  doctorPersonalDetailId String
+  doctorPersonalDetail   DoctorPersonalDetail @relation(fields: [doctorPersonalDetailId], references: [id], onDelete: Cascade)
 
-    createdBy String?
-    updatedBy String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ───────────────────────────
@@ -221,46 +221,46 @@ model Language {
 // ───────────────────────────
 
 model KYCAddress {
-    id          String @id @default(cuid())
-    orgId       String
-    careOf      String
-    addressLine String
-    city        String
-    district    String
-    state       String
-    pincode     String // 6-digit Indian pincode
+  id          String @id @default(cuid())
+  orgId       String
+  careOf      String
+  addressLine String
+  city        String
+  district    String
+  state       String
+  pincode     String // 6-digit Indian pincode
 
-    doctorPersonalDetailId String               @unique
-    doctorPersonalDetail   DoctorPersonalDetail @relation(fields: [doctorPersonalDetailId], references: [id], onDelete: Cascade)
+  doctorPersonalDetailId String               @unique
+  doctorPersonalDetail   DoctorPersonalDetail @relation(fields: [doctorPersonalDetailId], references: [id], onDelete: Cascade)
 
-    createdBy String?
-    updatedBy String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-    @@index([pincode])
+  @@index([pincode])
 }
 
 model CommunicationAddress {
-    id          String  @id @default(cuid())
-    orgId       String
-    sameAsKyc   Boolean @default(false)
-    careOf      String?
-    addressLine String?
-    city        String?
-    district    String?
-    state       String?
-    pincode     String?
+  id          String  @id @default(cuid())
+  orgId       String
+  sameAsKyc   Boolean @default(false)
+  careOf      String?
+  addressLine String?
+  city        String?
+  district    String?
+  state       String?
+  pincode     String?
 
-    doctorPersonalDetailId String               @unique
-    doctorPersonalDetail   DoctorPersonalDetail @relation(fields: [doctorPersonalDetailId], references: [id], onDelete: Cascade)
+  doctorPersonalDetailId String               @unique
+  doctorPersonalDetail   DoctorPersonalDetail @relation(fields: [doctorPersonalDetailId], references: [id], onDelete: Cascade)
 
-    createdBy String?
-    updatedBy String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-    @@index([pincode])
+  @@index([pincode])
 }
 
 // ───────────────────────────
@@ -268,47 +268,47 @@ model CommunicationAddress {
 // ───────────────────────────
 
 model DoctorQualification {
-    id                      String           @id @default(uuid())
-    orgId                   String
-    systemOfMedicine        String
-    category                String
-    councilName             String
-    registrationNumber      String
-    dateOfFirstRegistration DateTime
-    registrationType        RegistrationType
-    registrationValidDate   DateTime?
-    nameMatchesAadhaar      Boolean
+  id                      String           @id @default(uuid())
+  orgId                   String
+  systemOfMedicine        String
+  category                String
+  councilName             String
+  registrationNumber      String
+  dateOfFirstRegistration DateTime
+  registrationType        RegistrationType
+  registrationValidDate   DateTime?
+  nameMatchesAadhaar      Boolean
 
-    doctorId       String          @unique
-    doctor         Doctor          @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-    qualifications Qualification[]
+  doctorId       String          @unique
+  doctor         Doctor          @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  qualifications Qualification[]
 
-    createdBy String?
-    updatedBy String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Qualification {
-    id                     String  @id @default(uuid())
-    orgId                  String
-    countryOfQualification String
-    degreeName             String
-    country                String
-    state                  String
-    college                String
-    university             String
-    passingMonth           String
-    passingYear            String
-    nameMatchesAadhaar     Boolean
+  id                     String  @id @default(uuid())
+  orgId                  String
+  countryOfQualification String
+  degreeName             String
+  country                String
+  state                  String
+  college                String
+  university             String
+  passingMonth           String
+  passingYear            String
+  nameMatchesAadhaar     Boolean
 
-    doctorQualificationId String
-    doctorQualification   DoctorQualification @relation(fields: [doctorQualificationId], references: [id], onDelete: Cascade)
+  doctorQualificationId String
+  doctorQualification   DoctorQualification @relation(fields: [doctorQualificationId], references: [id], onDelete: Cascade)
 
-    createdBy String?
-    updatedBy String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ───────────────────────────
@@ -316,103 +316,103 @@ model Qualification {
 // ───────────────────────────
 
 model DoctorWorkDetail {
-    id                  String              @id @default(uuid())
-    orgId               String
-    currentlyWorking    Boolean
-    experience          String
-    reasonForNotWorking String?
-    otherReason         String?
-    natureOfWork        String?
-    teleConsultationURL String?
-    workStatus          WorkStatus?
-    governmentCategory  GovernmentCategory?
-    centralGovernment   String?
-    about               String
+  id                  String              @id @default(uuid())
+  orgId               String
+  currentlyWorking    Boolean
+  experience          String
+  reasonForNotWorking String?
+  otherReason         String?
+  natureOfWork        String?
+  teleConsultationURL String?
+  workStatus          WorkStatus?
+  governmentCategory  GovernmentCategory?
+  centralGovernment   String?
+  about               String
 
-    doctorId               String                        @unique
-    doctor                 Doctor                        @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-    workingFacilityDetails DoctorWorkingFacilityDetail[]
+  doctorId               String                        @unique
+  doctor                 Doctor                        @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  workingFacilityDetails DoctorWorkingFacilityDetail[]
 
-    createdBy String?
-    updatedBy String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model DoctorWorkingFacilityDetail {
-    id             String  @id @default(uuid())
-    orgId          String
-    facilityId     String
-    facilityStatus Boolean
-    facilityName   String
-    address        String
-    state          String
-    district       String
-    type           String
-    department     String
-    designation    String
+  id             String  @id @default(uuid())
+  orgId          String
+  facilityId     String
+  facilityStatus Boolean
+  facilityName   String
+  address        String
+  state          String
+  district       String
+  type           String
+  department     String
+  designation    String
 
-    doctorWorkId String
-    doctorWork   DoctorWorkDetail @relation(fields: [doctorWorkId], references: [id], onDelete: Cascade)
+  doctorWorkId String
+  doctorWork   DoctorWorkDetail @relation(fields: [doctorWorkId], references: [id], onDelete: Cascade)
 
-    createdBy String?
-    updatedBy String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Service {
-    id             String  @id @default(uuid())
-    orgId          String
-    name           String
-    duration       Int
-    priceAmount    Float?
-    priceCurrency  String? @db.VarChar(3)
-    description    String?
-    supportedModes Json
+  id             String  @id @default(uuid())
+  orgId          String
+  name           String
+  duration       Int
+  priceAmount    Float?
+  priceCurrency  String? @db.VarChar(3)
+  description    String?
+  supportedModes Json
 
-    doctorId String
-    doctor   Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  doctorId String
+  doctor   Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
 
-    createdBy String?
-    updatedBy String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-    @@unique([orgId, doctorId, name])
+  @@unique([orgId, doctorId, name])
 }
 
 model WeeklyAvailability {
-    id        String  @id @default(uuid())
-    orgId     String
-    dayOfWeek String
-    isEnabled Boolean @default(false)
+  id        String  @id @default(uuid())
+  orgId     String
+  dayOfWeek String
+  isEnabled Boolean @default(false)
 
-    doctorId String
-    doctor   Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  doctorId String
+  doctor   Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
 
-    slots AvailabilitySlot[]
+  slots AvailabilitySlot[]
 
-    createdBy String?
-    updatedBy String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-    @@unique([orgId, doctorId, dayOfWeek])
+  @@unique([orgId, doctorId, dayOfWeek])
 }
 
 model AvailabilitySlot {
-    id                   String             @id @default(uuid())
-    orgId                String
-    start                String
-    end                  String
-    weeklyAvailabilityId String
-    weeklyAvailability   WeeklyAvailability @relation(fields: [weeklyAvailabilityId], references: [id], onDelete: Cascade)
+  id                   String             @id @default(uuid())
+  orgId                String
+  start                String
+  end                  String
+  weeklyAvailabilityId String
+  weeklyAvailability   WeeklyAvailability @relation(fields: [weeklyAvailabilityId], references: [id], onDelete: Cascade)
 
-    createdBy String?
-    updatedBy String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 ////////////////////////////////////////////////////////////
@@ -421,32 +421,32 @@ model AvailabilitySlot {
 // Patient
 // -----------------------------
 model Patient {
-    id     String @id @default(uuid())
-    orgId  String
-    userId String
+  id     String @id @default(uuid())
+  orgId  String
+  userId String
 
-    patientId Int @default(autoincrement())
+  patientId Int @default(autoincrement())
 
-    isCompleted          Boolean @default(false)
-    isABHAPatientProfile Boolean @default(false)
-    fhirPatientId        Int?
+  isCompleted          Boolean @default(false)
+  isABHAPatientProfile Boolean @default(false)
+  fhirPatientId        Int?
 
-    // Relations
-    personal       PatientPersonalDetail?
-    medicalHistory MedicalHistory[]
-    medications    Medication[]
-    labResults     LabResult[]
-    vitals         Vital[]
-    lifestyle      Lifestyle?
-    appointments   Appointment[]
-    reviews        Review[]
+  // Relations
+  personal       PatientPersonalDetail?
+  medicalHistory MedicalHistory[]
+  medications    Medication[]
+  labResults     LabResult[]
+  vitals         Vital[]
+  lifestyle      Lifestyle?
+  appointments   Appointment[]
+  reviews        Review[]
 
-    createdBy String?
-    updatedBy String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-    @@unique([orgId, userId])
+  @@unique([orgId, userId])
 }
 
 // -----------------------------
@@ -454,31 +454,31 @@ model Patient {
 // -----------------------------
 
 model PatientPersonalDetail {
-    id        String @id @default(uuid())
-    patientId String @unique
-    orgId     String
+  id        String @id @default(uuid())
+  patientId String @unique
+  orgId     String
 
-    name                    String
-    gender                  Gender
-    dateOfBirth             DateTime
-    address                 String
-    alternativeAddress      String?
-    mobileNumber            String
-    alternativeMobileNumber String?
-    email                   String
-    alternativeEmail        String?
-    insuranceProvider       String?
-    insuranceNumber         String?
-    idCardNumber            String?
-    maritalStatus           String
-    bloodGroup              String?
+  name                    String
+  gender                  Gender
+  dateOfBirth             DateTime
+  address                 String
+  alternativeAddress      String?
+  mobileNumber            String
+  alternativeMobileNumber String?
+  email                   String
+  alternativeEmail        String?
+  insuranceProvider       String?
+  insuranceNumber         String?
+  idCardNumber            String?
+  maritalStatus           String
+  bloodGroup              String?
 
-    patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
-    createdBy String?
-    updatedBy String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 /**
@@ -542,116 +542,116 @@ model PatientPersonalDetail {
 // Medical History
 // -----------------------------
 model MedicalHistory {
-    id        String @id @default(uuid())
-    patientId String
-    orgId     String
+  id        String @id @default(uuid())
+  patientId String
+  orgId     String
 
-    pastDiagnoses     String?
-    pastSurgeries     String?
-    allergies         String?
-    immunizations     String?
-    ongoingTreatments String?
-    familyHistory     String?
+  pastDiagnoses     String?
+  pastSurgeries     String?
+  allergies         String?
+  immunizations     String?
+  ongoingTreatments String?
+  familyHistory     String?
 
-    patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
-    createdBy String?
-    updatedBy String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // -----------------------------
 // Medications
 // -----------------------------
 model Medication {
-    id        String @id @default(uuid())
-    patientId String
-    orgId     String
+  id        String @id @default(uuid())
+  patientId String
+  orgId     String
 
-    drugName  String
-    fromDate  DateTime
-    toDate    DateTime
-    dose      String?
-    frequency String?
-    duration  String?
+  drugName  String
+  fromDate  DateTime
+  toDate    DateTime
+  dose      String?
+  frequency String?
+  duration  String?
 
-    patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
-    createdBy String?
-    updatedBy String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // -----------------------------
 // Lab Results
 // -----------------------------
 model LabResult {
-    id        String @id @default(uuid())
-    patientId String
-    orgId     String
+  id        String @id @default(uuid())
+  patientId String
+  orgId     String
 
-    parameter    String
-    value        String?
-    range        String?
-    units        String?
-    abnormalFlag AbnormalFlag?
+  parameter    String
+  value        String?
+  range        String?
+  units        String?
+  abnormalFlag AbnormalFlag?
 
-    labReportDate  DateTime?
-    labReportRefNo String?
-    labName        String?
+  labReportDate  DateTime?
+  labReportRefNo String?
+  labName        String?
 
-    patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
-    createdBy String?
-    updatedBy String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // -----------------------------
 // Vitals
 // -----------------------------
 model Vital {
-    id        String @id @default(uuid())
-    patientId String
-    orgId     String
+  id        String @id @default(uuid())
+  patientId String
+  orgId     String
 
-    bp        String?
-    hr        Int?
-    temp      Float?
-    bmi       Float?
-    oxygenSat Float?
-    asOnDate  DateTime
+  bp        String?
+  hr        Int?
+  temp      Float?
+  bmi       Float?
+  oxygenSat Float?
+  asOnDate  DateTime
 
-    patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
-    createdBy String?
-    updatedBy String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // -----------------------------
 // Lifestyle
 // -----------------------------
 model Lifestyle {
-    id        String @id @default(uuid())
-    patientId String @unique
-    orgId     String
+  id        String @id @default(uuid())
+  patientId String @unique
+  orgId     String
 
-    smoking  String?
-    alcohol  String?
-    exercise String?
-    diet     String?
+  smoking  String?
+  alcohol  String?
+  exercise String?
+  diet     String?
 
-    patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
-    createdBy String?
-    updatedBy String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // -----------------------------
@@ -659,212 +659,1851 @@ model Lifestyle {
 // -----------------------------
 
 enum CancelledBy {
-    PATIENT
-    DOCTOR
+  PATIENT
+  DOCTOR
 }
 
 model PreAppointmentMap {
-    id BigInt @id @default(autoincrement())
+  id BigInt @id @default(autoincrement())
 
-    intakeAppointmentId   String
-    followUpAppointmentId String
+  intakeAppointmentId   String
+  followUpAppointmentId String
 
-    intakeAppointment   Appointment @relation("Intake", fields: [intakeAppointmentId], references: [id], onDelete: Cascade)
-    followUpAppointment Appointment @relation("FollowUp", fields: [followUpAppointmentId], references: [id], onDelete: Cascade)
+  intakeAppointment   Appointment @relation("Intake", fields: [intakeAppointmentId], references: [id], onDelete: Cascade)
+  followUpAppointment Appointment @relation("FollowUp", fields: [followUpAppointmentId], references: [id], onDelete: Cascade)
 
-    createdBy String?
-    updatedBy String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-    @@unique([intakeAppointmentId])
-    @@unique([followUpAppointmentId])
+  @@unique([intakeAppointmentId])
+  @@unique([followUpAppointmentId])
 }
 
 model Appointment {
-    id    String @id @default(uuid())
-    orgId String
+  id    String @id @default(uuid())
+  orgId String
 
-    patientId String
-    doctorId  String?
+  patientId String
+  doctorId  String?
 
-    appointmentMode AppointmentMode
+  appointmentMode AppointmentMode
 
-    appointmentDate DateTime
-    time            String
+  appointmentDate DateTime
+  time            String
 
-    status        AppointmentStatus @default(PENDING)
-    type          String
-    price         Float?
-    priceCurrency String?
-    note          String?
+  status        AppointmentStatus @default(PENDING)
+  type          String
+  price         Float?
+  priceCurrency String?
+  note          String?
 
-    virtualRoomId String?      @unique
-    cancelReason  String?
-    cancelledBy   CancelledBy?
+  virtualRoomId String?      @unique
+  cancelReason  String?
+  cancelledBy   CancelledBy?
 
-    fhirEncounterId   Int?
-    fhirAppointmentId Int?
+  fhirEncounterId   Int?
+  fhirAppointmentId Int?
 
-    // per-participant visibility
-    isPatientDeleted Boolean @default(false)
-    isDoctorDeleted  Boolean @default(false)
+  // per-participant visibility
+  isPatientDeleted Boolean @default(false)
+  isDoctorDeleted  Boolean @default(false)
 
-    patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
-    doctor  Doctor? @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor  Doctor? @relation(fields: [doctorId], references: [id], onDelete: Cascade)
 
-    // mapping relations
-    intakeMapping   PreAppointmentMap? @relation("Intake")
-    followUpMapping PreAppointmentMap? @relation("FollowUp")
+  // mapping relations
+  intakeMapping   PreAppointmentMap? @relation("Intake")
+  followUpMapping PreAppointmentMap? @relation("FollowUp")
 
-    review            Review?
-    appointmentAudits AppointmentAudit[]
-    appointmentActual AppointmentActual?
+  review            Review?
+  appointmentAudits AppointmentAudit[]
+  appointmentActual AppointmentActual?
 
-    createdBy String?
-    updatedBy String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  serviceRequests    ServiceRequest[]
+  medicationRequests MedicationRequest[]
+  observations       Observation[]
+  conditions         Condition[]
 
-    @@unique([id, orgId], name: "appointment_id_orgId_unique")
-    @@index([orgId, patientId, isPatientDeleted, appointmentDate])
-    @@index([orgId, doctorId, isDoctorDeleted, appointmentDate])
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([id, orgId], name: "appointment_id_orgId_unique")
+  @@index([orgId, patientId, isPatientDeleted, appointmentDate])
+  @@index([orgId, doctorId, isDoctorDeleted, appointmentDate])
 }
 
 model AppointmentActual {
-    id            Int    @id @default(autoincrement())
-    orgId         String
-    appointmentId String @unique
+  id            Int    @id @default(autoincrement())
+  orgId         String
+  appointmentId String @unique
 
-    intakeConversation  Json?
-    intakeReport        Json?
-    virtualConversation Json?
+  intakeConversation  Json?
+  intakeReport        Json?
+  virtualConversation Json?
 
-    doctorReport     Json?   // from /doctor-report (SOAP)
-    fullReport       Json?   // from /full-report (SOAP + assessment)
+  doctorReport Json? // from /doctor-report (SOAP)
+  fullReport   Json? // from /full-report (SOAP + assessment)
 
-    appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
 
-    createdBy String?
-    updatedBy String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum AppointmentEventKind {
-    RESCHEDULED
-    CANCELLED
-    DELETED
-    SCHEDULED
+  RESCHEDULED
+  CANCELLED
+  DELETED
+  SCHEDULED
 }
 
 enum AppointmentActorType {
-    PATIENT
-    DOCTOR
-    STAFF
-    SYSTEM
+  PATIENT
+  DOCTOR
+  STAFF
+  SYSTEM
 }
 
 model AppointmentAudit {
-    id            Int         @id @default(autoincrement())
-    orgId         String
-    appointmentId String
-    appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  id            Int         @id @default(autoincrement())
+  orgId         String
+  appointmentId String
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
 
-    kind      AppointmentEventKind // RESCHEDULED | CANCELLED
-    actorType AppointmentActorType // who did it
-    actorId   String? // optional user id of actor
-    reason    String? // free text reason
+  kind      AppointmentEventKind // RESCHEDULED | CANCELLED
+  actorType AppointmentActorType // who did it
+  actorId   String? // optional user id of actor
+  reason    String? // free text reason
 
-    // only used for RESCHEDULED
-    fromDate DateTime?
-    fromTime String?
-    toDate   DateTime?
-    toTime   String?
+  // only used for RESCHEDULED
+  fromDate DateTime?
+  fromTime String?
+  toDate   DateTime?
+  toTime   String?
 
-    createdBy String?
-    createdAt DateTime @default(now())
+  createdBy String?
+  createdAt DateTime @default(now())
 
-    @@index([appointmentId, createdAt])
+  @@index([appointmentId, createdAt])
 }
 
 // ───────────────────────────
 // Doctor Reviews
 // ───────────────────────────
 model Review {
-    id    String @id @default(uuid())
-    orgId String
+  id    String @id @default(uuid())
+  orgId String
 
-    doctorId String
-    doctor   Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  doctorId String
+  doctor   Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
 
-    patientId String
-    patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patientId String
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
-    // Optional, but recommended if the review is tied to a specific visit
-    appointmentId String?      @unique
-    appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  // Optional, but recommended if the review is tied to a specific visit
+  appointmentId String?      @unique
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
 
-    rating      Int // enforce 1..5 in app/service layer (DB CHECK not portable in Prisma)
-    title       String?
-    comment     String?
-    isAnonymous Boolean @default(false)
+  rating      Int // enforce 1..5 in app/service layer (DB CHECK not portable in Prisma)
+  title       String?
+  comment     String?
+  isAnonymous Boolean @default(false)
 
-    status         ReviewStatus @default(PUBLISHED)
-    reportedReason String?
+  status         ReviewStatus @default(PUBLISHED)
+  reportedReason String?
 
-    // Basic engagement signals (optional)
-    helpfulCount Int @default(0)
+  // Basic engagement signals (optional)
+  helpfulCount Int @default(0)
 
-    // One optional reply from the doctor/clinic
-    reply ReviewReply[]
+  // One optional reply from the doctor/clinic
+  reply ReviewReply[]
 
-    createdBy String?
-    updatedBy String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-    // Uncomment one of the following depending on your policy:
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  // Uncomment one of the following depending on your policy:
 
-    // 1) One review per (patient, doctor) across all time:
-    // @@unique([patientId, doctorId])
+  // 1) One review per (patient, doctor) across all time:
+  // @@unique([patientId, doctorId])
 
-    // 2) One review per (patient, doctor, appointment) – already enforced via unique appointmentId
-    // leave as-is if you want multiple reviews across different appointments
+  // 2) One review per (patient, doctor, appointment) – already enforced via unique appointmentId
+  // leave as-is if you want multiple reviews across different appointments
 
-    @@index([orgId, doctorId, status])
+  @@index([orgId, doctorId, status])
 }
 
 enum ReviewAuthorRole {
-    DOCTOR
-    ADMIN
+  DOCTOR
+  ADMIN
 }
 
 model ReviewReply {
-    id    String @id @default(uuid())
-    orgId String
+  id    String @id @default(uuid())
+  orgId String
 
-    reviewId String
-    review   Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  reviewId String
+  review   Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
 
-    // who replied
-    authorRole   ReviewAuthorRole
-    authorUserId String // the userId who posted the reply (doctor user or admin user)
+  // who replied
+  authorRole   ReviewAuthorRole
+  authorUserId String // the userId who posted the reply (doctor user or admin user)
 
-    // optional fast path to doctor profile (null for admin replies)
-    authorDoctorId String?
-    authorDoctor   Doctor? @relation(fields: [authorDoctorId], references: [id], onDelete: SetNull)
+  // optional fast path to doctor profile (null for admin replies)
+  authorDoctorId String?
+  authorDoctor   Doctor? @relation(fields: [authorDoctorId], references: [id], onDelete: SetNull)
 
-    message String
+  message String
 
-    createdBy String?
-    updatedBy String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-    // OPTIONAL: enforce at most one reply per role per review:
-    // @@unique([reviewId, authorRole])
+  // OPTIONAL: enforce at most one reply per role per review:
+  // @@unique([reviewId, authorRole])
 
-    @@index([reviewId])
-    @@index([authorRole])
-    @@index([authorDoctorId])
+  @@index([reviewId])
+  @@index([authorRole])
+  @@index([authorDoctorId])
+}
+
+// ───────────────────────────────────────────────────────────────
+// ENUMS — FHIR Clinical Resources
+// ───────────────────────────────────────────────────────────────
+
+enum ServiceRequestStatus {
+  DRAFT
+  ACTIVE
+  ON_HOLD
+  REVOKED
+  COMPLETED
+  ENTERED_IN_ERROR
+  UNKNOWN
+}
+
+enum ServiceRequestIntent {
+  PROPOSAL
+  PLAN
+  DIRECTIVE
+  ORDER
+  ORIGINAL_ORDER
+  REFLEX_ORDER
+  FILLER_ORDER
+  INSTANCE_ORDER
+  OPTION
+}
+
+enum ServiceRequestPriority {
+  ROUTINE
+  URGENT
+  ASAP
+  STAT
+}
+
+enum MedicationRequestStatus {
+  ACTIVE
+  ON_HOLD
+  CANCELLED
+  COMPLETED
+  ENTERED_IN_ERROR
+  STOPPED
+  DRAFT
+  UNKNOWN
+}
+
+enum MedicationRequestIntent {
+  PROPOSAL
+  PLAN
+  ORDER
+  ORIGINAL_ORDER
+  REFLEX_ORDER
+  FILLER_ORDER
+  INSTANCE_ORDER
+  OPTION
+}
+
+enum MedicationRequestPriority {
+  ROUTINE
+  URGENT
+  ASAP
+  STAT
+}
+
+enum ObservationStatus {
+  REGISTERED
+  PRELIMINARY
+  FINAL
+  AMENDED
+  CORRECTED
+  CANCELLED
+  ENTERED_IN_ERROR
+  UNKNOWN
+}
+
+// ───────────────────────────────────────────────────────────────
+// SERVICE REQUEST
+// ───────────────────────────────────────────────────────────────
+
+model ServiceRequest {
+  id    String @id @default(uuid())
+  orgId String
+
+  appointmentId String
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  status       ServiceRequestStatus
+  intent       ServiceRequestIntent
+  priority     ServiceRequestPriority?
+  doNotPerform Boolean?
+
+  // code (CodeableConcept)
+  codeSystem  String?
+  codeCode    String?
+  codeDisplay String?
+  codeText    String?
+
+  // subject (Reference)
+  subjectType    String?
+  subjectId      Int?
+  subjectDisplay String?
+
+  // occurrence[x]
+  occurrenceDatetime          DateTime?
+  occurrencePeriodStart       DateTime?
+  occurrencePeriodEnd         DateTime?
+  occurrenceTimingFrequency   Int?
+  occurrenceTimingPeriod      Float?
+  occurrenceTimingPeriodUnit  String?
+  occurrenceTimingBoundsStart DateTime?
+  occurrenceTimingBoundsEnd   DateTime?
+
+  // asNeeded[x]
+  asNeededBoolean Boolean?
+  asNeededSystem  String?
+  asNeededCode    String?
+  asNeededDisplay String?
+  asNeededText    String?
+
+  // Authored / Requester
+  authoredOn       DateTime?
+  requesterType    String?
+  requesterId      Int?
+  requesterDisplay String?
+
+  // performerType (CodeableConcept)
+  performerTypeSystem  String?
+  performerTypeCode    String?
+  performerTypeDisplay String?
+  performerTypeText    String?
+
+  // quantity[x] — Quantity
+  quantityValue  Float?
+  quantityUnit   String?
+  quantitySystem String?
+  quantityCode   String?
+
+  // quantity[x] — Ratio
+  quantityRatioNumeratorValue   Float?
+  quantityRatioNumeratorUnit    String?
+  quantityRatioDenominatorValue Float?
+  quantityRatioDenominatorUnit  String?
+
+  // quantity[x] — Range
+  quantityRangeLowValue  Float?
+  quantityRangeLowUnit   String?
+  quantityRangeHighValue Float?
+  quantityRangeHighUnit  String?
+
+  // requisition (Identifier)
+  requisitionUse         String?
+  requisitionTypeSystem  String?
+  requisitionTypeCode    String?
+  requisitionTypeDisplay String?
+  requisitionTypeText    String?
+  requisitionSystem      String?
+  requisitionValue       String?
+  requisitionPeriodStart DateTime?
+  requisitionPeriodEnd   DateTime?
+  requisitionAssigner    String?
+
+  instantiatesCanonical String?
+  instantiatesUri       String?
+  patientInstruction    String?
+
+  isDoctorAccepted Boolean @default(false)
+
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  identifiers     ServiceRequestIdentifier[]
+  categories      ServiceRequestCategory[]
+  orderDetails    ServiceRequestOrderDetail[]
+  performers      ServiceRequestPerformer[]
+  locationCodes   ServiceRequestLocationCode[]
+  locationRefs    ServiceRequestLocationReference[]
+  reasonCodes     ServiceRequestReasonCode[]
+  reasonRefs      ServiceRequestReasonReference[]
+  insurance       ServiceRequestInsurance[]
+  supportingInfo  ServiceRequestSupportingInfo[]
+  specimens       ServiceRequestSpecimen[]
+  bodySites       ServiceRequestBodySite[]
+  notes           ServiceRequestNote[]
+  relevantHistory ServiceRequestRelevantHistory[]
+  basedOn         ServiceRequestBasedOn[]
+  replaces        ServiceRequestReplaces[]
+
+  @@index([orgId, appointmentId])
+}
+
+model ServiceRequestIdentifier {
+  id               Int     @id @default(autoincrement())
+  serviceRequestId String
+  orgId            String?
+
+  use         String?
+  typeSystem  String?
+  typeCode    String?
+  typeDisplay String?
+  typeText    String?
+  system      String?
+  value       String
+  periodStart DateTime?
+  periodEnd   DateTime?
+  assigner    String?
+
+  serviceRequest ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+
+  @@index([serviceRequestId])
+}
+
+model ServiceRequestCategory {
+  id               Int     @id @default(autoincrement())
+  serviceRequestId String
+  orgId            String?
+
+  codingSystem  String?
+  codingCode    String?
+  codingDisplay String?
+  text          String?
+
+  serviceRequest ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+
+  @@index([serviceRequestId])
+}
+
+model ServiceRequestOrderDetail {
+  id               Int     @id @default(autoincrement())
+  serviceRequestId String
+  orgId            String?
+
+  codingSystem  String?
+  codingCode    String?
+  codingDisplay String?
+  text          String?
+
+  serviceRequest ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+
+  @@index([serviceRequestId])
+}
+
+model ServiceRequestPerformer {
+  id               Int     @id @default(autoincrement())
+  serviceRequestId String
+  orgId            String?
+
+  referenceType    String?
+  referenceId      Int?
+  referenceDisplay String?
+
+  serviceRequest ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+
+  @@index([serviceRequestId])
+}
+
+model ServiceRequestLocationCode {
+  id               Int     @id @default(autoincrement())
+  serviceRequestId String
+  orgId            String?
+
+  codingSystem  String?
+  codingCode    String?
+  codingDisplay String?
+  text          String?
+
+  serviceRequest ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+
+  @@index([serviceRequestId])
+}
+
+model ServiceRequestLocationReference {
+  id               Int     @id @default(autoincrement())
+  serviceRequestId String
+  orgId            String?
+
+  referenceType    String?
+  referenceId      Int?
+  referenceDisplay String?
+
+  serviceRequest ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+
+  @@index([serviceRequestId])
+}
+
+model ServiceRequestReasonCode {
+  id               Int     @id @default(autoincrement())
+  serviceRequestId String
+  orgId            String?
+
+  codingSystem  String?
+  codingCode    String?
+  codingDisplay String?
+  text          String?
+
+  serviceRequest ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+
+  @@index([serviceRequestId])
+}
+
+model ServiceRequestReasonReference {
+  id               Int     @id @default(autoincrement())
+  serviceRequestId String
+  orgId            String?
+
+  referenceType    String?
+  referenceId      Int?
+  referenceDisplay String?
+
+  serviceRequest ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+
+  @@index([serviceRequestId])
+}
+
+model ServiceRequestInsurance {
+  id               Int     @id @default(autoincrement())
+  serviceRequestId String
+  orgId            String?
+
+  referenceType    String?
+  referenceId      Int?
+  referenceDisplay String?
+
+  serviceRequest ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+
+  @@index([serviceRequestId])
+}
+
+model ServiceRequestSupportingInfo {
+  id               Int     @id @default(autoincrement())
+  serviceRequestId String
+  orgId            String?
+
+  referenceType    String?
+  referenceId      Int?
+  referenceDisplay String?
+
+  serviceRequest ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+
+  @@index([serviceRequestId])
+}
+
+model ServiceRequestSpecimen {
+  id               Int     @id @default(autoincrement())
+  serviceRequestId String
+  orgId            String?
+
+  referenceType    String?
+  referenceId      Int?
+  referenceDisplay String?
+
+  serviceRequest ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+
+  @@index([serviceRequestId])
+}
+
+model ServiceRequestBodySite {
+  id               Int     @id @default(autoincrement())
+  serviceRequestId String
+  orgId            String?
+
+  codingSystem  String?
+  codingCode    String?
+  codingDisplay String?
+  text          String?
+
+  serviceRequest ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+
+  @@index([serviceRequestId])
+}
+
+model ServiceRequestNote {
+  id               Int     @id @default(autoincrement())
+  serviceRequestId String
+  orgId            String?
+
+  text                   String
+  time                   DateTime?
+  authorString           String?
+  authorReferenceType    String?
+  authorReferenceId      Int?
+  authorReferenceDisplay String?
+
+  serviceRequest ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+
+  @@index([serviceRequestId])
+}
+
+model ServiceRequestRelevantHistory {
+  id               Int     @id @default(autoincrement())
+  serviceRequestId String
+  orgId            String?
+
+  referenceType    String?
+  referenceId      Int?
+  referenceDisplay String?
+
+  serviceRequest ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+
+  @@index([serviceRequestId])
+}
+
+model ServiceRequestBasedOn {
+  id               Int     @id @default(autoincrement())
+  serviceRequestId String
+  orgId            String?
+
+  referenceType    String?
+  referenceId      Int?
+  referenceDisplay String?
+
+  serviceRequest ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+
+  @@index([serviceRequestId])
+}
+
+model ServiceRequestReplaces {
+  id               Int     @id @default(autoincrement())
+  serviceRequestId String
+  orgId            String?
+
+  referenceType    String?
+  referenceId      Int?
+  referenceDisplay String?
+
+  serviceRequest ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+
+  @@index([serviceRequestId])
+}
+
+// ───────────────────────────────────────────────────────────────
+// MEDICATION REQUEST
+// ───────────────────────────────────────────────────────────────
+
+model MedicationRequest {
+  id    String @id @default(uuid())
+  orgId String
+
+  appointmentId String
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  status       MedicationRequestStatus
+  intent       MedicationRequestIntent
+  priority     MedicationRequestPriority?
+  doNotPerform Boolean?
+
+  // statusReason (CodeableConcept)
+  statusReasonSystem  String?
+  statusReasonCode    String?
+  statusReasonDisplay String?
+  statusReasonText    String?
+
+  // medication[x] — CodeableConcept
+  medicationCodeSystem  String?
+  medicationCodeCode    String?
+  medicationCodeDisplay String?
+  medicationCodeText    String?
+
+  // medication[x] — Reference(Medication)
+  medicationReferenceType    String?
+  medicationReferenceId      Int?
+  medicationReferenceDisplay String?
+
+  // subject (Reference)
+  subjectType    String?
+  subjectId      Int?
+  subjectDisplay String?
+
+  authoredOn DateTime?
+
+  // reported[x]
+  reportedBoolean          Boolean?
+  reportedReferenceType    String?
+  reportedReferenceId      Int?
+  reportedReferenceDisplay String?
+
+  // requester (Reference)
+  requesterType    String?
+  requesterId      Int?
+  requesterDisplay String?
+
+  // performer (Reference)
+  performerType    String?
+  performerId      Int?
+  performerDisplay String?
+
+  // performerType (CodeableConcept — role of performer)
+  performerTypeSystem  String?
+  performerTypeCode    String?
+  performerTypeDisplay String?
+  performerTypeText    String?
+
+  // recorder (Reference)
+  recorderType    String?
+  recorderId      Int?
+  recorderDisplay String?
+
+  // groupIdentifier (Identifier)
+  groupIdentifierUse         String?
+  groupIdentifierTypeSystem  String?
+  groupIdentifierTypeCode    String?
+  groupIdentifierTypeDisplay String?
+  groupIdentifierTypeText    String?
+  groupIdentifierSystem      String?
+  groupIdentifierValue       String?
+  groupIdentifierPeriodStart DateTime?
+  groupIdentifierPeriodEnd   DateTime?
+  groupIdentifierAssigner    String?
+
+  // courseOfTherapyType (CodeableConcept)
+  courseOfTherapyTypeSystem  String?
+  courseOfTherapyTypeCode    String?
+  courseOfTherapyTypeDisplay String?
+  courseOfTherapyTypeText    String?
+
+  // priorPrescription (Reference)
+  priorPrescriptionType    String?
+  priorPrescriptionId      Int?
+  priorPrescriptionDisplay String?
+
+  instantiatesCanonical String?
+  instantiatesUri       String?
+
+  // dispenseRequest (BackboneElement — flattened)
+  dispenseInitialFillQuantityValue    Float?
+  dispenseInitialFillQuantityUnit     String?
+  dispenseInitialFillQuantitySystem   String?
+  dispenseInitialFillQuantityCode     String?
+  dispenseInitialFillDurationValue    Float?
+  dispenseInitialFillDurationUnit     String?
+  dispenseIntervalValue               Float?
+  dispenseIntervalUnit                String?
+  dispenseValidityPeriodStart         DateTime?
+  dispenseValidityPeriodEnd           DateTime?
+  dispenseNumberOfRepeatsAllowed      Int?
+  dispenseQuantityValue               Float?
+  dispenseQuantityUnit                String?
+  dispenseQuantitySystem              String?
+  dispenseQuantityCode                String?
+  dispenseExpectedSupplyDurationValue Float?
+  dispenseExpectedSupplyDurationUnit  String?
+  dispensePerformerType               String?
+  dispensePerformerId                 Int?
+  dispensePerformerDisplay            String?
+
+  // substitution (BackboneElement — flattened)
+  substitutionAllowedBoolean Boolean?
+  substitutionAllowedSystem  String?
+  substitutionAllowedCode    String?
+  substitutionAllowedDisplay String?
+  substitutionAllowedText    String?
+  substitutionReasonSystem   String?
+  substitutionReasonCode     String?
+  substitutionReasonDisplay  String?
+  substitutionReasonText     String?
+
+  isDoctorAccepted Boolean @default(false)
+
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  identifiers        MedicationRequestIdentifier[]
+  categories         MedicationRequestCategory[]
+  supportingInfo     MedicationRequestSupportingInfo[]
+  reasonCodes        MedicationRequestReasonCode[]
+  reasonRefs         MedicationRequestReasonReference[]
+  basedOn            MedicationRequestBasedOn[]
+  insurance          MedicationRequestInsurance[]
+  notes              MedicationRequestNote[]
+  dosageInstructions MedicationRequestDosageInstruction[]
+  detectedIssues     MedicationRequestDetectedIssue[]
+  eventHistory       MedicationRequestEventHistory[]
+
+  @@index([orgId, appointmentId])
+}
+
+model MedicationRequestIdentifier {
+  id                  Int     @id @default(autoincrement())
+  medicationRequestId String
+  orgId               String?
+
+  use         String?
+  typeSystem  String?
+  typeCode    String?
+  typeDisplay String?
+  typeText    String?
+  system      String?
+  value       String
+  periodStart DateTime?
+  periodEnd   DateTime?
+  assigner    String?
+
+  medicationRequest MedicationRequest @relation(fields: [medicationRequestId], references: [id], onDelete: Cascade)
+
+  @@index([medicationRequestId])
+}
+
+model MedicationRequestCategory {
+  id                  Int     @id @default(autoincrement())
+  medicationRequestId String
+  orgId               String?
+
+  codingSystem  String?
+  codingCode    String?
+  codingDisplay String?
+  text          String?
+
+  medicationRequest MedicationRequest @relation(fields: [medicationRequestId], references: [id], onDelete: Cascade)
+
+  @@index([medicationRequestId])
+}
+
+model MedicationRequestSupportingInfo {
+  id                  Int     @id @default(autoincrement())
+  medicationRequestId String
+  orgId               String?
+
+  referenceType    String?
+  referenceId      Int?
+  referenceDisplay String?
+
+  medicationRequest MedicationRequest @relation(fields: [medicationRequestId], references: [id], onDelete: Cascade)
+
+  @@index([medicationRequestId])
+}
+
+model MedicationRequestReasonCode {
+  id                  Int     @id @default(autoincrement())
+  medicationRequestId String
+  orgId               String?
+
+  codingSystem  String?
+  codingCode    String?
+  codingDisplay String?
+  text          String?
+
+  medicationRequest MedicationRequest @relation(fields: [medicationRequestId], references: [id], onDelete: Cascade)
+
+  @@index([medicationRequestId])
+}
+
+model MedicationRequestReasonReference {
+  id                  Int     @id @default(autoincrement())
+  medicationRequestId String
+  orgId               String?
+
+  referenceType    String?
+  referenceId      Int?
+  referenceDisplay String?
+
+  medicationRequest MedicationRequest @relation(fields: [medicationRequestId], references: [id], onDelete: Cascade)
+
+  @@index([medicationRequestId])
+}
+
+model MedicationRequestBasedOn {
+  id                  Int     @id @default(autoincrement())
+  medicationRequestId String
+  orgId               String?
+
+  referenceType    String?
+  referenceId      Int?
+  referenceDisplay String?
+
+  medicationRequest MedicationRequest @relation(fields: [medicationRequestId], references: [id], onDelete: Cascade)
+
+  @@index([medicationRequestId])
+}
+
+model MedicationRequestInsurance {
+  id                  Int     @id @default(autoincrement())
+  medicationRequestId String
+  orgId               String?
+
+  referenceType    String?
+  referenceId      Int?
+  referenceDisplay String?
+
+  medicationRequest MedicationRequest @relation(fields: [medicationRequestId], references: [id], onDelete: Cascade)
+
+  @@index([medicationRequestId])
+}
+
+model MedicationRequestNote {
+  id                  Int     @id @default(autoincrement())
+  medicationRequestId String
+  orgId               String?
+
+  text                   String
+  time                   DateTime?
+  authorString           String?
+  authorReferenceType    String?
+  authorReferenceId      Int?
+  authorReferenceDisplay String?
+
+  medicationRequest MedicationRequest @relation(fields: [medicationRequestId], references: [id], onDelete: Cascade)
+
+  @@index([medicationRequestId])
+}
+
+model MedicationRequestDosageInstruction {
+  id                  Int     @id @default(autoincrement())
+  medicationRequestId String
+  orgId               String?
+
+  sequence           Int?
+  text               String?
+  patientInstruction String?
+
+  // asNeeded[x]
+  asNeededBoolean Boolean?
+  asNeededSystem  String?
+  asNeededCode    String?
+  asNeededDisplay String?
+  asNeededText    String?
+
+  // site (CodeableConcept)
+  siteSystem  String?
+  siteCode    String?
+  siteDisplay String?
+  siteText    String?
+
+  // route (CodeableConcept)
+  routeSystem  String?
+  routeCode    String?
+  routeDisplay String?
+  routeText    String?
+
+  // method (CodeableConcept)
+  methodSystem  String?
+  methodCode    String?
+  methodDisplay String?
+  methodText    String?
+
+  // timing.code (CodeableConcept)
+  timingCodeSystem  String?
+  timingCodeCode    String?
+  timingCodeDisplay String?
+
+  // timing.repeat
+  timingRepeatBoundsStart  DateTime?
+  timingRepeatBoundsEnd    DateTime?
+  timingRepeatCount        Int?
+  timingRepeatCountMax     Int?
+  timingRepeatDuration     Float?
+  timingRepeatDurationMax  Float?
+  timingRepeatDurationUnit String?
+  timingRepeatFrequency    Int?
+  timingRepeatFrequencyMax Int?
+  timingRepeatPeriod       Float?
+  timingRepeatPeriodMax    Float?
+  timingRepeatPeriodUnit   String?
+  timingRepeatDayOfWeek    String?
+  timingRepeatTimeOfDay    String?
+  timingRepeatWhen         String?
+  timingRepeatOffset       Int?
+
+  // maxDosePerPeriod (Ratio)
+  maxDosePerPeriodNumeratorValue   Float?
+  maxDosePerPeriodNumeratorUnit    String?
+  maxDosePerPeriodDenominatorValue Float?
+  maxDosePerPeriodDenominatorUnit  String?
+
+  // maxDosePerAdministration (SimpleQuantity)
+  maxDosePerAdministrationValue Float?
+  maxDosePerAdministrationUnit  String?
+
+  // maxDosePerLifetime (SimpleQuantity)
+  maxDosePerLifetimeValue Float?
+  maxDosePerLifetimeUnit  String?
+
+  medicationRequest      MedicationRequest                              @relation(fields: [medicationRequestId], references: [id], onDelete: Cascade)
+  additionalInstructions MedicationRequestDosageAdditionalInstruction[]
+  doseAndRates           MedicationRequestDosageDoseAndRate[]
+
+  @@index([medicationRequestId])
+}
+
+model MedicationRequestDosageAdditionalInstruction {
+  id                  Int     @id @default(autoincrement())
+  dosageInstructionId Int
+  orgId               String?
+
+  codingSystem  String?
+  codingCode    String?
+  codingDisplay String?
+  text          String?
+
+  dosageInstruction MedicationRequestDosageInstruction @relation(fields: [dosageInstructionId], references: [id], onDelete: Cascade)
+
+  @@index([dosageInstructionId])
+}
+
+model MedicationRequestDosageDoseAndRate {
+  id                  Int     @id @default(autoincrement())
+  dosageInstructionId Int
+  orgId               String?
+
+  // type (CodeableConcept)
+  typeSystem  String?
+  typeCode    String?
+  typeDisplay String?
+
+  // dose[x] — Quantity
+  doseQuantityValue  Float?
+  doseQuantityUnit   String?
+  doseQuantitySystem String?
+  doseQuantityCode   String?
+
+  // dose[x] — Range
+  doseRangeLowValue  Float?
+  doseRangeLowUnit   String?
+  doseRangeHighValue Float?
+  doseRangeHighUnit  String?
+
+  // rate[x] — Ratio
+  rateRatioNumeratorValue   Float?
+  rateRatioNumeratorUnit    String?
+  rateRatioDenominatorValue Float?
+  rateRatioDenominatorUnit  String?
+
+  // rate[x] — Range
+  rateRangeLowValue  Float?
+  rateRangeLowUnit   String?
+  rateRangeHighValue Float?
+  rateRangeHighUnit  String?
+
+  // rate[x] — Quantity
+  rateQuantityValue  Float?
+  rateQuantityUnit   String?
+  rateQuantitySystem String?
+  rateQuantityCode   String?
+
+  dosageInstruction MedicationRequestDosageInstruction @relation(fields: [dosageInstructionId], references: [id], onDelete: Cascade)
+
+  @@index([dosageInstructionId])
+}
+
+model MedicationRequestDetectedIssue {
+  id                  Int     @id @default(autoincrement())
+  medicationRequestId String
+  orgId               String?
+
+  referenceType    String?
+  referenceId      Int?
+  referenceDisplay String?
+
+  medicationRequest MedicationRequest @relation(fields: [medicationRequestId], references: [id], onDelete: Cascade)
+
+  @@index([medicationRequestId])
+}
+
+model MedicationRequestEventHistory {
+  id                  Int     @id @default(autoincrement())
+  medicationRequestId String
+  orgId               String?
+
+  referenceType    String?
+  referenceId      Int?
+  referenceDisplay String?
+
+  medicationRequest MedicationRequest @relation(fields: [medicationRequestId], references: [id], onDelete: Cascade)
+
+  @@index([medicationRequestId])
+}
+
+// ───────────────────────────────────────────────────────────────
+// OBSERVATION
+// ───────────────────────────────────────────────────────────────
+
+model Observation {
+  id    String @id @default(uuid())
+  orgId String
+
+  appointmentId String
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  status ObservationStatus
+
+  // code (CodeableConcept — required)
+  codeSystem  String?
+  codeCode    String?
+  codeDisplay String?
+  codeText    String?
+
+  // subject (Reference)
+  subjectType    String?
+  subjectId      Int?
+  subjectDisplay String?
+
+  // effective[x]
+  effectiveDateTime    DateTime?
+  effectivePeriodStart DateTime?
+  effectivePeriodEnd   DateTime?
+  effectiveInstant     DateTime?
+
+  // effective[x] — Timing (flattened)
+  effectiveTimingEvent                          String?
+  effectiveTimingCodeSystem                     String?
+  effectiveTimingCodeCode                       String?
+  effectiveTimingCodeDisplay                    String?
+  effectiveTimingCodeText                       String?
+  effectiveTimingRepeatBoundsDurationValue      Decimal?
+  effectiveTimingRepeatBoundsDurationComparator String?
+  effectiveTimingRepeatBoundsDurationUnit       String?
+  effectiveTimingRepeatBoundsDurationSystem     String?
+  effectiveTimingRepeatBoundsDurationCode       String?
+  effectiveTimingRepeatBoundsRangeLowValue      Decimal?
+  effectiveTimingRepeatBoundsRangeLowUnit       String?
+  effectiveTimingRepeatBoundsRangeLowSystem     String?
+  effectiveTimingRepeatBoundsRangeLowCode       String?
+  effectiveTimingRepeatBoundsRangeHighValue     Decimal?
+  effectiveTimingRepeatBoundsRangeHighUnit      String?
+  effectiveTimingRepeatBoundsRangeHighSystem    String?
+  effectiveTimingRepeatBoundsRangeHighCode      String?
+  effectiveTimingRepeatBoundsPeriodStart        DateTime?
+  effectiveTimingRepeatBoundsPeriodEnd          DateTime?
+  effectiveTimingRepeatCount                    Int?
+  effectiveTimingRepeatCountMax                 Int?
+  effectiveTimingRepeatDuration                 Decimal?
+  effectiveTimingRepeatDurationMax              Decimal?
+  effectiveTimingRepeatDurationUnit             String?
+  effectiveTimingRepeatFrequency                Int?
+  effectiveTimingRepeatFrequencyMax             Int?
+  effectiveTimingRepeatPeriod                   Decimal?
+  effectiveTimingRepeatPeriodMax                Decimal?
+  effectiveTimingRepeatPeriodUnit               String?
+  effectiveTimingRepeatDayOfWeek                String?
+  effectiveTimingRepeatTimeOfDay                String?
+  effectiveTimingRepeatWhen                     String?
+  effectiveTimingRepeatOffset                   Int?
+
+  issued DateTime?
+
+  // value[x] — Quantity
+  valueQuantityValue      Decimal?
+  valueQuantityComparator String?
+  valueQuantityUnit       String?
+  valueQuantitySystem     String?
+  valueQuantityCode       String?
+
+  // value[x] — CodeableConcept
+  valueCodeableConceptSystem  String?
+  valueCodeableConceptCode    String?
+  valueCodeableConceptDisplay String?
+  valueCodeableConceptText    String?
+
+  // value[x] — primitives
+  valueString   String?
+  valueBoolean  Boolean?
+  valueInteger  Int?
+  valueTime     String?
+  valueDateTime DateTime?
+
+  // value[x] — Period
+  valuePeriodStart DateTime?
+  valuePeriodEnd   DateTime?
+
+  // value[x] — Range
+  valueRangeLowValue   Decimal?
+  valueRangeLowUnit    String?
+  valueRangeLowSystem  String?
+  valueRangeLowCode    String?
+  valueRangeHighValue  Decimal?
+  valueRangeHighUnit   String?
+  valueRangeHighSystem String?
+  valueRangeHighCode   String?
+
+  // value[x] — Ratio
+  valueRatioNumeratorValue        Decimal?
+  valueRatioNumeratorComparator   String?
+  valueRatioNumeratorUnit         String?
+  valueRatioNumeratorSystem       String?
+  valueRatioNumeratorCode         String?
+  valueRatioDenominatorValue      Decimal?
+  valueRatioDenominatorComparator String?
+  valueRatioDenominatorUnit       String?
+  valueRatioDenominatorSystem     String?
+  valueRatioDenominatorCode       String?
+
+  // value[x] — SampledData
+  valueSampledDataOriginValue  Decimal?
+  valueSampledDataOriginUnit   String?
+  valueSampledDataOriginSystem String?
+  valueSampledDataOriginCode   String?
+  valueSampledDataPeriod       Decimal?
+  valueSampledDataFactor       Decimal?
+  valueSampledDataLowerLimit   Decimal?
+  valueSampledDataUpperLimit   Decimal?
+  valueSampledDataDimensions   Int?
+  valueSampledDataData         String?
+
+  // dataAbsentReason (CodeableConcept)
+  dataAbsentReasonSystem  String?
+  dataAbsentReasonCode    String?
+  dataAbsentReasonDisplay String?
+  dataAbsentReasonText    String?
+
+  // bodySite (CodeableConcept)
+  bodySiteSystem  String?
+  bodySiteCode    String?
+  bodySiteDisplay String?
+  bodySiteText    String?
+
+  // method (CodeableConcept)
+  methodSystem  String?
+  methodCode    String?
+  methodDisplay String?
+  methodText    String?
+
+  // specimen (Reference)
+  specimenType    String?
+  specimenId      Int?
+  specimenDisplay String?
+
+  // device (Reference)
+  deviceType    String?
+  deviceId      Int?
+  deviceDisplay String?
+
+  isDoctorAccepted Boolean @default(false)
+
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  identifiers     ObservationIdentifier[]
+  basedOn         ObservationBasedOn[]
+  partOf          ObservationPartOf[]
+  categories      ObservationCategory[]
+  focus           ObservationFocus[]
+  performers      ObservationPerformer[]
+  interpretations ObservationInterpretation[]
+  notes           ObservationNote[]
+  referenceRanges ObservationReferenceRange[]
+  hasMembers      ObservationHasMember[]
+  derivedFrom     ObservationDerivedFrom[]
+  components      ObservationComponent[]
+
+  @@index([orgId, appointmentId])
+}
+
+model ObservationIdentifier {
+  id            Int     @id @default(autoincrement())
+  observationId String
+  orgId         String?
+
+  use         String?
+  typeSystem  String?
+  typeCode    String?
+  typeDisplay String?
+  typeText    String?
+  system      String?
+  value       String?
+  periodStart DateTime?
+  periodEnd   DateTime?
+  assigner    String?
+
+  observation Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+
+  @@index([observationId])
+}
+
+model ObservationBasedOn {
+  id            Int     @id @default(autoincrement())
+  observationId String
+  orgId         String?
+
+  referenceType    String?
+  referenceId      Int?
+  referenceDisplay String?
+
+  observation Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+
+  @@index([observationId])
+}
+
+model ObservationPartOf {
+  id            Int     @id @default(autoincrement())
+  observationId String
+  orgId         String?
+
+  referenceType    String?
+  referenceId      Int?
+  referenceDisplay String?
+
+  observation Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+
+  @@index([observationId])
+}
+
+model ObservationCategory {
+  id            Int     @id @default(autoincrement())
+  observationId String
+  orgId         String?
+
+  codingSystem  String?
+  codingCode    String?
+  codingDisplay String?
+  text          String?
+
+  observation Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+
+  @@index([observationId])
+}
+
+model ObservationFocus {
+  id            Int     @id @default(autoincrement())
+  observationId String
+  orgId         String?
+
+  referenceType    String?
+  referenceId      Int?
+  referenceDisplay String?
+
+  observation Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+
+  @@index([observationId])
+}
+
+model ObservationPerformer {
+  id            Int     @id @default(autoincrement())
+  observationId String
+  orgId         String?
+
+  referenceType    String?
+  referenceId      Int?
+  referenceDisplay String?
+
+  observation Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+
+  @@index([observationId])
+}
+
+model ObservationInterpretation {
+  id            Int     @id @default(autoincrement())
+  observationId String
+  orgId         String?
+
+  codingSystem  String?
+  codingCode    String?
+  codingDisplay String?
+  text          String?
+
+  observation Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+
+  @@index([observationId])
+}
+
+model ObservationNote {
+  id            Int     @id @default(autoincrement())
+  observationId String
+  orgId         String?
+
+  text                   String
+  time                   DateTime?
+  authorString           String?
+  authorReferenceType    String?
+  authorReferenceId      Int?
+  authorReferenceDisplay String?
+
+  observation Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+
+  @@index([observationId])
+}
+
+model ObservationReferenceRange {
+  id            Int     @id @default(autoincrement())
+  observationId String
+  orgId         String?
+
+  // low (SimpleQuantity)
+  lowValue  Decimal?
+  lowUnit   String?
+  lowSystem String?
+  lowCode   String?
+
+  // high (SimpleQuantity)
+  highValue  Decimal?
+  highUnit   String?
+  highSystem String?
+  highCode   String?
+
+  // type (CodeableConcept)
+  typeSystem  String?
+  typeCode    String?
+  typeDisplay String?
+  typeText    String?
+
+  // age (Range — low/high SimpleQuantity)
+  ageLowValue   Decimal?
+  ageLowUnit    String?
+  ageLowSystem  String?
+  ageLowCode    String?
+  ageHighValue  Decimal?
+  ageHighUnit   String?
+  ageHighSystem String?
+  ageHighCode   String?
+
+  text String?
+
+  observation Observation                          @relation(fields: [observationId], references: [id], onDelete: Cascade)
+  appliesTo   ObservationReferenceRangeAppliesTo[]
+
+  @@index([observationId])
+}
+
+model ObservationReferenceRangeAppliesTo {
+  id               Int     @id @default(autoincrement())
+  referenceRangeId Int
+  orgId            String?
+
+  codingSystem  String?
+  codingCode    String?
+  codingDisplay String?
+  text          String?
+
+  referenceRange ObservationReferenceRange @relation(fields: [referenceRangeId], references: [id], onDelete: Cascade)
+
+  @@index([referenceRangeId])
+}
+
+model ObservationHasMember {
+  id            Int     @id @default(autoincrement())
+  observationId String
+  orgId         String?
+
+  referenceType    String?
+  referenceId      Int?
+  referenceDisplay String?
+
+  observation Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+
+  @@index([observationId])
+}
+
+model ObservationDerivedFrom {
+  id            Int     @id @default(autoincrement())
+  observationId String
+  orgId         String?
+
+  referenceType    String?
+  referenceId      Int?
+  referenceDisplay String?
+
+  observation Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+
+  @@index([observationId])
+}
+
+model ObservationComponent {
+  id            Int     @id @default(autoincrement())
+  observationId String
+  orgId         String?
+
+  // code (CodeableConcept — required)
+  codeSystem  String?
+  codeCode    String?
+  codeDisplay String?
+  codeText    String?
+
+  // value[x] — same variants as Observation.value[x]
+  valueQuantityValue              Decimal?
+  valueQuantityComparator         String?
+  valueQuantityUnit               String?
+  valueQuantitySystem             String?
+  valueQuantityCode               String?
+  valueCodeableConceptSystem      String?
+  valueCodeableConceptCode        String?
+  valueCodeableConceptDisplay     String?
+  valueCodeableConceptText        String?
+  valueString                     String?
+  valueBoolean                    Boolean?
+  valueInteger                    Int?
+  valueTime                       String?
+  valueDateTime                   DateTime?
+  valuePeriodStart                DateTime?
+  valuePeriodEnd                  DateTime?
+  valueRangeLowValue              Decimal?
+  valueRangeLowUnit               String?
+  valueRangeLowSystem             String?
+  valueRangeLowCode               String?
+  valueRangeHighValue             Decimal?
+  valueRangeHighUnit              String?
+  valueRangeHighSystem            String?
+  valueRangeHighCode              String?
+  valueRatioNumeratorValue        Decimal?
+  valueRatioNumeratorComparator   String?
+  valueRatioNumeratorUnit         String?
+  valueRatioNumeratorSystem       String?
+  valueRatioNumeratorCode         String?
+  valueRatioDenominatorValue      Decimal?
+  valueRatioDenominatorComparator String?
+  valueRatioDenominatorUnit       String?
+  valueRatioDenominatorSystem     String?
+  valueRatioDenominatorCode       String?
+  valueSampledDataOriginValue     Decimal?
+  valueSampledDataOriginUnit      String?
+  valueSampledDataOriginSystem    String?
+  valueSampledDataOriginCode      String?
+  valueSampledDataPeriod          Decimal?
+  valueSampledDataFactor          Decimal?
+  valueSampledDataLowerLimit      Decimal?
+  valueSampledDataUpperLimit      Decimal?
+  valueSampledDataDimensions      Int?
+  valueSampledDataData            String?
+
+  // dataAbsentReason (CodeableConcept)
+  dataAbsentReasonSystem  String?
+  dataAbsentReasonCode    String?
+  dataAbsentReasonDisplay String?
+  dataAbsentReasonText    String?
+
+  observation     Observation                          @relation(fields: [observationId], references: [id], onDelete: Cascade)
+  interpretations ObservationComponentInterpretation[]
+  referenceRanges ObservationComponentReferenceRange[]
+
+  @@index([observationId])
+}
+
+model ObservationComponentInterpretation {
+  id          Int     @id @default(autoincrement())
+  componentId Int
+  orgId       String?
+
+  codingSystem  String?
+  codingCode    String?
+  codingDisplay String?
+  text          String?
+
+  component ObservationComponent @relation(fields: [componentId], references: [id], onDelete: Cascade)
+
+  @@index([componentId])
+}
+
+model ObservationComponentReferenceRange {
+  id          Int     @id @default(autoincrement())
+  componentId Int
+  orgId       String?
+
+  lowValue  Decimal?
+  lowUnit   String?
+  lowSystem String?
+  lowCode   String?
+
+  highValue  Decimal?
+  highUnit   String?
+  highSystem String?
+  highCode   String?
+
+  typeSystem  String?
+  typeCode    String?
+  typeDisplay String?
+  typeText    String?
+
+  ageLowValue   Decimal?
+  ageLowUnit    String?
+  ageLowSystem  String?
+  ageLowCode    String?
+  ageHighValue  Decimal?
+  ageHighUnit   String?
+  ageHighSystem String?
+  ageHighCode   String?
+
+  text String?
+
+  component ObservationComponent                          @relation(fields: [componentId], references: [id], onDelete: Cascade)
+  appliesTo ObservationComponentReferenceRangeAppliesTo[]
+
+  @@index([componentId])
+}
+
+model ObservationComponentReferenceRangeAppliesTo {
+  id               Int     @id @default(autoincrement())
+  referenceRangeId Int
+  orgId            String?
+
+  codingSystem  String?
+  codingCode    String?
+  codingDisplay String?
+  text          String?
+
+  referenceRange ObservationComponentReferenceRange @relation(fields: [referenceRangeId], references: [id], onDelete: Cascade)
+
+  @@index([referenceRangeId])
+}
+
+// ───────────────────────────────────────────────────────────────
+// CONDITION
+// ───────────────────────────────────────────────────────────────
+
+model Condition {
+  id    String @id @default(uuid())
+  orgId String
+
+  appointmentId String
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  // clinicalStatus (CodeableConcept)
+  clinicalStatusSystem  String?
+  clinicalStatusCode    String?
+  clinicalStatusDisplay String?
+  clinicalStatusText    String?
+
+  // verificationStatus (CodeableConcept)
+  verificationStatusSystem  String?
+  verificationStatusCode    String?
+  verificationStatusDisplay String?
+  verificationStatusText    String?
+
+  // severity (CodeableConcept)
+  severitySystem  String?
+  severityCode    String?
+  severityDisplay String?
+  severityText    String?
+
+  // code (CodeableConcept)
+  codeSystem  String?
+  codeCode    String?
+  codeDisplay String?
+  codeText    String?
+
+  // subject (Reference)
+  subjectType    String?
+  subjectId      Int?
+  subjectDisplay String?
+
+  // onset[x]
+  onsetDatetime       DateTime?
+  onsetAgeValue       Float?
+  onsetAgeComparator  String?
+  onsetAgeUnit        String?
+  onsetAgeSystem      String?
+  onsetAgeCode        String?
+  onsetPeriodStart    DateTime?
+  onsetPeriodEnd      DateTime?
+  onsetRangeLowValue  Float?
+  onsetRangeLowUnit   String?
+  onsetRangeHighValue Float?
+  onsetRangeHighUnit  String?
+  onsetString         String?
+
+  // abatement[x]
+  abatementDatetime       DateTime?
+  abatementAgeValue       Float?
+  abatementAgeComparator  String?
+  abatementAgeUnit        String?
+  abatementAgeSystem      String?
+  abatementAgeCode        String?
+  abatementPeriodStart    DateTime?
+  abatementPeriodEnd      DateTime?
+  abatementRangeLowValue  Float?
+  abatementRangeLowUnit   String?
+  abatementRangeHighValue Float?
+  abatementRangeHighUnit  String?
+  abatementString         String?
+
+  recordedDate DateTime?
+
+  // recorder (Reference)
+  recorderType    String?
+  recorderId      Int?
+  recorderDisplay String?
+
+  // asserter (Reference)
+  asserterType    String?
+  asserterId      Int?
+  asserterDisplay String?
+
+  isDoctorAccepted Boolean @default(false)
+
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  identifiers ConditionIdentifier[]
+  categories  ConditionCategory[]
+  bodySites   ConditionBodySite[]
+  stages      ConditionStage[]
+  evidence    ConditionEvidence[]
+  notes       ConditionNote[]
+
+  @@index([orgId, appointmentId])
+}
+
+model ConditionIdentifier {
+  id          Int     @id @default(autoincrement())
+  conditionId String
+  orgId       String?
+
+  use         String?
+  typeSystem  String?
+  typeCode    String?
+  typeDisplay String?
+  typeText    String?
+  system      String?
+  value       String
+  periodStart DateTime?
+  periodEnd   DateTime?
+  assigner    String?
+
+  condition Condition @relation(fields: [conditionId], references: [id], onDelete: Cascade)
+
+  @@index([conditionId])
+}
+
+model ConditionCategory {
+  id          Int     @id @default(autoincrement())
+  conditionId String
+  orgId       String?
+
+  codingSystem  String?
+  codingCode    String?
+  codingDisplay String?
+  text          String?
+
+  condition Condition @relation(fields: [conditionId], references: [id], onDelete: Cascade)
+
+  @@index([conditionId])
+}
+
+model ConditionBodySite {
+  id          Int     @id @default(autoincrement())
+  conditionId String
+  orgId       String?
+
+  codingSystem  String?
+  codingCode    String?
+  codingDisplay String?
+  text          String?
+
+  condition Condition @relation(fields: [conditionId], references: [id], onDelete: Cascade)
+
+  @@index([conditionId])
+}
+
+model ConditionStage {
+  id          Int     @id @default(autoincrement())
+  conditionId String
+  orgId       String?
+
+  // summary (CodeableConcept)
+  summarySystem  String?
+  summaryCode    String?
+  summaryDisplay String?
+  summaryText    String?
+
+  // type (CodeableConcept)
+  typeSystem  String?
+  typeCode    String?
+  typeDisplay String?
+  typeText    String?
+
+  condition   Condition                  @relation(fields: [conditionId], references: [id], onDelete: Cascade)
+  assessments ConditionStageAssessment[]
+
+  @@index([conditionId])
+}
+
+model ConditionStageAssessment {
+  id      Int     @id @default(autoincrement())
+  stageId Int
+  orgId   String?
+
+  referenceType    String?
+  referenceId      Int?
+  referenceDisplay String?
+
+  stage ConditionStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
+
+  @@index([stageId])
+}
+
+model ConditionEvidence {
+  id          Int     @id @default(autoincrement())
+  conditionId String
+  orgId       String?
+
+  condition Condition                 @relation(fields: [conditionId], references: [id], onDelete: Cascade)
+  codes     ConditionEvidenceCode[]
+  details   ConditionEvidenceDetail[]
+
+  @@index([conditionId])
+}
+
+model ConditionEvidenceCode {
+  id         Int     @id @default(autoincrement())
+  evidenceId Int
+  orgId      String?
+
+  codingSystem  String?
+  codingCode    String?
+  codingDisplay String?
+  text          String?
+
+  evidence ConditionEvidence @relation(fields: [evidenceId], references: [id], onDelete: Cascade)
+
+  @@index([evidenceId])
+}
+
+model ConditionEvidenceDetail {
+  id         Int     @id @default(autoincrement())
+  evidenceId Int
+  orgId      String?
+
+  referenceType    String?
+  referenceId      Int?
+  referenceDisplay String?
+
+  evidence ConditionEvidence @relation(fields: [evidenceId], references: [id], onDelete: Cascade)
+
+  @@index([evidenceId])
+}
+
+model ConditionNote {
+  id          Int     @id @default(autoincrement())
+  conditionId String
+  orgId       String?
+
+  text                   String
+  time                   DateTime?
+  authorString           String?
+  authorReferenceType    String?
+  authorReferenceId      Int?
+  authorReferenceDisplay String?
+
+  condition Condition @relation(fields: [conditionId], references: [id], onDelete: Cascade)
+
+  @@index([conditionId])
 }
