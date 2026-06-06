@@ -9,5 +9,7 @@ export default async function AppointmentIdPage({ params }: Props) {
   const { appointmentId } = await params;
   const data = await getPatientAppointmentView(appointmentId).catch(() => null);
 
+  console.log(data);
+
   return <PatientAppointmentView data={data} />;
 }

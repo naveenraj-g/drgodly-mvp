@@ -10,6 +10,7 @@ import { CheckCircle2, CalendarDays, User, Loader2 } from "lucide-react";
 import { SoapEditor } from "./soap/SoapEditor";
 import { ClinicalExtractionPanel } from "./clinical/ClinicalExtractionPanel";
 import { submitClinicalReview } from "@/modules/client/telemedicine/server-actions/appointment-action";
+import type { ClinicalExtractionResult } from "./clinical/ClinicalExtractionPanel";
 import type {
   SoapNote,
   ConditionFormItem,
@@ -119,10 +120,18 @@ interface AppointmentReviewProps {
 }
 
 export function AppointmentReview({ appointmentId, userId, data }: AppointmentReviewProps) {
-  const report =
-    data?.fullReport && typeof data.fullReport === "object"
-      ? (data.fullReport as StagingReport)
-      : MOCK_REPORT;
+  const rawReport = data?.fullReport && typeof data.fullReport === "object"
+    ? (data.fullReport as Partial<StagingReport>)
+    : null;
+  const report: StagingReport = {
+    soap: rawReport?.soap ?? MOCK_REPORT.soap,
+    clinicalExtraction: {
+      conditions: rawReport?.clinicalExtraction?.conditions ?? [],
+      observations: rawReport?.clinicalExtraction?.observations ?? [],
+      medicationRequests: rawReport?.clinicalExtraction?.medicationRequests ?? [],
+      serviceRequests: rawReport?.clinicalExtraction?.serviceRequests ?? [],
+    },
+  };
 
   const [soap, setSoap] = useState<SoapNote>(report.soap);
   const [conditions, setConditions] = useState<ConditionFormItem[]>(
@@ -150,6 +159,13 @@ export function AppointmentReview({ appointmentId, userId, data }: AppointmentRe
         day: "numeric",
       })
     : null;
+
+  const handleReExtract = (result: ClinicalExtractionResult) => {
+    setConditions(result.conditions.map(toConditionItem));
+    setObservations(result.observations.map(toObservationItem));
+    setMedications(result.medicationRequests.map(toMedicationItem));
+    setServiceRequests(result.serviceRequests.map(toServiceRequestItem));
+  };
 
   const handleConfirm = () => {
     startTransition(async () => {
@@ -236,6 +252,7 @@ export function AppointmentReview({ appointmentId, userId, data }: AppointmentRe
           </div>
           <div className="flex-1 min-h-0 p-4">
             <ClinicalExtractionPanel
+              soap={soap}
               conditions={conditions}
               observations={observations}
               medications={medications}
@@ -244,6 +261,7 @@ export function AppointmentReview({ appointmentId, userId, data }: AppointmentRe
               onObservationsChange={setObservations}
               onMedicationsChange={setMedications}
               onServiceRequestsChange={setServiceRequests}
+              onReExtract={handleReExtract}
             />
           </div>
         </div>

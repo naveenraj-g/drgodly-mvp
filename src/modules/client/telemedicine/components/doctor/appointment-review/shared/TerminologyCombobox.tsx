@@ -198,7 +198,7 @@ export function TerminologyCombobox({
               <CommandGroup>
                 {results.map((concept, i) => (
                   <CommandItem
-                    key={concept.id != null ? `id-${concept.id}` : `${i}-${concept.code}`}
+                    key={`${i}-${concept.code}-${concept.id ?? ""}`}
                     value={concept.code}
                     onSelect={() => handleSelect(concept)}
                     className="flex items-start gap-2 py-2.5 px-3"

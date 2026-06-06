@@ -48,7 +48,10 @@ import {
   updateFhirAppointment,
 } from "@/modules/server/fhir";
 import { fhirRequest } from "@/modules/server/fhir/client";
-import type { EncounterClass, FhirAppointmentCreatePayload } from "@/modules/server/fhir";
+import type {
+  EncounterClass,
+  FhirAppointmentCreatePayload,
+} from "@/modules/server/fhir";
 import { prismaTelemedicine } from "@/modules/server/prisma/prisma";
 import type {
   Prisma,
@@ -105,10 +108,19 @@ async function syncEncounterAndAppointment({
 
   const participants: FhirAppointmentCreatePayload["participant"] = [];
   if (patientDisplay) {
-    participants.push({ actor_display: patientDisplay, required: "required", status: "accepted" });
+    participants.push({
+      actor_display: patientDisplay,
+      required: "required",
+      status: "accepted",
+    });
   }
   if (practitionerDisplay) {
-    participants.push({ actor_display: practitionerDisplay, type_text: "Attending Physician", required: "required", status: "accepted" });
+    participants.push({
+      actor_display: practitionerDisplay,
+      type_text: "Attending Physician",
+      required: "required",
+      status: "accepted",
+    });
   }
   if (participants.length === 0) {
     participants.push({ status: "needs-action" });
@@ -139,28 +151,37 @@ export const bookAppointment = createServerAction()
     try {
       const [patientRecord, doctorRecord] = await Promise.all([
         prismaTelemedicine.patient.findUnique({
-          where: { orgId_userId: { orgId: input.orgId, userId: input.patientUserId } },
+          where: {
+            orgId_userId: { orgId: input.orgId, userId: input.patientUserId },
+          },
           select: { fhirPatientId: true },
         }),
         prismaTelemedicine.doctor.findUnique({
-          where: { orgId_userId: { orgId: input.orgId, userId: input.doctorUserId } },
+          where: {
+            orgId_userId: { orgId: input.orgId, userId: input.doctorUserId },
+          },
           select: { fhirPractitionerId: true },
         }),
       ]);
 
       if (patientRecord?.fhirPatientId && doctorRecord?.fhirPractitionerId) {
-        const startIso = buildIsoDatetime(new Date(input.appointmentDate), input.time);
+        const startIso = buildIsoDatetime(
+          new Date(input.appointmentDate),
+          input.time,
+        );
         const endIso = addMinutes(startIso, 30);
-        const { encounter, appointment } = await createFhirAppointmentWithEncounter({
-          fhirPatientId: String(patientRecord.fhirPatientId),
-          fhirPractitionerId: String(doctorRecord.fhirPractitionerId),
-          patientName: null,
-          practitionerName: null,
-          start: startIso,
-          end: endIso,
-          appointmentTypeMode: input.appointmentMode === "VIRTUAL" ? "virtual" : "in-person",
-          description: input.note ?? undefined,
-        });
+        const { encounter, appointment } =
+          await createFhirAppointmentWithEncounter({
+            fhirPatientId: String(patientRecord.fhirPatientId),
+            fhirPractitionerId: String(doctorRecord.fhirPractitionerId),
+            patientName: null,
+            practitionerName: null,
+            start: startIso,
+            end: endIso,
+            appointmentTypeMode:
+              input.appointmentMode === "VIRTUAL" ? "virtual" : "in-person",
+            description: input.note ?? undefined,
+          });
         fhirEncounterId = Number(encounter.id);
         fhirAppointmentId = Number(appointment.id);
       }
@@ -170,10 +191,11 @@ export const bookAppointment = createServerAction()
 
     return await withMonitoring<TBookAppointmentControllerOutput>(
       "bookAppointment",
-      () => bookAppointmentController(input, fhirEncounterId, fhirAppointmentId),
+      () =>
+        bookAppointmentController(input, fhirEncounterId, fhirAppointmentId),
       {
         operationErrorMessage: "Failed to book appointment.",
-      }
+      },
     );
   });
 
@@ -185,7 +207,7 @@ export const bookIntakeAppointment = createServerAction()
       () => bookIntakeAppointmentController(input),
       {
         operationErrorMessage: "Failed to book intake appointment.",
-      }
+      },
     );
 
     try {
@@ -200,7 +222,8 @@ export const bookIntakeAppointment = createServerAction()
 
       if (input.intakeConversation != null || input.intakeReport != null) {
         await createFhirQuestionnaireResponse({
-          questionnaire: "http://drgodly.com/fhir/Questionnaire/intake-conversation",
+          questionnaire:
+            "http://drgodly.com/fhir/Questionnaire/intake-conversation",
           status: "completed",
           encounter: `Encounter/${encounter.id}`,
           authored: startIso,
@@ -208,16 +231,18 @@ export const bookIntakeAppointment = createServerAction()
             {
               link_id: "1",
               text: "Intake Conversation",
-              answer: input.intakeConversation != null
-                ? [{ value_string: JSON.stringify(input.intakeConversation) }]
-                : undefined,
+              answer:
+                input.intakeConversation != null
+                  ? [{ value_string: JSON.stringify(input.intakeConversation) }]
+                  : undefined,
             },
             {
               link_id: "2",
               text: "Intake Report",
-              answer: input.intakeReport != null
-                ? [{ value_string: JSON.stringify(input.intakeReport) }]
-                : undefined,
+              answer:
+                input.intakeReport != null
+                  ? [{ value_string: JSON.stringify(input.intakeReport) }]
+                  : undefined,
             },
           ],
         });
@@ -237,7 +262,7 @@ export const getPatientAppointments = createServerAction()
       () => getAppointmentsForPatientController(input),
       {
         operationErrorMessage: "Failed to get appointments.",
-      }
+      },
     );
   });
 
@@ -249,7 +274,7 @@ export const getDoctorAppointments = createServerAction()
       () => getAppointmentsForDoctorController(input),
       {
         operationErrorMessage: "Failed to get appointments.",
-      }
+      },
     );
   });
 
@@ -261,7 +286,7 @@ export const getDoctorDashboardAppointments = createServerAction()
       () => getDoctorDashboardAppointmentsController(input),
       {
         operationErrorMessage: "Failed to get dashboard appointments.",
-      }
+      },
     );
   });
 
@@ -273,7 +298,7 @@ export const getAppointmentForOnlineConsultation = createServerAction()
       () => getAppointmentForOnlineConsultationController(input),
       {
         operationErrorMessage: "Failed to get appointment.",
-      }
+      },
     );
   });
 
@@ -287,12 +312,15 @@ export const rescheduleAppointment = createServerAction()
         revalidatePath: true,
         url: "/bezs/telemedicine/patient/appointments",
         operationErrorMessage: "Failed to reschedule appointment.",
-      }
+      },
     );
 
     try {
       if (result.fhirAppointmentId) {
-        const startIso = buildIsoDatetime(new Date(input.appointmentDate), input.time);
+        const startIso = buildIsoDatetime(
+          new Date(input.appointmentDate),
+          input.time,
+        );
         const endIso = addMinutes(startIso, 30);
         await updateFhirAppointment(String(result.fhirAppointmentId), {
           status: "booked",
@@ -317,7 +345,7 @@ export const cancelAppointment = createServerAction()
         revalidatePath: true,
         url: "/bezs/telemedicine/patient/appointments",
         operationErrorMessage: "Failed to cancel appointment.",
-      }
+      },
     );
 
     try {
@@ -345,20 +373,23 @@ export const deleteAppointment = createServerAction()
         revalidatePath: true,
         url: "/bezs/telemedicine/patient/appointments",
         operationErrorMessage: "Failed to delete appointment.",
-      }
+      },
     );
   });
 
 export const bookConsultationAppointment = createServerAction()
-  .input(BookConsultationAppointmentValidationSchema, { skipInputParsing: true })
+  .input(BookConsultationAppointmentValidationSchema, {
+    skipInputParsing: true,
+  })
   .handler(async ({ input }) => {
-    const result = await withMonitoring<TBookConsultationAppointmentControllerOutput>(
-      "bookConsultationAppointment",
-      () => bookConsultationAppointmentController(input),
-      {
-        operationErrorMessage: "Failed to book consultation appointment.",
-      }
-    );
+    const result =
+      await withMonitoring<TBookConsultationAppointmentControllerOutput>(
+        "bookConsultationAppointment",
+        () => bookConsultationAppointmentController(input),
+        {
+          operationErrorMessage: "Failed to book consultation appointment.",
+        },
+      );
 
     try {
       const startIso = new Date().toISOString();
@@ -372,7 +403,8 @@ export const bookConsultationAppointment = createServerAction()
 
       if (input.virtualConversation != null) {
         await createFhirQuestionnaireResponse({
-          questionnaire: "http://drgodly.com/fhir/Questionnaire/virtual-consultation",
+          questionnaire:
+            "http://drgodly.com/fhir/Questionnaire/virtual-consultation",
           status: "completed",
           encounter: `Encounter/${encounter.id}`,
           authored: startIso,
@@ -380,7 +412,9 @@ export const bookConsultationAppointment = createServerAction()
             {
               link_id: "1",
               text: "Virtual Consultation Conversation",
-              answer: [{ value_string: JSON.stringify(input.virtualConversation) }],
+              answer: [
+                { value_string: JSON.stringify(input.virtualConversation) },
+              ],
             },
           ],
         });
@@ -402,7 +436,7 @@ export const confirmAppointment = createServerAction()
         revalidatePath: true,
         url: "/bezs/telemedicine/patient/appointments",
         operationErrorMessage: "Failed to confirm appointment.",
-      }
+      },
     );
   });
 
@@ -421,7 +455,7 @@ export const getPreviousConsultationReport = createServerAction()
       () => getPreviousCompletedReportController(input),
       {
         operationErrorMessage: "Failed to fetch previous consultation report.",
-      }
+      },
     );
   });
 
@@ -433,7 +467,7 @@ export const completeConsultation = createServerAction()
       () => completeConsultationController(input),
       {
         operationErrorMessage: "Failed to complete consultation.",
-      }
+      },
     );
   });
 
@@ -539,7 +573,9 @@ export const getBookedSlotsForDoctor = createServerAction()
     endOfDay.setHours(23, 59, 59, 999);
 
     const doctor = await prismaTelemedicine.doctor.findUnique({
-      where: { orgId_userId: { orgId: input.orgId, userId: input.doctorUserId } },
+      where: {
+        orgId_userId: { orgId: input.orgId, userId: input.doctorUserId },
+      },
       select: { id: true },
     });
 
@@ -571,26 +607,44 @@ interface ClinicalReviewInput {
   soap: Record<string, unknown>;
   conditions: Array<{
     display: string;
-    resolved?: { system: string; code: string; display: string; text: string } | null;
+    terminologySystem?: string | null;
+    resolved?: {
+      system: string;
+      code: string;
+      display: string;
+      text: string;
+    } | null;
     clinicalStatus?: string | null;
     verificationStatus?: string | null;
   }>;
   observations: Array<{
     display: string;
+    terminologySystem?: string | null;
     value?: string | null;
     unit?: string | null;
-    resolved?: { system: string; code: string; display: string; text: string } | null;
+    resolved?: {
+      system: string;
+      code: string;
+      display: string;
+      text: string;
+    } | null;
     status?: string | null;
     editedValue?: string | null;
     editedUnit?: string | null;
   }>;
   medications: Array<{
     display: string;
+    terminologySystem?: string | null;
     dose?: string | null;
     frequency?: string | null;
     duration?: string | null;
     route?: string | null;
-    resolved?: { system: string; code: string; display: string; text: string } | null;
+    resolved?: {
+      system: string;
+      code: string;
+      display: string;
+      text: string;
+    } | null;
     status?: string | null;
     intent?: string | null;
     editedDose?: string | null;
@@ -600,7 +654,13 @@ interface ClinicalReviewInput {
   }>;
   serviceRequests: Array<{
     display: string;
-    resolved?: { system: string; code: string; display: string; text: string } | null;
+    terminologySystem?: string | null;
+    resolved?: {
+      system: string;
+      code: string;
+      display: string;
+      text: string;
+    } | null;
     status?: string | null;
     intent?: string | null;
     priority?: string | null;
@@ -617,19 +677,34 @@ export async function submitClinicalReview(input: ClinicalReviewInput) {
 
   await prismaTelemedicine.$transaction(async (tx) => {
     // 1. Persist the edited SOAP as the canonical doctor report
-    await tx.appointmentActual.update({
+    await tx.appointmentActual.upsert({
       where: { appointmentId: input.appointmentId },
-      data: {
+      create: {
+        appointmentId: input.appointmentId,
+        orgId,
+        doctorReport: input.soap as unknown as Prisma.InputJsonValue,
+        createdBy: input.userId,
+        updatedBy: input.userId,
+      },
+      update: {
         doctorReport: input.soap as unknown as Prisma.InputJsonValue,
         updatedBy: input.userId,
       },
     });
 
     // 2. Replace prior FHIR records (idempotent re-save)
-    await tx.condition.deleteMany({ where: { appointmentId: input.appointmentId } });
-    await tx.observation.deleteMany({ where: { appointmentId: input.appointmentId } });
-    await tx.medicationRequest.deleteMany({ where: { appointmentId: input.appointmentId } });
-    await tx.serviceRequest.deleteMany({ where: { appointmentId: input.appointmentId } });
+    await tx.condition.deleteMany({
+      where: { appointmentId: input.appointmentId },
+    });
+    await tx.observation.deleteMany({
+      where: { appointmentId: input.appointmentId },
+    });
+    await tx.medicationRequest.deleteMany({
+      where: { appointmentId: input.appointmentId },
+    });
+    await tx.serviceRequest.deleteMany({
+      where: { appointmentId: input.appointmentId },
+    });
 
     // 3. Conditions
     for (const c of input.conditions) {
@@ -693,10 +768,12 @@ export async function submitClinicalReview(input: ClinicalReviewInput) {
           medicationCodeCode: m.resolved?.code ?? null,
           medicationCodeDisplay: m.resolved?.display ?? m.display,
           medicationCodeText: m.resolved?.text ?? m.display,
-          ...(dosageText ?? routeText
+          ...((dosageText ?? routeText)
             ? {
                 dosageInstructions: {
-                  create: [{ text: dosageText, routeDisplay: routeText, routeText }],
+                  create: [
+                    { text: dosageText, routeDisplay: routeText, routeText },
+                  ],
                 },
               }
             : {}),
@@ -724,4 +801,46 @@ export async function submitClinicalReview(input: ClinicalReviewInput) {
       });
     }
   });
+}
+
+// ── Re-extract clinical data from an edited SOAP note ────────────────────────
+
+export interface ClinicalExtractionResult {
+  conditions: Array<{ display: string; terminologySystem: string }>;
+  observations: Array<{
+    display: string;
+    terminologySystem: string;
+    value?: string | null;
+    unit?: string | null;
+  }>;
+  medicationRequests: Array<{
+    display: string;
+    terminologySystem: string;
+    dose?: string | null;
+    frequency?: string | null;
+    duration?: string | null;
+    route?: string | null;
+  }>;
+  serviceRequests: Array<{ display: string; terminologySystem: string }>;
+}
+
+export async function extractClinicalFromSoap(
+  soap: Record<string, unknown>,
+): Promise<ClinicalExtractionResult> {
+  const url = process.env.AGENT_CLINICAL_API_URL;
+  if (!url) throw new Error("AGENT_CLINICAL_API_URL is not configured");
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ soap }),
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Clinical extraction agent error ${res.status}: ${text}`);
+  }
+
+  return res.json() as Promise<ClinicalExtractionResult>;
 }

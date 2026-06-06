@@ -289,7 +289,7 @@ export const appointmentColumn: ColumnDef<TAppointment>[] = [
               </Link>
             )}
 
-          {status === "COMPLETED" && (
+          {status === "COMPLETED" && !isAi && (
             <Link
               className={cn(
                 buttonVariants({ size: "sm", variant: "outline" }),
