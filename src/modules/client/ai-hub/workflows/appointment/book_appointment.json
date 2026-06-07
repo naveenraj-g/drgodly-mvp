@@ -3,7 +3,14 @@
   "name": "Book Appointment",
   "description": "Book a healthcare appointment in three steps: select a practitioner, choose a free time slot, then confirm and create the booking.",
   "version": "2.0.0",
-  "tags": ["fhir", "appointment", "booking", "scheduling", "healthcare", "slot"],
+  "tags": [
+    "fhir",
+    "appointment",
+    "booking",
+    "scheduling",
+    "healthcare",
+    "slot"
+  ],
   "llm_hints": {
     "intent_examples": [
       "Book an appointment",
@@ -152,7 +159,7 @@
           "description": "Fetch appointment status value set for the Status select.",
           "context_key": "appointment_status_concepts",
           "tool_name": "get_appointment_status_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Appointment&field=status",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Appointment&field=status",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -160,7 +167,7 @@
           "description": "Fetch appointment-type value set for the Appointment Type select.",
           "context_key": "appointment_type_concepts",
           "tool_name": "get_appointment_type_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Appointment&field=appointmentType",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Appointment&field=appointmentType",
           "method": "GET",
           "timeout_ms": 8000
         }

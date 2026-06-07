@@ -20,16 +20,32 @@ import type {
 
 export interface ClinicalExtractionResult {
   conditions: Array<{ display: string; terminologySystem: string }>;
-  observations: Array<{ display: string; terminologySystem: string; value?: string | null; unit?: string | null }>;
-  medicationRequests: Array<{ display: string; terminologySystem: string; dose?: string | null; frequency?: string | null; duration?: string | null; route?: string | null }>;
+  observations: Array<{
+    display: string;
+    terminologySystem: string;
+    value?: string | null;
+    unit?: string | null;
+  }>;
+  medicationRequests: Array<{
+    display: string;
+    terminologySystem: string;
+    dose?: string | null;
+    frequency?: string | null;
+    duration?: string | null;
+    route?: string | null;
+  }>;
   serviceRequests: Array<{ display: string; terminologySystem: string }>;
 }
 
-async function fetchClinicalExtraction(soap: Record<string, unknown>): Promise<ClinicalExtractionResult> {
+async function fetchClinicalExtraction(
+  soap: Record<string, unknown>,
+  assessment?: unknown,
+): Promise<ClinicalExtractionResult> {
+  console.log({ soap, assessment: assessment ?? null });
   const res = await fetch("/api/clinical-extraction-agent", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ soap }),
+    body: JSON.stringify({ soap, assessment: assessment ?? null }),
   });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
@@ -40,6 +56,7 @@ async function fetchClinicalExtraction(soap: Record<string, unknown>): Promise<C
 
 interface ClinicalExtractionPanelProps {
   soap: SoapNote;
+  assessment?: unknown;
   conditions: ConditionFormItem[];
   observations: ObservationFormItem[];
   medications: MedicationFormItem[];
@@ -53,6 +70,7 @@ interface ClinicalExtractionPanelProps {
 
 export function ClinicalExtractionPanel({
   soap,
+  assessment,
   conditions,
   observations,
   medications,
@@ -68,7 +86,10 @@ export function ClinicalExtractionPanel({
   const handleReExtract = () => {
     startTransition(async () => {
       try {
-        const result = await fetchClinicalExtraction(soap as unknown as Record<string, unknown>);
+        const result = await fetchClinicalExtraction(
+          soap as unknown as Record<string, unknown>,
+          assessment,
+        );
         onReExtract(result);
         toast.success("Clinical data re-extracted from updated SOAP note.");
       } catch (err) {
@@ -141,13 +162,19 @@ export function ClinicalExtractionPanel({
 
         <TabsContent value="observations" className="h-full m-0">
           <ScrollArea className="h-full pr-1">
-            <ObservationList items={observations} onChange={onObservationsChange} />
+            <ObservationList
+              items={observations}
+              onChange={onObservationsChange}
+            />
           </ScrollArea>
         </TabsContent>
 
         <TabsContent value="medications" className="h-full m-0">
           <ScrollArea className="h-full pr-1">
-            <MedicationList items={medications} onChange={onMedicationsChange} />
+            <MedicationList
+              items={medications}
+              onChange={onMedicationsChange}
+            />
           </ScrollArea>
         </TabsContent>
 

@@ -70,7 +70,7 @@
           "description": "Fetch status value set for Observation.",
           "context_key": "status_concepts",
           "tool_name": "get_observation_status",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Observation&field=status",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Observation&field=status",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -78,7 +78,7 @@
           "description": "Fetch category value set for Observation.",
           "context_key": "category_concepts",
           "tool_name": "get_observation_category",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Observation&field=category",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Observation&field=category",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -86,7 +86,7 @@
           "description": "Fetch interpretation value set for Observation.",
           "context_key": "interpretation_concepts",
           "tool_name": "get_observation_interpretation",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Observation&field=interpretation",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Observation&field=interpretation",
           "method": "GET",
           "timeout_ms": 8000
         }

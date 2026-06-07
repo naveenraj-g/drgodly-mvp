@@ -68,7 +68,7 @@
           "description": "Fetch coverage-status value set.",
           "context_key": "status_concepts",
           "tool_name": "get_coverage_status_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Coverage&field=status",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Coverage&field=status",
           "method": "GET",
           "timeout_ms": 8000
         },

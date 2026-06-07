@@ -68,7 +68,7 @@
           "description": "Fetch relationship type value set for RelatedPerson.",
           "context_key": "relationship_concepts",
           "tool_name": "get_relationship_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=RelatedPerson&field=relationship",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=RelatedPerson&field=relationship",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -76,7 +76,7 @@
           "description": "Fetch administrative-gender value set.",
           "context_key": "gender_concepts",
           "tool_name": "get_gender_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=RelatedPerson&field=gender",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=RelatedPerson&field=gender",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -84,7 +84,7 @@
           "description": "Fetch name-use value set.",
           "context_key": "name_use_concepts",
           "tool_name": "get_name_use_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=RelatedPerson&field=nameUse",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=RelatedPerson&field=nameUse",
           "method": "GET",
           "timeout_ms": 8000
         }

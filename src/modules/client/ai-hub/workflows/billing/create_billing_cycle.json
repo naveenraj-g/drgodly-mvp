@@ -57,7 +57,7 @@
           "description": "Fetch Claim status value set.",
           "context_key": "status_concepts",
           "tool_name": "get_claim_status",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Claim&field=status",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Claim&field=status",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -65,7 +65,7 @@
           "description": "Fetch Claim use value set.",
           "context_key": "use_concepts",
           "tool_name": "get_claim_use",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Claim&field=use",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Claim&field=use",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -135,7 +135,7 @@
           "description": "Fetch ClaimResponse status value set.",
           "context_key": "cr_status_concepts",
           "tool_name": "get_claim_response_status",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=ClaimResponse&field=status",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=ClaimResponse&field=status",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -143,7 +143,7 @@
           "description": "Fetch ClaimResponse use value set.",
           "context_key": "use_concepts",
           "tool_name": "get_claim_response_use",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=ClaimResponse&field=use",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=ClaimResponse&field=use",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -151,7 +151,7 @@
           "description": "Fetch ClaimResponse outcome value set.",
           "context_key": "outcome_concepts",
           "tool_name": "get_claim_response_outcome",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=ClaimResponse&field=outcome",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=ClaimResponse&field=outcome",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -208,7 +208,7 @@
           "description": "Fetch Invoice status value set.",
           "context_key": "status_concepts",
           "tool_name": "get_invoice_status",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Invoice&field=status",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Invoice&field=status",
           "method": "GET",
           "timeout_ms": 8000
         },

@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
-  const base =
-    process.env.TERMINOLOGY_SERVICE_URL ??
-    process.env.NEXT_PUBLIC_TERMINOLOGY_SERVICE_URL;
+  const base = process.env.FHIR_SERVER_URL;
 
   if (!base) {
     return NextResponse.json(
-      { error: "TERMINOLOGY_SERVICE_URL is not configured" },
+      { error: "FHIR_SERVER_URL is not configured" },
       { status: 500 },
     );
   }

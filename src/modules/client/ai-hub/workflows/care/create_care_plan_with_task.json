@@ -56,7 +56,7 @@
           "description": "Fetch CarePlan status value set.",
           "context_key": "status_concepts",
           "tool_name": "get_care_plan_status",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=CarePlan&field=status",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=CarePlan&field=status",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -64,7 +64,7 @@
           "description": "Fetch CarePlan intent value set.",
           "context_key": "intent_concepts",
           "tool_name": "get_care_plan_intent",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=CarePlan&field=intent",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=CarePlan&field=intent",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -121,7 +121,7 @@
           "description": "Fetch Task status value set.",
           "context_key": "task_status_concepts",
           "tool_name": "get_task_status",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Task&field=status",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Task&field=status",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -129,7 +129,7 @@
           "description": "Fetch Task intent value set.",
           "context_key": "task_intent_concepts",
           "tool_name": "get_task_intent",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Task&field=intent",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Task&field=intent",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -137,7 +137,7 @@
           "description": "Fetch Task priority value set.",
           "context_key": "priority_concepts",
           "tool_name": "get_task_priority",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Task&field=priority",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Task&field=priority",
           "method": "GET",
           "timeout_ms": 8000
         },

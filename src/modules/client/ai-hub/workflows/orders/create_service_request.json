@@ -73,7 +73,7 @@
           "description": "Fetch allowed status codes for ServiceRequest.",
           "context_key": "status_concepts",
           "tool_name": "get_service_request_status",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=ServiceRequest&field=status",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=ServiceRequest&field=status",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -81,7 +81,7 @@
           "description": "Fetch allowed intent codes for ServiceRequest.",
           "context_key": "intent_concepts",
           "tool_name": "get_service_request_intent",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=ServiceRequest&field=intent",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=ServiceRequest&field=intent",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -89,7 +89,7 @@
           "description": "Fetch allowed priority codes for ServiceRequest.",
           "context_key": "priority_concepts",
           "tool_name": "get_service_request_priority",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=ServiceRequest&field=priority",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=ServiceRequest&field=priority",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -97,7 +97,7 @@
           "description": "Fetch allowed category codes for ServiceRequest.",
           "context_key": "category_concepts",
           "tool_name": "get_service_request_category",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=ServiceRequest&field=category",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=ServiceRequest&field=category",
           "method": "GET",
           "timeout_ms": 8000
         },

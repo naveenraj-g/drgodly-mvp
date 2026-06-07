@@ -67,7 +67,7 @@
           "description": "Fetch clinical status value set for Condition.",
           "context_key": "clinical_status_concepts",
           "tool_name": "get_condition_clinical_status",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Condition&field=clinicalStatus",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Condition&field=clinicalStatus",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -75,7 +75,7 @@
           "description": "Fetch verification status value set for Condition.",
           "context_key": "verification_status_concepts",
           "tool_name": "get_condition_verification_status",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Condition&field=verificationStatus",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Condition&field=verificationStatus",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -83,7 +83,7 @@
           "description": "Fetch severity value set for Condition.",
           "context_key": "severity_concepts",
           "tool_name": "get_condition_severity",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Condition&field=severity",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Condition&field=severity",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -91,7 +91,7 @@
           "description": "Fetch category value set for Condition.",
           "context_key": "category_concepts",
           "tool_name": "get_condition_category",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Condition&field=category",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Condition&field=category",
           "method": "GET",
           "timeout_ms": 8000
         }

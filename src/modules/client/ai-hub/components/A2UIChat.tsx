@@ -491,7 +491,7 @@ export default function A2UIChatPage() {
     <div className="flex flex-col h-full w-full overflow-hidden bg-background">
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-6">
-        <div className="max-w-4xl mx-auto space-y-4">
+        <div className="max-w-5xl mx-auto space-y-4">
           {messages.length === 0 && (
             <div className="text-center text-muted-foreground py-20">
               <Bot className="size-12 mx-auto mb-4 opacity-30" />

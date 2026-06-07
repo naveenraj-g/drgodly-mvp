@@ -23,9 +23,16 @@
     ],
     "required_context": []
   },
-  "execution": { "mode": "deterministic", "orchestrator": "nextjs", "audit_enabled": true },
+  "execution": {
+    "mode": "deterministic",
+    "orchestrator": "nextjs",
+    "audit_enabled": true
+  },
   "introduction": "I'll help you create a schedule and add bookable slots in 2 steps.",
-  "completion": { "message": "Schedule and slots created. Practitioners are now bookable.", "action": "dismiss" },
+  "completion": {
+    "message": "Schedule and slots created. Practitioners are now bookable.",
+    "action": "dismiss"
+  },
   "workflow_steps": [
     {
       "sequence_number": 1,
@@ -36,7 +43,11 @@
       "context": {
         "inputs": {},
         "outputs": {
-          "schedule_id": { "type": "integer", "resource": "Schedule", "field": "id" }
+          "schedule_id": {
+            "type": "integer",
+            "resource": "Schedule",
+            "field": "id"
+          }
         }
       },
       "context_resolvers": [
@@ -52,7 +63,7 @@
           "description": "Fetch specialty value set.",
           "context_key": "specialty_concepts",
           "tool_name": "get_specialty_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Schedule&field=specialty",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Schedule&field=specialty",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -60,12 +71,17 @@
           "description": "Fetch service-type value set.",
           "context_key": "service_type_concepts",
           "tool_name": "get_service_type_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Schedule&field=serviceType",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Schedule&field=serviceType",
           "method": "GET",
           "timeout_ms": 8000
         }
       ],
-      "ui": { "schema": "schedule_create_form", "mode": "create", "prefill": false, "editable": true },
+      "ui": {
+        "schema": "schedule_create_form",
+        "mode": "create",
+        "prefill": false,
+        "editable": true
+      },
       "actions": [
         {
           "type": "http",
@@ -103,7 +119,7 @@
           "description": "Fetch slot-status value set.",
           "context_key": "slot_status_concepts",
           "tool_name": "get_slot_status_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Slot&field=status",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Slot&field=status",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -111,12 +127,17 @@
           "description": "Fetch appointment-type value set for slot classification.",
           "context_key": "appointment_type_concepts",
           "tool_name": "get_appointment_type_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Slot&field=appointmentType",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Slot&field=appointmentType",
           "method": "GET",
           "timeout_ms": 8000
         }
       ],
-      "ui": { "schema": "slot_create_form", "mode": "create", "prefill": false, "editable": true },
+      "ui": {
+        "schema": "slot_create_form",
+        "mode": "create",
+        "prefill": false,
+        "editable": true
+      },
       "actions": [
         {
           "type": "http",

@@ -73,7 +73,7 @@
           "description": "Fetch allowed status codes for DeviceRequest.",
           "context_key": "status_concepts",
           "tool_name": "get_device_request_status",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=DeviceRequest&field=status",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=DeviceRequest&field=status",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -81,7 +81,7 @@
           "description": "Fetch allowed intent codes for DeviceRequest.",
           "context_key": "intent_concepts",
           "tool_name": "get_device_request_intent",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=DeviceRequest&field=intent",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=DeviceRequest&field=intent",
           "method": "GET",
           "timeout_ms": 8000
         },

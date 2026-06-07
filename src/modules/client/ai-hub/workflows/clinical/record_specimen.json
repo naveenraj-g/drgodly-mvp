@@ -3,7 +3,14 @@
   "name": "Record Specimen",
   "description": "Record a biological specimen collected from the current patient, including type, accession identifier, collection details, and body site.",
   "version": "1.0.0",
-  "tags": ["fhir", "specimen", "clinical", "create", "laboratory", "healthcare"],
+  "tags": [
+    "fhir",
+    "specimen",
+    "clinical",
+    "create",
+    "laboratory",
+    "healthcare"
+  ],
   "llm_hints": {
     "intent_examples": [
       "Record a specimen",
@@ -67,7 +74,7 @@
           "description": "Fetch specimen status value set.",
           "context_key": "status_concepts",
           "tool_name": "get_specimen_status_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Specimen&field=status",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Specimen&field=status",
           "method": "GET",
           "timeout_ms": 8000
         },

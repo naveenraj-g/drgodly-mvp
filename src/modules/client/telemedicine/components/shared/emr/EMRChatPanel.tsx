@@ -22,14 +22,14 @@ interface EMRChatPanelProps {
 
 export function EMRChatPanel({ role }: EMRChatPanelProps) {
   return (
-    <div className="flex flex-col w-full h-[calc(100vh-100px)]">
+    <div className="flex flex-col w-full h-[calc(100vh-156px)]">
       {/* Header */}
       <div className="flex items-center gap-2.5 px-6 py-3 border-b bg-background shrink-0">
         <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10">
           <Bot className="h-4 w-4 text-primary" />
         </div>
         <div>
-          <p className="text-sm font-semibold leading-tight">AI Assistant</p>
+          <p className="text-sm font-semibold leading-tight">EMR Assistant</p>
           <p className="text-xs text-muted-foreground leading-tight">
             {role === "doctor"
               ? "Electronic Medical Records — guided clinical workflows"

@@ -58,15 +58,41 @@ const MOCK_REPORT: StagingReport = {
   },
   clinicalExtraction: {
     conditions: [
-      { display: "Upper Respiratory Tract Infection", terminologySystem: "SNOMED" },
-      { display: "Viral upper respiratory tract infection", terminologySystem: "SNOMED" },
+      {
+        display: "Upper Respiratory Tract Infection",
+        terminologySystem: "SNOMED",
+      },
+      {
+        display: "Viral upper respiratory tract infection",
+        terminologySystem: "SNOMED",
+      },
       { display: "Bacterial pharyngitis", terminologySystem: "SNOMED" },
     ],
     observations: [
-      { display: "Temperature", terminologySystem: "LOINC", value: "101.2", unit: "F" },
-      { display: "Blood Pressure", terminologySystem: "LOINC", value: "138/88", unit: "mmHg" },
-      { display: "Heart rate", terminologySystem: "LOINC", value: "96", unit: "beats per minute" },
-      { display: "Oxygen saturation", terminologySystem: "LOINC", value: "98", unit: "%" },
+      {
+        display: "Temperature",
+        terminologySystem: "LOINC",
+        value: "101.2",
+        unit: "F",
+      },
+      {
+        display: "Blood Pressure",
+        terminologySystem: "LOINC",
+        value: "138/88",
+        unit: "mmHg",
+      },
+      {
+        display: "Heart rate",
+        terminologySystem: "LOINC",
+        value: "96",
+        unit: "beats per minute",
+      },
+      {
+        display: "Oxygen saturation",
+        terminologySystem: "LOINC",
+        value: "98",
+        unit: "%",
+      },
     ],
     medicationRequests: [
       {
@@ -93,17 +119,166 @@ const MOCK_REPORT: StagingReport = {
   },
 };
 
-function toConditionItem(c: StagingReport["clinicalExtraction"]["conditions"][0]): ConditionFormItem {
+function toConditionItem(
+  c: StagingReport["clinicalExtraction"]["conditions"][0],
+): ConditionFormItem {
   return { ...c, id: crypto.randomUUID() };
 }
-function toObservationItem(o: StagingReport["clinicalExtraction"]["observations"][0]): ObservationFormItem {
+function toObservationItem(
+  o: StagingReport["clinicalExtraction"]["observations"][0],
+): ObservationFormItem {
   return { ...o, id: crypto.randomUUID() };
 }
-function toMedicationItem(m: StagingReport["clinicalExtraction"]["medicationRequests"][0]): MedicationFormItem {
+function toMedicationItem(
+  m: StagingReport["clinicalExtraction"]["medicationRequests"][0],
+): MedicationFormItem {
   return { ...m, id: crypto.randomUUID() };
 }
-function toServiceRequestItem(s: StagingReport["clinicalExtraction"]["serviceRequests"][0]): ServiceRequestFormItem {
+function toServiceRequestItem(
+  s: StagingReport["clinicalExtraction"]["serviceRequests"][0],
+): ServiceRequestFormItem {
   return { ...s, id: crypto.randomUUID() };
+}
+
+// ── Reverse-map FHIR system URL → short terminology system name ───────────────
+const SYSTEM_URL_TO_NAME: Record<string, string> = {
+  "http://snomed.info/sct": "SNOMED",
+  "http://loinc.org": "LOINC",
+  "http://www.nlm.nih.gov/research/umls/rxnorm": "RXNORM",
+  "http://hl7.org/fhir/sid/icd-10-cm": "ICD-10",
+};
+function systemName(url: string | null | undefined): string {
+  return (url && SYSTEM_URL_TO_NAME[url]) ?? "SNOMED";
+}
+
+// ── Build FormItems from saved FHIR DB records ────────────────────────────────
+type SavedCondition = {
+  id: string;
+  codeSystem: string | null;
+  codeCode: string | null;
+  codeDisplay: string | null;
+  codeText: string | null;
+  clinicalStatusCode: string | null;
+  verificationStatusCode: string | null;
+};
+type SavedObservation = {
+  id: string;
+  codeSystem: string | null;
+  codeCode: string | null;
+  codeDisplay: string | null;
+  codeText: string | null;
+  status: string;
+  valueString: string | null;
+  valueQuantityValue: unknown;
+  valueQuantityUnit: string | null;
+};
+type SavedMedication = {
+  id: string;
+  medicationCodeSystem: string | null;
+  medicationCodeCode: string | null;
+  medicationCodeDisplay: string | null;
+  medicationCodeText: string | null;
+  status: string;
+  intent: string;
+  dosageInstructions: {
+    text: string | null;
+    routeDisplay: string | null;
+    routeText: string | null;
+  }[];
+};
+type SavedServiceRequest = {
+  id: string;
+  codeSystem: string | null;
+  codeCode: string | null;
+  codeDisplay: string | null;
+  codeText: string | null;
+  status: string;
+  intent: string;
+  priority: string | null;
+};
+
+function conditionFromFhir(c: SavedCondition): ConditionFormItem {
+  return {
+    id: c.id,
+    display: c.codeDisplay ?? c.codeText ?? "Unknown condition",
+    terminologySystem: systemName(c.codeSystem),
+    resolved: c.codeCode
+      ? {
+          code: c.codeCode,
+          system: c.codeSystem ?? "",
+          display: c.codeDisplay ?? "",
+          text: c.codeText ?? c.codeDisplay ?? "",
+        }
+      : undefined,
+    clinicalStatus: c.clinicalStatusCode ?? undefined,
+    verificationStatus: c.verificationStatusCode ?? undefined,
+  };
+}
+
+function observationFromFhir(o: SavedObservation): ObservationFormItem {
+  const numVal =
+    o.valueQuantityValue != null ? String(o.valueQuantityValue) : null;
+  return {
+    id: o.id,
+    display: o.codeDisplay ?? o.codeText ?? "Unknown observation",
+    terminologySystem: systemName(o.codeSystem),
+    value: numVal ?? o.valueString ?? null,
+    unit: o.valueQuantityUnit ?? null,
+    resolved: o.codeCode
+      ? {
+          code: o.codeCode,
+          system: o.codeSystem ?? "",
+          display: o.codeDisplay ?? "",
+          text: o.codeText ?? o.codeDisplay ?? "",
+        }
+      : undefined,
+    status: o.status.toLowerCase(),
+  };
+}
+
+function medicationFromFhir(m: SavedMedication): MedicationFormItem {
+  const dosage = m.dosageInstructions[0];
+  return {
+    id: m.id,
+    display:
+      m.medicationCodeDisplay ?? m.medicationCodeText ?? "Unknown medication",
+    terminologySystem: systemName(m.medicationCodeSystem),
+    dose: dosage?.text ?? null,
+    frequency: null,
+    duration: null,
+    route: dosage?.routeDisplay ?? dosage?.routeText ?? null,
+    resolved: m.medicationCodeCode
+      ? {
+          code: m.medicationCodeCode,
+          system: m.medicationCodeSystem ?? "",
+          display: m.medicationCodeDisplay ?? "",
+          text: m.medicationCodeText ?? m.medicationCodeDisplay ?? "",
+        }
+      : undefined,
+    status: m.status.toLowerCase(),
+    intent: m.intent.toLowerCase(),
+  };
+}
+
+function serviceRequestFromFhir(
+  s: SavedServiceRequest,
+): ServiceRequestFormItem {
+  return {
+    id: s.id,
+    display: s.codeDisplay ?? s.codeText ?? "Unknown order",
+    terminologySystem: systemName(s.codeSystem),
+    resolved: s.codeCode
+      ? {
+          code: s.codeCode,
+          system: s.codeSystem ?? "",
+          display: s.codeDisplay ?? "",
+          text: s.codeText ?? s.codeDisplay ?? "",
+        }
+      : undefined,
+    status: s.status.toLowerCase(),
+    intent: s.intent.toLowerCase(),
+    priority: s.priority?.toLowerCase() ?? undefined,
+  };
 }
 
 interface AppointmentReviewProps {
@@ -115,43 +290,73 @@ interface AppointmentReviewProps {
       appointmentDate?: Date | null;
       patient?: { personal?: { name?: string | null } | null } | null;
       doctor?: { personal?: { fullName?: string | null } | null } | null;
+      conditions?: SavedCondition[];
+      observations?: SavedObservation[];
+      medicationRequests?: SavedMedication[];
+      serviceRequests?: SavedServiceRequest[];
     } | null;
   } | null;
 }
 
-export function AppointmentReview({ appointmentId, userId, data }: AppointmentReviewProps) {
-  const rawReport = data?.fullReport && typeof data.fullReport === "object"
-    ? (data.fullReport as Partial<StagingReport>)
-    : null;
+export function AppointmentReview({
+  appointmentId,
+  userId,
+  data,
+}: AppointmentReviewProps) {
+  const rawReport =
+    data?.fullReport && typeof data.fullReport === "object"
+      ? (data.fullReport as Partial<StagingReport>)
+      : null;
   const report: StagingReport = {
     soap: rawReport?.soap ?? MOCK_REPORT.soap,
     clinicalExtraction: {
       conditions: rawReport?.clinicalExtraction?.conditions ?? [],
       observations: rawReport?.clinicalExtraction?.observations ?? [],
-      medicationRequests: rawReport?.clinicalExtraction?.medicationRequests ?? [],
+      medicationRequests:
+        rawReport?.clinicalExtraction?.medicationRequests ?? [],
       serviceRequests: rawReport?.clinicalExtraction?.serviceRequests ?? [],
     },
   };
 
+  // If the doctor has previously confirmed, rehydrate from saved FHIR records
+  // so their resolved codes, statuses, and verifications are restored.
+  const savedConditions = data?.appointment?.conditions ?? [];
+  const savedObservations = data?.appointment?.observations ?? [];
+  const savedMedications = data?.appointment?.medicationRequests ?? [];
+  const savedServiceRequests = data?.appointment?.serviceRequests ?? [];
+  const hasSaved =
+    savedConditions.length > 0 ||
+    savedObservations.length > 0 ||
+    savedMedications.length > 0 ||
+    savedServiceRequests.length > 0;
+
   const [soap, setSoap] = useState<SoapNote>(report.soap);
   const [conditions, setConditions] = useState<ConditionFormItem[]>(
-    report.clinicalExtraction.conditions.map(toConditionItem),
+    hasSaved
+      ? savedConditions.map(conditionFromFhir)
+      : report.clinicalExtraction.conditions.map(toConditionItem),
   );
   const [observations, setObservations] = useState<ObservationFormItem[]>(
-    report.clinicalExtraction.observations.map(toObservationItem),
+    hasSaved
+      ? savedObservations.map(observationFromFhir)
+      : report.clinicalExtraction.observations.map(toObservationItem),
   );
   const [medications, setMedications] = useState<MedicationFormItem[]>(
-    report.clinicalExtraction.medicationRequests.map(toMedicationItem),
+    hasSaved
+      ? savedMedications.map(medicationFromFhir)
+      : report.clinicalExtraction.medicationRequests.map(toMedicationItem),
   );
-  const [serviceRequests, setServiceRequests] = useState<ServiceRequestFormItem[]>(
-    report.clinicalExtraction.serviceRequests.map(toServiceRequestItem),
+  const [serviceRequests, setServiceRequests] = useState<
+    ServiceRequestFormItem[]
+  >(
+    hasSaved
+      ? savedServiceRequests.map(serviceRequestFromFhir)
+      : report.clinicalExtraction.serviceRequests.map(toServiceRequestItem),
   );
   const [isPending, startTransition] = useTransition();
 
-  const patientName =
-    data?.appointment?.patient?.personal?.name ?? "Patient";
-  const doctorName =
-    data?.appointment?.doctor?.personal?.fullName ?? "Doctor";
+  const patientName = data?.appointment?.patient?.personal?.name ?? "Patient";
+  const doctorName = data?.appointment?.doctor?.personal?.fullName ?? "Doctor";
   const appointmentDate = data?.appointment?.appointmentDate
     ? new Date(data.appointment.appointmentDate).toLocaleDateString("en-US", {
         year: "numeric",
@@ -188,14 +393,15 @@ export function AppointmentReview({ appointmentId, userId, data }: AppointmentRe
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-100px)] gap-0">
+    <div className="flex flex-col h-[calc(100vh-156px)] gap-0">
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-3 border-b bg-background shrink-0">
         <div className="flex items-center gap-4">
           <div>
             <p className="text-sm font-semibold">Post-Consultation Review</p>
             <p className="text-xs text-muted-foreground">
-              Review and confirm AI-generated clinical data before saving to records
+              Review and confirm AI-generated clinical data before saving to
+              records
             </p>
           </div>
           <Separator orientation="vertical" className="h-8" />
@@ -217,7 +423,12 @@ export function AppointmentReview({ appointmentId, userId, data }: AppointmentRe
           </Badge>
         </div>
 
-        <Button onClick={handleConfirm} size="sm" className="gap-2" disabled={isPending}>
+        <Button
+          onClick={handleConfirm}
+          size="sm"
+          className="gap-2"
+          disabled={isPending}
+        >
           {isPending ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
@@ -233,7 +444,9 @@ export function AppointmentReview({ appointmentId, userId, data }: AppointmentRe
         <div className="w-[420px] shrink-0 border-r flex flex-col min-h-0">
           <div className="px-4 py-3 border-b shrink-0">
             <p className="text-sm font-medium">SOAP Note</p>
-            <p className="text-xs text-muted-foreground">Edit and review clinical notes</p>
+            <p className="text-xs text-muted-foreground">
+              Edit and review clinical notes
+            </p>
           </div>
           <ScrollArea className="flex-1 min-h-0">
             <div className="p-4">
@@ -253,6 +466,7 @@ export function AppointmentReview({ appointmentId, userId, data }: AppointmentRe
           <div className="flex-1 min-h-0 p-4">
             <ClinicalExtractionPanel
               soap={soap}
+              assessment={rawReport?.assessment}
               conditions={conditions}
               observations={observations}
               medications={medications}

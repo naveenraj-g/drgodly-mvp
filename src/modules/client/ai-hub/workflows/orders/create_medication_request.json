@@ -3,7 +3,13 @@
   "name": "Create Medication Request",
   "description": "Prescribe a medication for the current patient by selecting from the formulary or searching by RxNorm code, specifying dosage instructions, dispensing details, and the requesting practitioner.",
   "version": "1.0.0",
-  "tags": ["fhir", "orders", "medication-request", "prescription", "medication"],
+  "tags": [
+    "fhir",
+    "orders",
+    "medication-request",
+    "prescription",
+    "medication"
+  ],
   "llm_hints": {
     "intent_examples": [
       "Prescribe a medication",
@@ -73,7 +79,7 @@
           "description": "Fetch allowed status codes for MedicationRequest.",
           "context_key": "status_concepts",
           "tool_name": "get_medication_request_status",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=MedicationRequest&field=status",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=MedicationRequest&field=status",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -81,7 +87,7 @@
           "description": "Fetch allowed intent codes for MedicationRequest.",
           "context_key": "intent_concepts",
           "tool_name": "get_medication_request_intent",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=MedicationRequest&field=intent",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=MedicationRequest&field=intent",
           "method": "GET",
           "timeout_ms": 8000
         },

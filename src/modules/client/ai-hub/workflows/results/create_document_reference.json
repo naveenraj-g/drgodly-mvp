@@ -3,7 +3,14 @@
   "name": "Create Document Reference",
   "description": "Create a document reference linking clinical documents (PDFs, notes, reports) to the current patient's record.",
   "version": "1.0.0",
-  "tags": ["fhir", "document-reference", "results", "clinical-documents", "create", "healthcare"],
+  "tags": [
+    "fhir",
+    "document-reference",
+    "results",
+    "clinical-documents",
+    "create",
+    "healthcare"
+  ],
   "llm_hints": {
     "intent_examples": [
       "Attach a document to a patient",
@@ -62,7 +69,7 @@
           "description": "Fetch document reference status value set.",
           "context_key": "status_concepts",
           "tool_name": "get_document_reference_status_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=DocumentReference&field=status",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=DocumentReference&field=status",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -70,7 +77,7 @@
           "description": "Fetch document reference doc-status value set.",
           "context_key": "doc_status_concepts",
           "tool_name": "get_document_reference_doc_status_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=DocumentReference&field=docStatus",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=DocumentReference&field=docStatus",
           "method": "GET",
           "timeout_ms": 8000
         },

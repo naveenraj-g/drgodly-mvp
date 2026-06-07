@@ -64,7 +64,7 @@
           "description": "Fetch EpisodeOfCare status value set.",
           "context_key": "status_concepts",
           "tool_name": "get_episode_of_care_status_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=EpisodeOfCare&field=status",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=EpisodeOfCare&field=status",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -72,7 +72,7 @@
           "description": "Fetch EpisodeOfCare type value set.",
           "context_key": "type_concepts",
           "tool_name": "get_episode_of_care_type_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=EpisodeOfCare&field=type",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=EpisodeOfCare&field=type",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -135,7 +135,7 @@
           "description": "Fetch Encounter status value set.",
           "context_key": "status_concepts",
           "tool_name": "get_encounter_status_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Encounter&field=status",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Encounter&field=status",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -143,7 +143,7 @@
           "description": "Fetch Encounter class value set.",
           "context_key": "class_concepts",
           "tool_name": "get_encounter_class_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Encounter&field=class",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Encounter&field=class",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -151,7 +151,7 @@
           "description": "Fetch Encounter service-type value set.",
           "context_key": "service_type_concepts",
           "tool_name": "get_encounter_service_type_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Encounter&field=serviceType",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Encounter&field=serviceType",
           "method": "GET",
           "timeout_ms": 8000
         },

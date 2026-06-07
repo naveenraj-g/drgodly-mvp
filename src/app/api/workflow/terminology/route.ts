@@ -17,8 +17,7 @@
  */
 
 const TERMINOLOGY_BASE =
-  process.env.TERMINOLOGY_SERVICE_URL ??
-  process.env.NEXT_PUBLIC_TERMINOLOGY_SERVICE_URL;
+  process.env.FHIR_SERVER_URL ?? process.env.NEXT_PUBLIC_FHIR_SERVER_URL;
 
 export async function GET(req: Request) {
   if (!TERMINOLOGY_BASE) {
@@ -59,7 +58,10 @@ export async function GET(req: Request) {
       // /terminology/search returns { total, limit, offset, data: [...] }
       concepts = Array.isArray(data.data) ? data.data : [];
     } else {
-      const params = new URLSearchParams({ resource: resource!, field: field! });
+      const params = new URLSearchParams({
+        resource: resource!,
+        field: field!,
+      });
       if (query) params.set("q", query);
 
       const res = await fetch(
@@ -75,6 +77,9 @@ export async function GET(req: Request) {
     return Response.json({ concepts });
   } catch (error) {
     console.error("[workflow/terminology] Failed:", error);
-    return Response.json({ error: "Failed to fetch terminology" }, { status: 500 });
+    return Response.json(
+      { error: "Failed to fetch terminology" },
+      { status: 500 },
+    );
   }
 }

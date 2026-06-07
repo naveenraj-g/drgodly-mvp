@@ -62,7 +62,7 @@
           "description": "Fetch clinical status value set for AllergyIntolerance.",
           "context_key": "clinical_status_concepts",
           "tool_name": "get_allergy_clinical_status",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=AllergyIntolerance&field=clinicalStatus",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=AllergyIntolerance&field=clinicalStatus",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -70,7 +70,7 @@
           "description": "Fetch verification status value set for AllergyIntolerance.",
           "context_key": "verification_status_concepts",
           "tool_name": "get_allergy_verification_status",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=AllergyIntolerance&field=verificationStatus",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=AllergyIntolerance&field=verificationStatus",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -78,7 +78,7 @@
           "description": "Fetch criticality value set for AllergyIntolerance.",
           "context_key": "criticality_concepts",
           "tool_name": "get_allergy_criticality",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=AllergyIntolerance&field=criticality",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=AllergyIntolerance&field=criticality",
           "method": "GET",
           "timeout_ms": 8000
         }

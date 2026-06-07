@@ -22,9 +22,16 @@
     ],
     "required_context": []
   },
-  "execution": { "mode": "deterministic", "orchestrator": "nextjs", "audit_enabled": true },
+  "execution": {
+    "mode": "deterministic",
+    "orchestrator": "nextjs",
+    "audit_enabled": true
+  },
   "introduction": "I'll help you register a new healthcare service for your organisation.",
-  "completion": { "message": "Healthcare service created successfully.", "action": "dismiss" },
+  "completion": {
+    "message": "Healthcare service created successfully.",
+    "action": "dismiss"
+  },
   "workflow_steps": [
     {
       "sequence_number": 1,
@@ -35,7 +42,11 @@
       "context": {
         "inputs": {},
         "outputs": {
-          "healthcare_service_id": { "type": "integer", "resource": "HealthcareService", "field": "id" }
+          "healthcare_service_id": {
+            "type": "integer",
+            "resource": "HealthcareService",
+            "field": "id"
+          }
         }
       },
       "context_resolvers": [
@@ -59,7 +70,7 @@
           "description": "Fetch service-category value set.",
           "context_key": "service_category_concepts",
           "tool_name": "get_service_category_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=HealthcareService&field=category",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=HealthcareService&field=category",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -67,7 +78,7 @@
           "description": "Fetch service-type value set.",
           "context_key": "service_type_concepts",
           "tool_name": "get_service_type_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=HealthcareService&field=type",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=HealthcareService&field=type",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -75,12 +86,17 @@
           "description": "Fetch specialty value set.",
           "context_key": "specialty_concepts",
           "tool_name": "get_specialty_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=HealthcareService&field=specialty",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=HealthcareService&field=specialty",
           "method": "GET",
           "timeout_ms": 8000
         }
       ],
-      "ui": { "schema": "healthcare_service_create_form", "mode": "create", "prefill": false, "editable": true },
+      "ui": {
+        "schema": "healthcare_service_create_form",
+        "mode": "create",
+        "prefill": false,
+        "editable": true
+      },
       "actions": [
         {
           "type": "http",

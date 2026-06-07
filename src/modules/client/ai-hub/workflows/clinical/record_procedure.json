@@ -62,7 +62,7 @@
           "description": "Fetch procedure status value set.",
           "context_key": "status_concepts",
           "tool_name": "get_procedure_status_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Procedure&field=status",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Procedure&field=status",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -70,7 +70,7 @@
           "description": "Fetch procedure category value set.",
           "context_key": "category_concepts",
           "tool_name": "get_procedure_category_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Procedure&field=category",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Procedure&field=category",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -78,7 +78,7 @@
           "description": "Fetch procedure outcome value set.",
           "context_key": "outcome_concepts",
           "tool_name": "get_procedure_outcome_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Procedure&field=outcome",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Procedure&field=outcome",
           "method": "GET",
           "timeout_ms": 8000
         },

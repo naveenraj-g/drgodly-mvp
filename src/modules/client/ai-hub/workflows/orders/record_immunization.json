@@ -73,7 +73,7 @@
           "description": "Fetch allowed status codes for Immunization (completed, entered-in-error, not-done).",
           "context_key": "status_concepts",
           "tool_name": "get_immunization_status",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Immunization&field=status",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Immunization&field=status",
           "method": "GET",
           "timeout_ms": 8000
         },

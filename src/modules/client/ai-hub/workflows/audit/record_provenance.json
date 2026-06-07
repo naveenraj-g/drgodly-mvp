@@ -67,7 +67,7 @@
           "description": "Fetch Provenance activity value set.",
           "context_key": "activity_concepts",
           "tool_name": "get_provenance_activity",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Provenance&field=activity",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Provenance&field=activity",
           "method": "GET",
           "timeout_ms": 8000
         }

@@ -28,6 +28,8 @@ import {
 } from "./_lib";
 import { getServerSession } from "@/modules/server/auth/get-session";
 
+import create_patient from "../../../modules/client/ai-hub/workflows/patient/create_patient.json";
+
 const AGENT_API_URL = process.env.AGENT_API_URL!;
 
 export async function POST(req: Request) {
@@ -69,15 +71,16 @@ export async function POST(req: Request) {
       });
 
       if (!agentRes.ok) {
+        console.log(agentRes);
         throw new Error(`Agent API error: ${agentRes.status}`);
       }
 
       workflow = await agentRes.json();
+      console.log(workflow);
     } else {
       // Fallback: load a default workflow when no agent is configured
-      const { default: fallback } = await import(
-        "@/modules/client/ai-hub/workflows/orders/create_service_request.json"
-      );
+      const { default: fallback } =
+        await import("@/modules/client/ai-hub/workflows/orders/create_service_request.json");
       workflow = fallback as WorkflowDefinition;
     }
 

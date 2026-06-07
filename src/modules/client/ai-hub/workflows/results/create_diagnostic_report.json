@@ -3,7 +3,15 @@
   "name": "Create Diagnostic Report with Observation",
   "description": "Create a diagnostic report for the current patient and then link an observation result to it in two steps.",
   "version": "1.0.0",
-  "tags": ["fhir", "diagnostic-report", "observation", "results", "laboratory", "create", "healthcare"],
+  "tags": [
+    "fhir",
+    "diagnostic-report",
+    "observation",
+    "results",
+    "laboratory",
+    "create",
+    "healthcare"
+  ],
   "llm_hints": {
     "intent_examples": [
       "Create a diagnostic report",
@@ -68,7 +76,7 @@
           "description": "Fetch diagnostic report status value set.",
           "context_key": "status_concepts",
           "tool_name": "get_diagnostic_report_status_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=DiagnosticReport&field=status",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=DiagnosticReport&field=status",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -76,7 +84,7 @@
           "description": "Fetch diagnostic report category value set.",
           "context_key": "category_concepts",
           "tool_name": "get_diagnostic_report_category_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=DiagnosticReport&field=category",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=DiagnosticReport&field=category",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -132,7 +140,7 @@
           "description": "Fetch observation status value set.",
           "context_key": "status_concepts",
           "tool_name": "get_observation_status_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Observation&field=status",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Observation&field=status",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -140,7 +148,7 @@
           "description": "Fetch observation interpretation value set.",
           "context_key": "interpretation_concepts",
           "tool_name": "get_observation_interpretation_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Observation&field=interpretation",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Observation&field=interpretation",
           "method": "GET",
           "timeout_ms": 8000
         },

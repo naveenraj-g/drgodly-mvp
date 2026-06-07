@@ -56,7 +56,7 @@
           "description": "Fetch medication-status value set.",
           "context_key": "status_concepts",
           "tool_name": "get_medication_status_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Medication&field=status",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Medication&field=status",
           "method": "GET",
           "timeout_ms": 8000
         }

@@ -57,7 +57,7 @@
           "description": "Fetch organisation-type value set for the Type select.",
           "context_key": "org_type_concepts",
           "tool_name": "get_org_type_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Organization&field=type",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Organization&field=type",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -65,7 +65,7 @@
           "description": "Fetch telecom-system value set for the Contact Type select.",
           "context_key": "telecom_system_concepts",
           "tool_name": "get_telecom_system_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Patient&field=telecom.system",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Patient&field=telecom.system",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -73,7 +73,7 @@
           "description": "Fetch telecom-use value set for the Contact Use select.",
           "context_key": "telecom_use_concepts",
           "tool_name": "get_telecom_use_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Patient&field=telecom.use",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Patient&field=telecom.use",
           "method": "GET",
           "timeout_ms": 8000
         }
@@ -131,7 +131,7 @@
           "description": "Fetch location-status value set.",
           "context_key": "location_status_concepts",
           "tool_name": "get_location_status_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Location&field=status",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Location&field=status",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -139,7 +139,7 @@
           "description": "Fetch location physical-type value set.",
           "context_key": "location_physical_type_concepts",
           "tool_name": "get_location_physical_type_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Location&field=physicalType",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Location&field=physicalType",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -147,7 +147,7 @@
           "description": "Fetch address-use value set.",
           "context_key": "address_use_concepts",
           "tool_name": "get_address_use_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Patient&field=address.use",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Patient&field=address.use",
           "method": "GET",
           "timeout_ms": 8000
         },
@@ -155,7 +155,7 @@
           "description": "Fetch address-type value set.",
           "context_key": "address_type_concepts",
           "tool_name": "get_address_type_valueset",
-          "url": "$terminology_server_url/api/v1/terminology/concepts?resource=Patient&field=address.type",
+          "url": "$fhir_server_url/api/v1/terminology/concepts?resource=Patient&field=address.type",
           "method": "GET",
           "timeout_ms": 8000
         }
